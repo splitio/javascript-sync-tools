@@ -13,6 +13,20 @@
     "es6": true,
     "jest": true
   },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "excludedFiles": ["src/**/__tests__/**"],
+      "rules": {
+        "no-restricted-syntax": ["error", "ForOfStatement", "ForInStatement"],
+        "no-throw-literal": "error"
+      },
+      "parserOptions": {
+        "ecmaVersion": 2015,
+        "sourceType": "module"
+      }
+    }
+  ],
   "rules": {
     "indent": ["error", 2, {"SwitchCase": 1}],
     "quotes": ["warn", "single", "avoid-escape"],
