@@ -102,3 +102,15 @@ dist
 
 # TernJS port file
 .tern-port
+
+## transpiled code
+/cjs
+/esm
+
+## stats info
+/stats
+
+## IDEs
+/.vscode
+/.idea
+.DS_Store
