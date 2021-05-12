@@ -6,9 +6,6 @@ import { SegmentsSynchroniser } from './synchronisers/SegmentsSynchroniser';
 import { SplitsSynchroniser } from './synchronisers/SplitsSynchroniser';
 import { SynchroniserStorageFactory } from './storages/SplitStorage';
 import fetch from 'node-fetch';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 /**
  * Main class to handle the Synchroniser execution.
@@ -110,7 +107,7 @@ export class SynchroniserManager {
     if (!isStorageReady) throw new Error('Error: Synchronisers are not ready.');
 
     const areSyncsReady = await this.setSynchronisers();
-    if (!areSyncsReady) throw new Error('Error: Synchronisers');
+    if (!areSyncsReady) throw new Error('Error: Some error occurred starting synchronisers. Exiting.');
     await this.synchroniseSplits();
     console.log(`> Splits fetched: ${this._storage.splits.getAll().length}`);
     console.log(`> Segments registered: ${this._storage.segments.getRegisteredSegments()}`);
