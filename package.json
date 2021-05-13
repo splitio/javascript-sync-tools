@@ -2,19 +2,21 @@
   "name": "@splitsoftware/splitio-node-slim-synchroniser",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "cli.js",
   "scripts": {
+    "add-version": "replace @VERSION@ $npm_package_version dist/settings/index.js",
     "check": "npm run check:lint && npm run check:types",
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
-    "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && scripts/make_cli.sh",
+    "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
     "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@splitsoftware/splitio-commons": "0.1.1-canary.0",
+    "@splitsoftware/splitio-commons": "0.1.1-canary.1",
+    "dotenv": "^9.0.1",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {

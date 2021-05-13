@@ -47,6 +47,7 @@
     "comma-style": "error",
     // added rules:
     "strict": "off",
+    "comma-dangle": ["error", "always-multiline"],
     "no-console": "off",
     "callback-return": ["error"],
     "handle-callback-err": ["error", "^(err|error|\\w+Error)$"],

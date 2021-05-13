@@ -7,5 +7,5 @@ module.exports = {
   // Required when using Split dependencies via GitHub
   // `"@splitsoftware/splitio-commons": "github:splitio/javascript-commons#branch_name",`
   transform: { 'node_modules/@splitsoftware/.+\\.(j|t)s$': 'ts-jest' },
-  transformIgnorePatterns: ['<rootDir>/node_modules/(?!@splitsoftware/.*)']
+  transformIgnorePatterns: ['<rootDir>/node_modules/(?!@splitsoftware/.*)'],
 };
