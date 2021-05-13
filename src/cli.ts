@@ -5,6 +5,9 @@ import { SynchroniserManager } from './manager';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 console.log('# Synchroniser: Initialization');
 
