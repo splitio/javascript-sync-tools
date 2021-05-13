@@ -11,7 +11,13 @@ export class ImpressionsSynchroniser {
    * The local reference to the Synchroniser's settings configurations.
    */
   private _settings;
+  /**
+   * The local reference to the Synchroniser's Impressions' Storage.
+   */
   private _impressionsStorage;
+  /**
+   * The local reference to the SplitAPI's Post request action.
+   */
   private _postImpressionsBulk;
   /**
    * @param {ISettingsInternal}     settings             The Synchroniser's settings reference.
@@ -29,7 +35,7 @@ export class ImpressionsSynchroniser {
   }
 
   /**
-   * Function to do stuff.
+   * Function to configure the ImpressionsSyncTask and the execute the Impressions POST request.
    *
    * @returns {Promise<any>}
    */

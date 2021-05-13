@@ -11,7 +11,13 @@ export class EventsSynchroniser {
    * The local reference to the Synchroniser's settings configurations.
    */
   private _settings;
+  /**
+   * The local reference to the Synchroniser's Events' Storage.
+   */
   private _eventsStorage;
+  /**
+   * The local reference to the SplitAPI's Events POST request action.
+   */
   private _postEventsBulk;
   /**
    *
@@ -30,7 +36,7 @@ export class EventsSynchroniser {
   }
 
   /**
-   * Function to do stuff.
+   * Function to configure the EventsSyncTask and the execute the Events POST request.
    *
    * @returns {Promise<any>}
    */
