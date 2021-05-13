@@ -29,9 +29,9 @@ export class SegmentsSynchroniser {
   private _settings;
 
   /**
-   * @param {IFetchSegmentChanges} segmentsFetcher  The SegmentChanges fetcher from SplitAPI.
-   * @param {ISettings}            settings         The Synchroniser's settings.
-   * @param {ISegmentsCacheSync} segmentsStorage  The reference to the current Storage.
+   * @param {IFetchSegmentChanges}  segmentsFetcher  The SegmentChanges fetcher from SplitAPI.
+   * @param {ISettings}             settings         The Synchroniser's settings.
+   * @param {ISegmentsCacheSync}    segmentsStorage  The reference to the current Storage.
    */
   constructor(segmentsFetcher: IFetchSegmentChanges, settings: ISettingsInternal, segmentsStorage: ISegmentsCacheSync) {
     this._segmentsStorage = segmentsStorage;
