@@ -62,7 +62,7 @@ export class SynchroniserManager {
    *
    * @returns {boolean}
    */
-  setStorage(): Promise<boolean> {
+  initializeStorages(): Promise<boolean> {
     /**
      * The local reference to the defined Storage.
      *
@@ -77,7 +77,7 @@ export class SynchroniserManager {
    *
    * @returns {boolean}
    */
-  setSynchronisers(): Promise<boolean> {
+  initializeSynchronisers(): Promise<boolean> {
     try {
       this._segmentsSynchroniser = new SegmentsSynchroniser(
         this._splitApi.fetchSegmentChanges,
@@ -103,10 +103,10 @@ export class SynchroniserManager {
   async execute() {
     console.log('# Synchroniser: Execute');
 
-    const isStorageReady = await this.setStorage();
+    const isStorageReady = await this.initializeStorages();
     if (!isStorageReady) throw new Error('Error: Synchronisers are not ready.');
 
-    const areSyncsReady = await this.setSynchronisers();
+    const areSyncsReady = await this.initializeSynchronisers();
     if (!areSyncsReady) throw new Error('Error: Some error occurred starting synchronisers. Exiting.');
     await this.synchroniseSplits();
     console.log(`> Splits fetched: ${this._storage.splits.getAll().length}`);

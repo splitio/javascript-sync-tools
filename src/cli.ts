@@ -3,6 +3,9 @@ import { exit } from 'process';
 import { synchroniserSettingsValidator } from './settings';
 import { SynchroniserManager } from './manager';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 console.log('# Synchroniser: Initialization');
 /**
