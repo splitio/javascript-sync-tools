@@ -6,6 +6,8 @@ import { SegmentsSynchroniser } from './synchronisers/SegmentsSynchroniser';
 import { SplitsSynchroniser } from './synchronisers/SplitsSynchroniser';
 import { SynchroniserStorageFactory } from './storages/SplitStorage';
 import fetch from 'node-fetch';
+import { EventsSynchroniser } from './synchronisers/EventsSynchroniser';
+import { ImpressionsSynchroniser } from './synchronisers/ImpressionsSynchroniser';
 
 /**
  * Main class to handle the Synchroniser execution.
@@ -27,6 +29,14 @@ export class SynchroniserManager {
    * The local reference to the SplitUpdater instance from @splitio/javascript-commons.
    */
   _splitsSynchroniser!: SplitsSynchroniser;
+  /**
+   * The local reference to the EventsSynchroniser class.
+   */
+  _eventsSynchroniser!: EventsSynchroniser;
+  /**
+   * The local reference to the EventsSynchroniser class.
+   */
+  _impressionsSynchroniser!: ImpressionsSynchroniser;
   /**
    * The local reference to the Synchroniser's settings configurations.
    */
@@ -90,6 +100,16 @@ export class SynchroniserManager {
         this._storage.splits,
         this._storage.segments,
       );
+      this._eventsSynchroniser = new EventsSynchroniser(
+        this._settings,
+        this._splitApi.postEventsBulk,
+        this._storage.events
+      );
+      this._impressionsSynchroniser = new ImpressionsSynchroniser(
+        this._settings,
+        this._splitApi.postTestImpressionsBulk,
+        this._storage.impressions
+      );
     } catch (error) {
       return Promise.reject(new Error('Error'));
     }
@@ -114,6 +134,10 @@ export class SynchroniserManager {
     const test = await this.synchroniseSegments();
     // @ts-ignore
     console.log(`> Segments: ${test}`);
+
+    await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
+
+    await this._impressionsSynchroniser.synchroniseImpressions().then((data) => console.log('> Impresisons:', data));
 
     console.log('# Synchroniser: Execution ended');
   }
