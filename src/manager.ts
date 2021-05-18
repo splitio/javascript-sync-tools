@@ -1,10 +1,10 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
 import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SegmentsSynchroniser } from './synchronisers/SegmentsSynchroniser';
 import { SplitsSynchroniser } from './synchronisers/SplitsSynchroniser';
-import { SynchroniserStorageFactory } from './storages/SplitStorage';
+import { SynchroniserStorageFactory } from './storages/SynchroniserStorage';
 import fetch from 'node-fetch';
 import { EventsSynchroniser } from './synchronisers/EventsSynchroniser';
 import { ImpressionsSynchroniser } from './synchronisers/ImpressionsSynchroniser';
@@ -16,7 +16,7 @@ export class SynchroniserManager {
   /**
    * The local reference to the Synchroniser's Storage.
    */
-  _storage!: IStorageSync;
+  _storage!: IStorageAsync;
   /**
    * The local reference to the Synchroniser's SplitAPI instance.
    */
@@ -76,7 +76,7 @@ export class SynchroniserManager {
     /**
      * The local reference to the defined Storage.
      *
-     * @type {IStorageSync}
+     * @type {IStorageAsync}
      */
     this._storage = SynchroniserStorageFactory(this._settings);
 
@@ -100,16 +100,16 @@ export class SynchroniserManager {
         this._storage.splits,
         this._storage.segments,
       );
-      this._eventsSynchroniser = new EventsSynchroniser(
-        this._settings,
-        this._splitApi.postEventsBulk,
-        this._storage.events
-      );
-      this._impressionsSynchroniser = new ImpressionsSynchroniser(
-        this._settings,
-        this._splitApi.postTestImpressionsBulk,
-        this._storage.impressions
-      );
+      // this._eventsSynchroniser = new EventsSynchroniser(
+      //   this._settings,
+      //   this._splitApi.postEventsBulk,
+      //   this._storage.events
+      // );
+      // this._impressionsSynchroniser = new ImpressionsSynchroniser(
+      //   this._settings,
+      //   this._splitApi.postTestImpressionsBulk,
+      //   this._storage.impressions
+      // );
     } catch (error) {
       return Promise.reject(new Error('Error'));
     }
@@ -129,15 +129,15 @@ export class SynchroniserManager {
     const areSyncsReady = await this.initializeSynchronisers();
     if (!areSyncsReady) throw new Error('Error: Some error occurred starting synchronisers. Exiting.');
     await this.synchroniseSplits();
-    console.log(`> Splits fetched: ${this._storage.splits.getAll().length}`);
-    console.log(`> Segments registered: ${this._storage.segments.getRegisteredSegments()}`);
+    console.log(`> Splits fetched: ${(await this._storage.splits.getAll()).length}`);
+    console.log(`> Segments registered: ${await this._storage.segments.getRegisteredSegments()}`);
     const test = await this.synchroniseSegments();
     // @ts-ignore
     console.log(`> Segments: ${test}`);
 
-    await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
+    // await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
 
-    await this._impressionsSynchroniser.synchroniseImpressions().then((data) => console.log('> Impresisons:', data));
+    // await this._impressionsSynchroniser.synchroniseImpressions().then((data) => console.log('> Impresisons:', data));
 
     console.log('# Synchroniser: Execution ended');
   }

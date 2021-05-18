@@ -4,7 +4,7 @@ import segmentChangesFetcherFactory
 import { segmentChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/segmentChangesUpdater';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
-import { ISegmentsCacheSync } from '@splitsoftware/splitio-commons/types/storages/types';
+import { ISegmentsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
 
 /**
  * Class that manages all the Segments entities related actions.
@@ -31,9 +31,13 @@ export class SegmentsSynchroniser {
   /**
    * @param {IFetchSegmentChanges}  segmentsFetcher  The SegmentChanges fetcher from SplitAPI.
    * @param {ISettings}             settings         The Synchroniser's settings.
-   * @param {ISegmentsCacheSync}    segmentsStorage  The reference to the current Storage.
+   * @param {ISegmentsCacheAsync}   segmentsStorage  The reference to the current Storage.
    */
-  constructor(segmentsFetcher: IFetchSegmentChanges, settings: ISettingsInternal, segmentsStorage: ISegmentsCacheSync) {
+  constructor(
+    segmentsFetcher: IFetchSegmentChanges,
+    settings: ISettingsInternal,
+    segmentsStorage: ISegmentsCacheAsync
+  ) {
     this._segmentsStorage = segmentsStorage;
     this._settings = settings;
     this._fetcher = segmentChangesFetcherFactory(segmentsFetcher);

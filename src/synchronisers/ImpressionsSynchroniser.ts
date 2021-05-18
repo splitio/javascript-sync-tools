@@ -1,7 +1,7 @@
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
-import { IImpressionsCacheSync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { impressionsSyncTaskFactory } from '@splitsoftware/splitio-commons/src/sync/submitters/impressionsSyncTask';
+import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { impressionsSubmitterFactory } from '../submitters/synchroniserImpressionsSubmitter';
 
 /**
  * Class that manages impressions synchronization.
@@ -20,14 +20,14 @@ export class ImpressionsSynchroniser {
    */
   private _postImpressionsBulk;
   /**
-   * @param {ISettingsInternal}     settings             The Synchroniser's settings reference.
-   * @param {IPostimpressionsBulk}  postImpressionsBulk  SplitApi's Post request function to Impressions endpoint.
-   * @param {IImpressionsCacheSync} impressionsStorage   The reference to the impresions' Storage.
+   * @param {ISettingsInternal}      settings             The Synchroniser's settings reference.
+   * @param {IPostimpressionsBulk}   postImpressionsBulk  SplitApi's Post request function to Impressions endpoint.
+   * @param {IImpressionsCacheAsync} impressionsStorage   The reference to the impresions' Storage.
    */
   constructor(
     settings: ISettingsInternal,
     postImpressionsBulk: IPostTestImpressionsBulk,
-    impressionsStorage: IImpressionsCacheSync
+    impressionsStorage: IImpressionsCacheAsync
   ) {
     this._settings = settings;
     this._postImpressionsBulk  = postImpressionsBulk;
@@ -40,14 +40,8 @@ export class ImpressionsSynchroniser {
    * @returns {Promise<any>}
    */
   synchroniseImpressions(): Promise<any> {
-    const impressionsSubmitter = impressionsSyncTaskFactory(
-      this._settings.log,
-      this._postImpressionsBulk,
-      this._impressionsStorage,
-      this._settings.scheduler.impressionsRefreshRate,
-      this._settings.core.labelsEnabled
-    );
-
-    return impressionsSubmitter.execute();
+    // @todo: WIP
+    const impressionsSubmitter = impressionsSubmitterFactory(this._postImpressionsBulk, this._impressionsStorage);
+    return Promise.resolve(impressionsSubmitter);
   }
 }

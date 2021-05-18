@@ -3,7 +3,7 @@ import splitChangesFetcherFactory from '@splitsoftware/splitio-commons/src/sync/
 // eslint-disable-next-line max-len
 import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
-import { ISegmentsCacheSync, ISplitsCacheSync } from '@splitsoftware/splitio-commons/types/storages/types';
+import { ISegmentsCacheAsync, ISplitsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
 
 /**
  * Class that manages all the Splits entities related actions.
@@ -32,16 +32,16 @@ export class SplitsSynchroniser {
   private _settings;
 
   /**
-   * @param {IFetchSplitChanges} splitFetcher     The SplitChanges fetcher from SplitAPI.
-   * @param {ISettings}          settings         The Synchroniser's settings.
-   * @param {ISplitsCacheSync}   splitsStorage    The reference to the current Storage.
-   * @param {ISegmentsCacheSync} segmentsStorage  The reference to the current Storage.
+   * @param {IFetchSplitChanges}  splitFetcher     The SplitChanges fetcher from SplitAPI.
+   * @param {ISettings}           settings         The Synchroniser's settings.
+   * @param {ISplitsCacheAsync}   splitsStorage    The reference to the current Storage.
+   * @param {ISegmentsCacheAsync} segmentsStorage  The reference to the current Storage.
    */
   constructor(
     splitFetcher: IFetchSplitChanges,
     settings: ISettingsInternal,
-    splitsStorage: ISplitsCacheSync,
-    segmentsStorage: ISegmentsCacheSync
+    splitsStorage: ISplitsCacheAsync,
+    segmentsStorage: ISegmentsCacheAsync
   ) {
     this._splitsStorage = splitsStorage;
     this._segmentsStorage = segmentsStorage;

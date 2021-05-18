@@ -1,7 +1,7 @@
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
-import { IEventsCacheSync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { eventsSyncTaskFactory } from '@splitsoftware/splitio-commons/src/sync/submitters/eventsSyncTask';
+import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { eventsSubmitterFactory } from '../submitters/synchroniserEventsSubmitter';
 
 /**
  * Class that manages Events synchronization.
@@ -23,12 +23,12 @@ export class EventsSynchroniser {
    *
    * @param {ISettingsInternal} settings            The Synchroniser's settings reference.
    * @param {IPostEventsBulk}   postTestEventsBulk  SplitApi's Post request function to Events endpoint.
-   * @param {IEventsCacheSync}  eventsStorage       The reference to the event's Storage.
+   * @param {IEventsCacheAsync} eventsStorage       The reference to the event's Storage.
    */
   constructor(
     settings: ISettingsInternal,
     postTestEventsBulk: IPostEventsBulk,
-    eventsStorage: IEventsCacheSync
+    eventsStorage: IEventsCacheAsync
   ) {
     this._settings = settings;
     this._postEventsBulk  = postTestEventsBulk;
@@ -41,13 +41,8 @@ export class EventsSynchroniser {
    * @returns {Promise<any>}
    */
   synchroniseEvents(): Promise<any> {
-    const eventsSubmitter = eventsSyncTaskFactory(
-      this._settings.log,
-      this._postEventsBulk,
-      this._eventsStorage,
-      this._settings.scheduler.eventsPushRate,
-      this._settings.startup.eventsFirstPushWindow
-    );
-    return eventsSubmitter.execute();
+    // @todo: WIP
+    const eventsSubmitter = eventsSubmitterFactory(this._postEventsBulk, this._eventsStorage);
+    return Promise.resolve(eventsSubmitter);
   }
 }
