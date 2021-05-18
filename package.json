@@ -18,7 +18,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@splitsoftware/splitio-commons": "0.1.1-canary.1",
+    "@splitsoftware/splitio-commons": "0.1.1-canary.2",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.1",
     "yargs": "^17.0.1"
