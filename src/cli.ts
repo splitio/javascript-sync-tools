@@ -6,6 +6,7 @@ import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputVa
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
+import { inMemoryStorageFactory } from './storages/InMemoryStorage';
 
 dotenv.config();
 
@@ -74,6 +75,11 @@ const settings = synchroniserSettingsValidator({
     sdk: apiUrl,
     // Storage for your SDK events
     // events: 'https://events.split.io/api',
+  },
+  storage: {
+    type: 'CUSTOM',
+    prefix: 'InMemoryWrapper',
+    wrapper: inMemoryStorageFactory(),
   },
 });
 
