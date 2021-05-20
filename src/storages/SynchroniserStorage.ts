@@ -1,5 +1,4 @@
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
-import { metadataBuilder } from '@splitsoftware/splitio-commons/src/storages/metadataBuilder';
 import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pluggable';
 
 /**
@@ -10,14 +9,15 @@ import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pl
  */
 export function SynchroniserStorageFactory(settings: ISettingsInternal) {
   const { log, storage } = settings;
-  const metadata = metadataBuilder(settings);
   const storageFactorParams = {
     log,
     optimize: false,
-    metadata,
   };
 
   // @ts-ignore
   const storageFactory = PluggableStorage(storage);
+  // @ts-ignore
+  // Ignoring metadata parameter since it's use by the Consumer API (like Events.track)
+  // and the Synchroniser doesn't need to perform such actions.
   return storageFactory(storageFactorParams);
 }

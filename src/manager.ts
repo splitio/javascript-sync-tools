@@ -100,11 +100,10 @@ export class SynchroniserManager {
         this._storage.splits,
         this._storage.segments,
       );
-      // this._eventsSynchroniser = new EventsSynchroniser(
-      //   this._settings,
-      //   this._splitApi.postEventsBulk,
-      //   this._storage.events
-      // );
+      this._eventsSynchroniser = new EventsSynchroniser(
+        this._splitApi.postEventsBulk,
+        this._storage.events
+      );
       // this._impressionsSynchroniser = new ImpressionsSynchroniser(
       //   this._settings,
       //   this._splitApi.postTestImpressionsBulk,
@@ -128,52 +127,17 @@ export class SynchroniserManager {
 
     const areSyncsReady = await this.initializeSynchronisers();
     if (!areSyncsReady) throw new Error('Error: Some error occurred starting synchronisers. Exiting.');
-    await this.synchroniseSplits();
+    await this._splitsSynchroniser.getSplitChanges();
     console.log(`> Splits fetched: ${(await this._storage.splits.getAll()).length}`);
     console.log(`> Segments registered: ${await this._storage.segments.getRegisteredSegments()}`);
-    const test = await this.synchroniseSegments();
+    const test = await this._segmentsSynchroniser.getSegmentsChanges();
     // @ts-ignore
     console.log(`> Segments: ${test}`);
 
-    // await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
+    await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
 
     // await this._impressionsSynchroniser.synchroniseImpressions().then((data) => console.log('> Impresisons:', data));
 
     console.log('# Synchroniser: Execution ended');
-  }
-  /**
-   * Method to get Split Changes from Split's Backend and alocate them in the storage.
-   *
-   * @returns {Promise<boolean>}
-   */
-  synchroniseSplits(): Promise<boolean> {
-    return this._splitsSynchroniser.getSplitChanges();
-  }
-  /**
-   * Method to get the Segment Changes from Split's Backend and alocate the in the storage.
-   *
-   * @returns {Promise<boolean>}
-   */
-  synchroniseSegments(): Promise<boolean> {
-    return this._segmentsSynchroniser.getSegmentsChanges();
-  }
-  // Consumer Methods:
-  /**
-   * Send Impressions obtained from the custom storage to the
-   * Split's backend.
-   *
-   * @throws {Error}
-   */
-  synchroniseImpressions() {
-    throw Error('Method not implemented');
-  }
-  /**
-   * Send Events obtained from the custom storage to the
-   * Split's backend.
-   *
-   * @throws {Error}
-   */
-  synchroniseEvents() {
-    throw Error('Method not implemented');
   }
 }

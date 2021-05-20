@@ -10,7 +10,7 @@ import { setToArray } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
  * @returns {any} Custom Storage wrapper.
  */
 export function inMemoryStorageFactory(): ICustomStorageWrapper &
-  { _cache: Record<string, string | string[] | Set<string>> } {
+{ _cache: Record<string, string | string[] | Set<string>> } {
 
   let _cache: Record<string, string | string[] | Set<string>> = {};
 
