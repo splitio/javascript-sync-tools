@@ -1,6 +1,6 @@
 /* eslint-disable max-len, no-magic-numbers */
 import { eventsSubmitterFactory } from '../synchroniserEventsSubmitter';
-import { getSingleEventMaxSizeString } from './eventsMock';
+import { getSingleEventMaxSizeString } from './eventsMockUtils';
 
 describe('Events Submitter for Lightweight Synchroniser', () => {
   const _postEventsMock = jest.fn(() => Promise.resolve());
