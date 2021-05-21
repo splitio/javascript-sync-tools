@@ -85,7 +85,7 @@ export class SynchroniserManager {
   /**
    * Function to set all the required Synchronisers.
    *
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
   initializeSynchronisers(): Promise<boolean> {
     try {
@@ -130,12 +130,8 @@ export class SynchroniserManager {
     await this._splitsSynchroniser.getSplitChanges();
     console.log(`> Splits fetched: ${(await this._storage.splits.getAll()).length}`);
     console.log(`> Segments registered: ${await this._storage.segments.getRegisteredSegments()}`);
-    const test = await this._segmentsSynchroniser.getSegmentsChanges();
-    // @ts-ignore
-    console.log(`> Segments: ${test}`);
-
+    await this._segmentsSynchroniser.getSegmentsChanges().then((result) => console.log('> Segments Results:', result));
     await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
-
     // await this._impressionsSynchroniser.synchroniseImpressions().then((data) => console.log('> Impresisons:', data));
 
     console.log('# Synchroniser: Execution ended');

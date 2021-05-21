@@ -1,6 +1,5 @@
 /* eslint-disable no-magic-numbers */
 import { eventsSubmitterFactory } from '../synchroniserEventsSubmitter';
-import { Response } from 'node-fetch';
 
 describe('Events Submitter for Lightweight Synchroniser', () => {
   const _postEventsMock = jest.fn(() => Promise.resolve());
