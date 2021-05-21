@@ -15,6 +15,10 @@ export class EventsSynchroniser {
    */
   private _postEventsBulk;
   /**
+   * The local reference to the Event's submitter.
+   */
+  private _eventsSubmitter;
+  /**
    *
    * @param {IPostEventsBulk}   postTestEventsBulk  SplitApi's Post request function to Events endpoint.
    * @param {IEventsCacheAsync} eventsStorage       The reference to the event's Storage.
@@ -25,16 +29,16 @@ export class EventsSynchroniser {
   ) {
     this._postEventsBulk  = postTestEventsBulk;
     this._eventsStorage = eventsStorage;
+    this._eventsSubmitter = eventsSubmitterFactory(this._postEventsBulk, this._eventsStorage);
   }
 
   /**
-   * Function to configure the EventsSyncTask and the execute the Events POST request.
+   * Function to execute the Events POST request. It can return a boolean if the operation went
+   * good/wrong or a string with a message in case it catches an error.
    *
-   * @returns {Promise<any>}
+   * @returns {Promise<boolean|string>}
    */
-  synchroniseEvents(): Promise<any> {
-    const eventsSubmitter = eventsSubmitterFactory(this._postEventsBulk, this._eventsStorage);
-
-    return eventsSubmitter();
+  synchroniseEvents(): Promise<boolean|string> {
+    return this._eventsSubmitter();
   }
 }

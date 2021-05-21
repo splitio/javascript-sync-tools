@@ -37,7 +37,7 @@ const processEvents = (events: StoredEventWithMetadata[] = []) => {
  *
  * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
- * @returns {Promise<boolean>}
+ * @returns {() => Promise<boolean|string>}
  */
 export function eventsSubmitterFactory(
   postEventsBulk: IPostEventsBulk,
@@ -77,5 +77,6 @@ export function eventsSubmitterFactory(
         }
       }
       return Promise.resolve(true);
-    });
+    })
+    .catch((e) => `An error occurred when getting data from storage: ${e}`);
 }
