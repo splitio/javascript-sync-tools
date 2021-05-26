@@ -2,6 +2,7 @@
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
+import { metadataToHeaders } from './metadataUtils';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
@@ -49,26 +50,30 @@ export function eventsSubmitterFactory(
       const processedEvents = processEvents(events);
       const _eMetadataKeys = Object.keys(processedEvents);
 
-      for (let i = 0; i < _eMetadataKeys.length; i++) {
+      for (let j = 0; j < _eMetadataKeys.length; j++) {
         let eventsQueue = [];
         let eventsQueueSize: number = 0;
 
         try {
-          while (processedEvents[_eMetadataKeys[i]].length > 0) {
-            const currentEvent = processedEvents[_eMetadataKeys[i]].splice(0, 1)[0];
+          while (processedEvents[_eMetadataKeys[j]].length > 0) {
+            const currentEvent = processedEvents[_eMetadataKeys[j]].splice(0, 1)[0];
             const currentEventSize = JSON.stringify(currentEvent).length;
 
             // Case when the Queue size is already full.
-            if ((eventsQueueSize + currentEventSize) * 1024 > MAX_QUEUE_BYTE_SIZE) {
-              await postEventsBulk(JSON.stringify(eventsQueue));
+            if ((eventsQueueSize + currentEventSize) > MAX_QUEUE_BYTE_SIZE) {
+              const metadata = JSON.parse(_eMetadataKeys[j]);
+              // @ts-ignore
+              await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(metadata));
               eventsQueueSize = 0;
               eventsQueue = [];
             }
-            eventsQueue.push(currentEvent);
+            eventsQueue.push(currentEvent.e);
 
             // Case when there are no more events to process and the queue has events to be sent.
-            if (!processedEvents[_eMetadataKeys[i]][0] && eventsQueue.length > 0) {
-              await postEventsBulk(JSON.stringify(eventsQueue));
+            if (!processedEvents[_eMetadataKeys[j]][0] && eventsQueue.length > 0) {
+              const metadata = JSON.parse(_eMetadataKeys[j]);
+              // @ts-ignore
+              await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(metadata));
             }
             eventsQueueSize += currentEventSize;
           }

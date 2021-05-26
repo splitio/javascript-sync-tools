@@ -1,4 +1,7 @@
 /* eslint-disable no-magic-numbers, jsdoc/require-jsdoc */
+
+import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/types/sync/submitters/types';
+
 /**
  * Mock representing an Event String with no Properties object.
  *
@@ -56,13 +59,13 @@ export function getSingleEventString(isSetMaxSize = false, randomise = false): s
  * @param {number}  amount        The amount of events to add and return in the list.
  * @param {boolean} isSetMaxSize  The flag to define if the events are set to its Max Size.
  * @param {boolean} randomise     The flag to set the same random metadata for the events in the list.
- * @returns {string[]}
+ * @returns {StoredEventWithMetadata[]}
  */
 export function getMultipleEventsSameMetadata(
   amount: number,
   isSetMaxSize: boolean = false,
   randomise: boolean = false
-): string[] {
+): StoredEventWithMetadata[] {
   const _singleEvent = getSingleEventString(isSetMaxSize ,randomise);
   const _eventsList = [];
 
