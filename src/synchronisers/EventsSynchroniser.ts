@@ -1,16 +1,11 @@
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { eventsSubmitterFactory } from '../submitters/synchroniserEventsSubmitter';
 
 /**
  * Class that manages Events synchronization.
  */
 export class EventsSynchroniser {
-  /**
-   * The local reference to the Synchroniser's settings configurations.
-   */
-  private _settings;
   /**
    * The local reference to the Synchroniser's Events' Storage.
    */
@@ -20,29 +15,30 @@ export class EventsSynchroniser {
    */
   private _postEventsBulk;
   /**
+   * The local reference to the Event's submitter.
+   */
+  private _eventsSubmitter;
+  /**
    *
-   * @param {ISettingsInternal} settings            The Synchroniser's settings reference.
    * @param {IPostEventsBulk}   postTestEventsBulk  SplitApi's Post request function to Events endpoint.
    * @param {IEventsCacheAsync} eventsStorage       The reference to the event's Storage.
    */
   constructor(
-    settings: ISettingsInternal,
     postTestEventsBulk: IPostEventsBulk,
     eventsStorage: IEventsCacheAsync
   ) {
-    this._settings = settings;
     this._postEventsBulk  = postTestEventsBulk;
     this._eventsStorage = eventsStorage;
+    this._eventsSubmitter = eventsSubmitterFactory(this._postEventsBulk, this._eventsStorage);
   }
 
   /**
-   * Function to configure the EventsSyncTask and the execute the Events POST request.
+   * Function to execute the Events POST request. It can return a boolean if the operation went
+   * good/wrong or a string with a message in case it catches an error.
    *
-   * @returns {Promise<any>}
+   * @returns {Promise<boolean|string>}
    */
-  synchroniseEvents(): Promise<any> {
-    // @todo: WIP
-    const eventsSubmitter = eventsSubmitterFactory(this._postEventsBulk, this._eventsStorage);
-    return Promise.resolve(eventsSubmitter);
+  synchroniseEvents(): Promise<boolean|string> {
+    return this._eventsSubmitter();
   }
 }

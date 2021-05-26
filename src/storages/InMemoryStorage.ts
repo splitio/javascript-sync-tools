@@ -4,13 +4,18 @@ import { startsWith, toNumber } from '@splitsoftware/splitio-commons/src/utils/l
 import { setToArray } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
 
 /**
+ * TODO: This file is only for testing purposes. Ideally, the customer will provide the proper Storage
+ * (like inMemory, Redis or whatever their storage may be).
+ */
+
+/**
  * Creates an in memory ICustomStorageWrapper implementation
  * Intended for testing purposes.
  *
  * @returns {any} Custom Storage wrapper.
  */
 export function inMemoryStorageFactory(): ICustomStorageWrapper &
-  { _cache: Record<string, string | string[] | Set<string>> } {
+{ _cache: Record<string, string | string[] | Set<string>> } {
 
   let _cache: Record<string, string | string[] | Set<string>> = {};
 
