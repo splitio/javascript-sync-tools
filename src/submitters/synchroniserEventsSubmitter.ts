@@ -57,8 +57,7 @@ export function eventsSubmitterFactory(
 
         try {
           while (currentMetadataEventsQueue.length > 0) {
-            const currentEvent = currentMetadataEventsQueue.shift();
-            if (!currentEvent) break;
+            const currentEvent = currentMetadataEventsQueue.shift() as StoredEventWithMetadata;
             const currentEventSize = JSON.stringify(currentEvent).length;
 
             // Case when the Queue size is already full.
