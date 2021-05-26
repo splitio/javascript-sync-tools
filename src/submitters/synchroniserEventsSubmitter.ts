@@ -15,7 +15,7 @@ const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5MB
  * Function to Process every Event from the storage and group them by Metadata.
  * It returns true or false if process was succesful.
  *
- * @param {EventData} events  List of Events from the storage.
+ * @param {StoredEventWithMetadata} events  List of Events from the storage.
  * @returns {Promise<boolean>}
  */
 const processEvents = (events: StoredEventWithMetadata[] = []) => {
