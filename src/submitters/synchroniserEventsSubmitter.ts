@@ -56,24 +56,23 @@ export function eventsSubmitterFactory(
 
         try {
           while (processedEvents[_eMetadataKeys[j]].length > 0) {
-            const currentEvent = processedEvents[_eMetadataKeys[j]].splice(0, 1)[0];
+            const currentEvent = processedEvents[_eMetadataKeys[j]].shift();
+            if (!currentEvent) break;
             const currentEventSize = JSON.stringify(currentEvent).length;
 
             // Case when the Queue size is already full.
             if ((eventsQueueSize + currentEventSize) > MAX_QUEUE_BYTE_SIZE) {
-              const metadata = JSON.parse(_eMetadataKeys[j]);
-              // @ts-ignore
-              await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(metadata));
+              // @ts-expect-error
+              await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(currentEvent.m));
               eventsQueueSize = 0;
               eventsQueue = [];
             }
             eventsQueue.push(currentEvent.e);
 
             // Case when there are no more events to process and the queue has events to be sent.
-            if (!processedEvents[_eMetadataKeys[j]][0] && eventsQueue.length > 0) {
-              const metadata = JSON.parse(_eMetadataKeys[j]);
-              // @ts-ignore
-              await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(metadata));
+            if (processedEvents[_eMetadataKeys[j]].length === 0 && eventsQueue.length > 0) {
+              // @ts-expect-error
+              await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(currentEvent.m));
             }
             eventsQueueSize += currentEventSize;
           }
