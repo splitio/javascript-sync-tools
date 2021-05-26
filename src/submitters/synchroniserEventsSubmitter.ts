@@ -53,10 +53,11 @@ export function eventsSubmitterFactory(
       for (let j = 0; j < _eMetadataKeys.length; j++) {
         let eventsQueue = [];
         let eventsQueueSize: number = 0;
+        const currentMetadataEventsQueue = processedEvents[_eMetadataKeys[j]];
 
         try {
-          while (processedEvents[_eMetadataKeys[j]].length > 0) {
-            const currentEvent = processedEvents[_eMetadataKeys[j]].shift();
+          while (currentMetadataEventsQueue.length > 0) {
+            const currentEvent = currentMetadataEventsQueue.shift();
             if (!currentEvent) break;
             const currentEventSize = JSON.stringify(currentEvent).length;
 
@@ -64,17 +65,17 @@ export function eventsSubmitterFactory(
             if ((eventsQueueSize + currentEventSize) > MAX_QUEUE_BYTE_SIZE) {
               // @ts-expect-error
               await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(currentEvent.m));
-              eventsQueueSize = 0;
               eventsQueue = [];
+              eventsQueueSize = 0;
             }
             eventsQueue.push(currentEvent.e);
+            eventsQueueSize += currentEventSize;
 
             // Case when there are no more events to process and the queue has events to be sent.
-            if (processedEvents[_eMetadataKeys[j]].length === 0 && eventsQueue.length > 0) {
+            if (currentMetadataEventsQueue.length === 0 && eventsQueue.length > 0) {
               // @ts-expect-error
               await postEventsBulk(JSON.stringify(eventsQueue), metadataToHeaders(currentEvent.m));
             }
-            eventsQueueSize += currentEventSize;
           }
         } catch (error) {
           return Promise.resolve(false);
@@ -82,5 +83,6 @@ export function eventsSubmitterFactory(
       }
       return Promise.resolve(true);
     })
+    // @todo: add Logger for error tracking.
     .catch((e) => `An error occurred when getting data from storage: ${e}`);
 }
