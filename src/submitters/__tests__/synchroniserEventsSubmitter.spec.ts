@@ -1,5 +1,7 @@
-/* eslint-disable no-magic-numbers */
+/* eslint-disable max-len, no-magic-numbers */
+import { metadataToHeaders } from '../metadataUtils';
 import { eventsSubmitterFactory } from '../synchroniserEventsSubmitter';
+import { getMultipleEventsSameMetadata } from './eventsMockUtils';
 
 describe('Events Submitter for Lightweight Synchroniser', () => {
   const _postEventsMock = jest.fn(() => Promise.resolve());
@@ -15,31 +17,63 @@ describe('Events Submitter for Lightweight Synchroniser', () => {
     _eventsCacheMock.popNWithMetadata.mockClear();
   });
 
-  // test1: pop & send.
-  test('Pop events from Storage and post to Split\'s services', async () => {
-    // eslint-disable-next-line max-len
-    const _eventsMock = '[{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273519949}},{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273529961}}]';
-    _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve(JSON.parse(_eventsMock)));
+  test('Pop 3 events from Storage and make an Events POST', async () => {
+    const _eventsMock = getMultipleEventsSameMetadata(3);
+    const _metadata = metadataToHeaders(_eventsMock[0].m);
+    const _eventsList = _eventsMock.map(i => i.e);
+    _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_eventsMock)));
+
     const res = await _eventsSubmitter();
 
     expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(1000);
-    expect(_postEventsMock).toBeCalledWith(_eventsMock);
+    expect(_postEventsMock).toBeCalledWith(JSON.stringify(_eventsList), _metadata);
     expect(res).toBe(true);
   });
 
-  // test2: pop, process and split by metadata group, send.
-  test('Pop events from Storage, Process and separate by Metadata in 2 calls to POST events.', async () => {
-    // eslint-disable-next-line max-len
-    const _eventsMock = '[{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273519949}},{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273529961}},{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273539976}},{"m":{"s":"go-6.1.0","i":"1.2.3.4","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273562186}},{"m":{"s":"go-6.1.0","i":"1.2.3.4","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273572201}}]';
-    _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve(JSON.parse(_eventsMock)));
-    const res = await _eventsSubmitter();
+  test(
+    'Pop 5 events from Storage, process and split them by METADATA in 2 calls, then make an Events POST.',
+    async () => {
+      const _eventsMock1 = getMultipleEventsSameMetadata(3, false, true);
+      const _metadata1 = metadataToHeaders(_eventsMock1[0].m);
+      const _eventsMock2 = getMultipleEventsSameMetadata(2, false, true);
+      const _metadata2 = metadataToHeaders(_eventsMock2[0].m);
+      _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve([..._eventsMock1, ..._eventsMock2]));
 
-    expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(1000);
-    // eslint-disable-next-line max-len
-    expect(_postEventsMock).toHaveBeenNthCalledWith(1, '[{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273519949}},{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273529961}},{"m":{"s":"go-6.1.0","i":"192.168.0.6","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273539976}}]');
-    // eslint-disable-next-line max-len
-    expect(_postEventsMock).toHaveBeenNthCalledWith(2, '[{"m":{"s":"go-6.1.0","i":"1.2.3.4","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273562186}},{"m":{"s":"go-6.1.0","i":"1.2.3.4","n":"ip-192-168-0-6"},"e":{"key":"emi","trafficTypeName":"user","eventTypeId":"event","value":5,"timestamp":1621273572201}}]');
-    expect(res).toBe(true);
-  });
-  // test3: pop, process, split by group, split by size, send.
+      const res = await _eventsSubmitter();
+
+      expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(1000);
+      expect(_postEventsMock).toHaveBeenNthCalledWith(1, JSON.stringify(_eventsMock1.map(i => i.e)), _metadata1);
+      expect(_postEventsMock).toHaveBeenNthCalledWith(2, JSON.stringify(_eventsMock2.map(i => i.e)), _metadata2);
+      expect(res).toBe(true);
+    }
+  );
+
+  test(
+    'Pop 6 events from Storage, process and split them by MAX SIZE batches in 2 calls, then make an Events POST.',
+    async () => {
+      const _eventsMock = getMultipleEventsSameMetadata(10000, true);
+      _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve(_eventsMock));
+
+      const res = await _eventsSubmitter();
+
+      expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(1000);
+      expect(_postEventsMock).toBeCalledTimes(2);
+      expect(res).toBe(true);
+    }
+  );
+
+  test('Pop 46 events from Storage, process and split them by METADATA and MAX SIZE batches in 10 calls, then make an Events Post.',
+    async () => {
+      const _eventsMock = [
+        ...getMultipleEventsSameMetadata(10000, false, true),
+        ...getMultipleEventsSameMetadata(10000, false, true),
+        ...getMultipleEventsSameMetadata(10000, true, true),
+        ...getMultipleEventsSameMetadata(10000, true, true),
+      ];
+
+      _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve(_eventsMock));
+      await _eventsSubmitter();
+
+      expect(_postEventsMock).toBeCalledTimes(6);
+    });
 });
