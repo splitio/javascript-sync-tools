@@ -69,7 +69,10 @@
     "no-useless-escape": "off",
     "prefer-promise-reject-errors": ["error", { "allowEmptyReject": true }],
     "require-await": "error",
-    // jsdoc
+    "key-spacing": ["error", { "beforeColon": false }],
+    "quote-props": ["error", "as-needed"],
+    "comma-spacing": ["error", { "before": false, "after": true }],
+     // jsdoc
     "jsdoc/check-access": "error",
     "jsdoc/check-alignment": "error",
     "jsdoc/check-param-names": ["error", {

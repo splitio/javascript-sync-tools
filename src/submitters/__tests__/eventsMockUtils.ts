@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers, jsdoc/require-jsdoc */
-
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/types/sync/submitters/types';
+import { _getRandomString } from './commonUtils';
 
 /**
  * Mock representing an Event String with no Properties object.
@@ -22,16 +22,6 @@ export const singleEventMockNoProperties = `{
     "timestamp":1621273519949
   }
 }`;
-/**
- * Function to create a Random String. Used for mocking `n` field in metadata.
- *
- * @param {number} len  The length of the string to return.
- * @returns {string}
- */
-function _getRandomString(len: number) {
-  return (Math.random().toString(36).substring(2, len) + Math.random().toString(36).substring(2, len))
-    .substring(0, len);
-}
 /**
  * Function to return a single Mock Event, with the option to randomise some of its data.
  *
@@ -66,7 +56,7 @@ export function getMultipleEventsSameMetadata(
   isSetMaxSize: boolean = false,
   randomise: boolean = false
 ): StoredEventWithMetadata[] {
-  const _singleEvent = getSingleEventString(isSetMaxSize ,randomise);
+  const _singleEvent = getSingleEventString(isSetMaxSize, randomise);
   const _eventsList = [];
 
   for (let i = 0; i < amount; i++) {
