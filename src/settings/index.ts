@@ -13,7 +13,7 @@ const version = '@VERSION@';
  */
 const params = {
   logger: validateLogger,
-  defaults: Object.assign(defaults, {version: `synchroniser-${version}`}),
+  defaults: Object.assign(defaults, { version: `synchroniser-${version}` }),
   // @todo: Add storage validator.
 };
 

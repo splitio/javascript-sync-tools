@@ -3,73 +3,101 @@ import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/types/sto
 import { StoredImpressionWithMetadata } from
   '@splitsoftware/splitio-commons/types/sync/submitters/types';
 import { ImpressionDTO } from '@splitsoftware/splitio-commons/types/types';
-import { ImpDedupModule, ImpressionsDTOWithMetadata } from '../types';
+import { ImpressionsDTOWithMetadata } from '../types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
+import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import ImpressionCountsCacheInMemory from
+  '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { groupByMetadata, metadataToHeaders } from './metadataUtils';
+import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
+
+/**
+ * Constant to define the amount of Events to pop from Storage.
+ */
+const IMPRESSIONS_AMOUNT = 1000;
+/**
+ * Function to create an ImpressionDTOWithMetadata object from a StoredImpressionWithMetadata.
+ * Basically it's transforming each StoredImpression key to its full name.
+ *
+ * @param {StoredImpressionWithMetadata} storedImpression  The target impression.
+ * @returns {ImpressionsDTOWithMetadata}
+ */
+export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredImpressionWithMetadata) => {
+  const {
+    m,
+    i,
+  } = storedImpression;
+
+  return {
+    metadata: m,
+    impression: {
+      keyName: i.k,
+      bucketingKey: i.b,
+      feature: i.f,
+      treatment: i.t,
+      label: i.r,
+      changeNumber: i.c,
+      time: i.m,
+    } as ImpressionDTO,
+  };
+};
 
 /**
  * Factory that returns an Impressions submitter, capable of fetching the Impressions from the storage,
  * process them and sent to the Split's Services.
  *
- * @param {IPostTestImpressionsBulk} postClient               HTTPClient API to perform the POST request.
- * @param {IImpressionsCacheAsync}   impressionsCache         Impressions Cache Storage reference.
- * @param {ImpDedupModule}           impressionsCountsModule  The reference to the impresions' Storage.
+ * @param {IPostTestImpressionsBulk}      postClient        HTTPClient API to perform the POST request.
+ * @param {IImpressionsCacheAsync}        impressionsCache  Impressions Cache Storage reference.
+ * @param {ImpressionObserver}            observer          The Impression Observer object for the dedupe process.
+ * @param {ImpressionCountsCacheInMemory} countsCache       The reference to the Impresion's Count Storage.
  * @returns {() => Promise<boolean|string>}
  */
 export function impressionsSubmitterFactory(
   postClient: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheAsync,
-  impressionsCountsModule?: ImpDedupModule,
-) {
-  return () => impressionsCache.popNWithMetadata(1000)
-    .then(async (dataImpressions: StoredImpressionWithMetadata[]) => {
-      // convert Impressions Metadata into Impressions DTO
-      const storedImpressions = dataImpressions.map(impression => {
-        const {
-          m,
-          i,
-        } = impression;
-
-        return {
-          metadata: m,
-          impression: {
-            keyName: i.k,
-            bucketingKey: i.b,
-            feature: i.f,
-            treatment: i.t,
-            label: i.r,
-            changeNumber: i.c,
-            time: i.m,
-          } as ImpressionDTO,
-        };
-      });
-
+  observer: ImpressionObserver,
+  countsCache?: ImpressionCountsCacheInMemory,
+): () => Promise<boolean|string> {
+  return () => impressionsCache.popNWithMetadata(IMPRESSIONS_AMOUNT)
+    .then((dataImpressions: StoredImpressionWithMetadata[]) => {
       const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
+
+      // convert Impressions Metadata into Impressions DTO
+      const storedImpressions = dataImpressions.map(impression => impressionWithMetadataToImpressionDTO(impression));
 
       storedImpressions.forEach((impressionWithMetadata) => {
         const { impression } = impressionWithMetadata;
 
-        if (impressionsCountsModule?.observer) {
+        if (observer) {
           // Adds previous time if it is enabled
-          impression.pt = impressionsCountsModule.observer.testAndSet(impression);
+          impression.pt = observer.testAndSet(impression);
         }
 
         const now = Date.now();
-        if (impressionsCountsModule?.countsCache) {
+        if (countsCache) {
           // Increments impression counter per featureName
-          impressionsCountsModule.countsCache.track(impression.feature, now, 1);
+          countsCache.track(impression.feature, now, 1);
         }
 
         // Checks if the impression should be added in queue to be sent
-        if (!impressionsCountsModule ||
-          !impression.pt ||
-          impression.pt < truncateTimeFrame(now)
-        ) {
+        if (!countsCache || !impression.pt || impression.pt < truncateTimeFrame(now)) {
           impressionsWithMetadataToPost.push(impressionWithMetadata);
         }
       });
 
+      const impressionsWithMetadataProcessedToPost: { [metadataAsKey: string]: ImpressionsDTOWithMetadata[]} =
+        groupByMetadata(impressionsWithMetadataToPost, 'metadata');
+
       try {
-        await postClient(JSON.stringify(impressionsWithMetadataToPost));
+        Object.keys(impressionsWithMetadataProcessedToPost).forEach(async (key) => {
+          const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
+          const impressions = impressionsWithMetadataProcessedToPost[key].map((data) => data.impression);
+          const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
+          const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
+
+          // @ts-expect-error
+          await postClient(JSON.stringify(impressions), headers);
+        });
       } catch (error) {
         return Promise.resolve(false);
       }

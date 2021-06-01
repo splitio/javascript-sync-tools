@@ -37,7 +37,7 @@ export function getSingleEventString(isSetMaxSize = false, randomise = false): s
   }
   // Add Properties object with a string value to reach 1024 bytes size for event limit.
   if (isSetMaxSize) {
-    _newEvent.properties = Object.assign({}, {a: Array(841).join('X')});
+    _newEvent.properties = Object.assign({}, { a: Array(841).join('X') });
   }
 
   return JSON.stringify(_newEvent);

@@ -2,7 +2,7 @@
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
-import { metadataToHeaders } from './metadataUtils';
+import { groupByMetadata, metadataToHeaders } from './metadataUtils';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
@@ -12,25 +12,9 @@ const EVENTS_AMOUNT = 1000;
  * Maximum number of bytes to be fetched from cache before posting to the backend.
  */
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5MB
-/**
- * Function to Process every Event from the storage and group them by Metadata.
- * It returns true or false if process was succesful.
- *
- * @param {StoredEventWithMetadata} events  List of Events from the storage.
- * @returns {Promise<boolean>}
- */
-const processEvents = (events: StoredEventWithMetadata[] = []) => {
-  const _eventsMap: { [metadataAsKey: string]: StoredEventWithMetadata[]; } = {};
-
-  events.forEach((eventData: StoredEventWithMetadata) => {
-    const metadataKey = JSON.stringify(eventData.m);
-    if (!_eventsMap[metadataKey]) _eventsMap[metadataKey] = [];
-    _eventsMap[metadataKey].push(eventData);
-  });
-
-  return _eventsMap;
+type ProcessedByMetadataEvents = {
+  [metadataAsKey: string]: StoredEventWithMetadata[];
 };
-
 /**
  * Function factory that will return an Event Submitter, that will be able to retrieve the
  * events from the Storage, process and group by Metadata and/or max bundle size, and finally push
@@ -47,7 +31,7 @@ export function eventsSubmitterFactory(
 ) {
   return () => eventsCache.popNWithMetadata(EVENTS_AMOUNT)
     .then(async (events) => {
-      const processedEvents = processEvents(events);
+      const processedEvents: ProcessedByMetadataEvents = groupByMetadata(events, 'm');
       const _eMetadataKeys = Object.keys(processedEvents);
 
       for (let j = 0; j < _eMetadataKeys.length; j++) {
