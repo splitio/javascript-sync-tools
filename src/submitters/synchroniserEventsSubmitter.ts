@@ -61,11 +61,14 @@ export function eventsSubmitterFactory(
             }
           }
         } catch (error) {
-          return Promise.resolve(false);
+          return Promise.resolve(error);
         }
       }
       return Promise.resolve(true);
     })
     // @todo: add Logger for error tracking.
-    .catch((e) => `An error occurred when getting data from storage: ${e}`);
+    .catch((e) => {
+      console.log(`An error occurred when getting data from storage: ${e}`);
+      return false;
+    });
 }
