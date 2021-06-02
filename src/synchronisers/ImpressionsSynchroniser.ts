@@ -1,6 +1,6 @@
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
-import ImpressionCountsCacheInMemory from
-  '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import ImpressionCountsCacheInMemory
+  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { impressionsSubmitterFactory } from '../submitters/synchroniserImpressionsSubmitter';
