@@ -107,7 +107,7 @@ export function impressionsSubmitterFactory(
     })
     // @todo: add Logger for error tracking.
     .catch((e) => {
-      console.log(`An error occurred when getting data from storage: ${e}`);
+      console.log(`An error occurred when processing Impressions: ${e}`);
       return false;
     });
 }
