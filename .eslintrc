@@ -41,8 +41,7 @@
     "camelcase": ["error", {"properties": "never"}],
     "no-use-before-define": ["error", "nofunc"],
     "eol-last": ["error", "always"],
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": "error",
     "keyword-spacing": "error",
     "comma-style": "error",
     // added rules:

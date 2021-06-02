@@ -12,7 +12,7 @@
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
     "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
-    "test": "jest"
+    "test": "clear && jest --verbose"
   },
   "keywords": [],
   "author": "",
