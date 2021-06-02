@@ -60,6 +60,7 @@ describe('Impressions Submitter for Lightweight Synchroniser', () => {
 
       await _impressionsCountSubmitter();
 
+      expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
@@ -108,6 +109,7 @@ describe('Impressions Submitter for Lightweight Synchroniser', () => {
       const impression1Data = impression1DTO.impression;
       const impression2Data = impression2DTO.impression;
 
+      expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
@@ -160,6 +162,7 @@ describe('Impressions Submitter for Lightweight Synchroniser', () => {
       const impression1Data = impressionList1DTO[0].impression;
       const impression2Data = impressionList2DTO[0].impression;
 
+      expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({

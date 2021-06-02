@@ -1,5 +1,5 @@
 
-import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
+import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/services/types';
 import { ImpressionCountsPayload }
   from '@splitsoftware/splitio-commons/types/sync/submitters/types';
 import ImpressionCountsCacheInMemory
@@ -43,17 +43,22 @@ const fromImpressionCountsCollector = (impressionsCount: Record<string, number>)
  * @returns {() => Promise<boolean|string>}
  */
 export function impressionsCountSubmitterFactory(
-  postClient: IPostTestImpressionsBulk,
+  postClient: IPostTestImpressionsCount,
   impressionsCountsCache: ImpressionCountsCacheInMemory,
 ) {
+  // eslint-disable-next-line no-async-promise-executor
   return async () => {
     const impressionsCountData = impressionsCountsCache.state();
     const payload = fromImpressionCountsCollector(impressionsCountData);
+
+    impressionsCountsCache.clear();
     try {
       await postClient(JSON.stringify(payload));
     } catch (error) {
-      return Promise.resolve(false);
+      // @todo: Add logger to handle errors.
+      console.log(`An error occurred when processing Impressions Counts: ${error}`);
+      Promise.resolve(false);
     }
-    return Promise.resolve(true);
+    Promise.resolve(true);
   };
 }
