@@ -101,7 +101,7 @@ export function impressionsSubmitterFactory(
           await postClient(JSON.stringify(impressions), headers);
         });
       } catch (error) {
-        return Promise.resolve(false);
+        return Promise.resolve(error);
       }
       return Promise.resolve(true);
     })
