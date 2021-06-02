@@ -13,6 +13,7 @@ import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
+ * >>>> TODO: Set this constant when executing the Synchroniser.
  */
 const IMPRESSIONS_AMOUNT = 1000;
 /**
@@ -50,14 +51,14 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * @param {IImpressionsCacheAsync}        impressionsCache  Impressions Cache Storage reference.
  * @param {ImpressionObserver}            observer          The Impression Observer object for the dedupe process.
  * @param {ImpressionCountsCacheInMemory} countsCache       The reference to the Impresion's Count Storage.
- * @returns {() => Promise<boolean|string>}
+ * @returns {() => Promise<boolean>}
  */
 export function impressionsSubmitterFactory(
   postClient: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheAsync,
   observer: ImpressionObserver,
   countsCache?: ImpressionCountsCacheInMemory,
-): () => Promise<boolean|string> {
+): () => Promise<boolean> {
   return () => impressionsCache.popNWithMetadata(IMPRESSIONS_AMOUNT)
     .then((dataImpressions: StoredImpressionWithMetadata[]) => {
       const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
@@ -89,8 +90,9 @@ export function impressionsSubmitterFactory(
         groupByMetadata(impressionsWithMetadataToPost, 'metadata');
 
       try {
+        const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
+
         Object.keys(impressionsWithMetadataProcessedToPost).forEach(async (key) => {
-          const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
           const impressions = impressionsWithMetadataProcessedToPost[key].map((data) => data.impression);
           const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
           const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
@@ -104,5 +106,8 @@ export function impressionsSubmitterFactory(
       return Promise.resolve(true);
     })
     // @todo: add Logger for error tracking.
-    .catch((e) => `An error occurred when getting data from storage: ${e}`);
+    .catch((e) => {
+      console.log(`An error occurred when getting data from storage: ${e}`);
+      return false;
+    });
 }

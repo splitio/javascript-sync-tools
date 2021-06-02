@@ -10,8 +10,8 @@ export const metadataToHeaders = (metadata: IMetadata) => {
   return { SplitSDKVersion: metadata.s, SplitSDKMachineIP: metadata.i, SplitSDKMachineName: metadata.n };
 };
 /**
- * Function to process a list of Objects, and group them by any unique key that is defined as
- * as desire when executing the function. It returns a Map with -n array of elements grouped
+ * Function to process a list of Objects, and group them by any unique key that is defined on
+ * demand when executing the function. It returns a Map with -n array of elements grouped
  * by the desired key.
  *
  * @param {Array<any>} listOfElements  The Array of Objects to process.
