@@ -6,7 +6,7 @@ import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputVa
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
-import { inMemoryStorageFactory } from './storages/InMemoryStorage';
+import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 
 dotenv.config();
 
@@ -20,25 +20,29 @@ let apiUrl: string | undefined;
  * The API key value.
  */
 let apikey: string | undefined;
+let customStorage: ICustomStorageWrapper;
 
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
   .command('sync', 'Start synchronising tasks.')
-  .example('$0 -m json --config path2/file.json ', '| Set settings from JSON file.')
-  .example('$0 -m env', '| Set settings from .env file.')
+  .example('$0 -m json --config path2/file.json -s path2/storage.js', '| Set settings from JSON file.')
+  .example('$0 -m env -s path2/storage.js', '| Set settings from .env file.')
+  .alias('s', 'storage')
+  .nargs('s', 1)
   .alias('m', 'mode')
   .nargs('m', 1)
-  .config('configs', function (configPath) {
+  .config('json-file', function (configPath) {
     return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   })
-  .describe('b', 'Set config mode: json | env')
-  .demandOption(['m'])
+  .describe('m', 'Set config mode: json | env')
+  .describe('s', 'Path to the JS file exposing the Storage API')
+  .demandOption(['m', 's'])
   .help('h')
   .alias('h', 'help')
   .epilog('copyright 2021')
   .argv;
 
-const { mode, APIKEY, API_URL } = yargv;
+const { mode, storage, APIKEY, API_URL } = yargv;
 
 console.log(`> Synchroniser's configs from: ${mode}`);
 
@@ -56,15 +60,19 @@ switch (mode) {
     break;
 }
 
+try {
+  customStorage = require(storage as string).default;
+} catch (error) {
+  console.log('Error importing Storage', error.message);
+  exit(0);
+}
+
 if (!apiUrl || !apikey) {
   console.log('Unable to initialize Synchroniser task: Invalid or missing settings.');
   exit(0);
 }
 /**
  * Settings creation.
- *
- * TODO: These settings could be defined in a JSON file or by parameters input
- *       when the CLI is executed.
  */
 const settings = synchroniserSettingsValidator({
   core: {
@@ -79,7 +87,8 @@ const settings = synchroniserSettingsValidator({
   storage: {
     type: 'CUSTOM',
     prefix: 'InMemoryWrapper',
-    wrapper: inMemoryStorageFactory(),
+    // @ts-ignore
+    wrapper: customStorage,
   },
 });
 
