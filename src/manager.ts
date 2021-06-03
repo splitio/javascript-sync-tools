@@ -14,7 +14,6 @@ import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 
-
 /**
  * Main class to handle the Synchroniser execution.
  */
@@ -84,12 +83,11 @@ export class SynchroniserManager {
    * @returns {boolean}
    */
   initializeStorages(): Promise<boolean> {
-    /**
-     * The local reference to the defined Storage.
-     *
-     * @type {IStorageAsync}
-     */
-    this._storage = SynchroniserStorageFactory(this._settings);
+    try {
+      this._storage = SynchroniserStorageFactory(this._settings);
+    } catch (error) {
+      return Promise.resolve(false);
+    }
 
     return Promise.resolve(true);
   }
