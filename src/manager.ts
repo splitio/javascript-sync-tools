@@ -8,6 +8,12 @@ import { SynchroniserStorageFactory } from './storages/SynchroniserStorage';
 import fetch from 'node-fetch';
 import { EventsSynchroniser } from './synchronisers/EventsSynchroniser';
 import { ImpressionsSynchroniser } from './synchronisers/ImpressionsSynchroniser';
+import { impressionObserverSSFactory } from
+  '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
+import ImpressionCountsCacheInMemory from
+  '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+
 
 /**
  * Main class to handle the Synchroniser execution.
@@ -41,6 +47,10 @@ export class SynchroniserManager {
    * The local reference to the Synchroniser's settings configurations.
    */
   _settings: ISettingsInternal;
+  /**
+   * The local reference for the Impression Observer.
+   */
+  _observer: ImpressionObserver;
 
   /**
    * @param  {ISettingsInternal} settings  Object containing the minimum settings required
@@ -48,6 +58,7 @@ export class SynchroniserManager {
    */
   constructor(settings: ISettingsInternal) {
     this._settings = settings;
+    this._observer = impressionObserverSSFactory();
     /**
      * Function to wrapp whatever fetch the app is using.
      * Todo: Check if this belongs here.
@@ -88,6 +99,10 @@ export class SynchroniserManager {
    * @returns {Promise<boolean>}
    */
   initializeSynchronisers(): Promise<boolean> {
+    const countsCache = this._settings.sync.impressionsMode === 'OPTIMIZED' ?
+      new ImpressionCountsCacheInMemory() :
+      undefined;
+
     try {
       this._segmentsSynchroniser = new SegmentsSynchroniser(
         this._splitApi.fetchSegmentChanges,
@@ -104,11 +119,12 @@ export class SynchroniserManager {
         this._splitApi.postEventsBulk,
         this._storage.events
       );
-      // this._impressionsSynchroniser = new ImpressionsSynchroniser(
-      //   this._settings,
-      //   this._splitApi.postTestImpressionsBulk,
-      //   this._storage.impressions
-      // );
+      this._impressionsSynchroniser = new ImpressionsSynchroniser(
+        this._splitApi.postTestImpressionsBulk,
+        this._storage.impressions,
+        this._observer,
+        countsCache,
+      );
     } catch (error) {
       return Promise.reject(new Error('Error'));
     }
