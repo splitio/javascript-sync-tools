@@ -54,11 +54,11 @@ function getRandomiseMetadata(): StoredImpressionWithMetadata {
  * @returns {StoredImpressionWithMetadata}
  */
 function getRandomiseImpression(): StoredImpressionWithMetadata {
-  const { f, k, t, m, b, c } = impressionWithMetadata.i;
+  const { r, k, t, m, b, c } = impressionWithMetadata.i;
   return Object.assign(
     {},
     impressionWithMetadata,
-    { i: { f, k, t, m, b, r: _getRandomString(12), c } }
+    { i: { r, k, t, m, b, f: _getRandomString(12), c } }
   );
 }
 /**

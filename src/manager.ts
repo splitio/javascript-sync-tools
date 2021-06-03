@@ -8,10 +8,10 @@ import { SynchroniserStorageFactory } from './storages/SynchroniserStorage';
 import fetch from 'node-fetch';
 import { EventsSynchroniser } from './synchronisers/EventsSynchroniser';
 import { ImpressionsSynchroniser } from './synchronisers/ImpressionsSynchroniser';
-import { impressionObserverSSFactory } from
-  '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import ImpressionCountsCacheInMemory from
-  '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { impressionObserverSSFactory }
+  from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
+import ImpressionCountsCacheInMemory
+  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 
 
