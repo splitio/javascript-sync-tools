@@ -1,0 +1,38 @@
+import { SynchroniserManager } from '../manager';
+import { synchroniserSettingsValidator } from '../settings';
+import InMemoryStorage from './customStorage/InMemoryStorage';
+
+describe('Manager creation and execution', () => {
+  // Teardown
+  const _settings = synchroniserSettingsValidator({
+    core: {
+      authorizationKey: 'th1s_1sF4keAp1k31',
+    },
+    urls: {
+      // CDN having all the information for your environment
+      sdk: 'https://fake.split.io//api',
+      // Storage for your SDK events
+      events: 'https://fake.events.split.io/api',
+    },
+    storage: {
+      type: 'CUSTOM',
+      prefix: 'InMemoryWrapper',
+      wrapper: InMemoryStorage,
+    },
+  });
+
+  describe('Custom Storage initialization', () => {
+    it('Instantiates the Synchroniser Manager and [SUCCESSFULLY] initializes Custom Storage', async () => {
+      const _manager = new SynchroniserManager(_settings);
+      expect(await _manager.initializeStorages()).toBe(true);
+    });
+
+    it('Instantiate the Synchroniser Manager and [FAILS] to initialize Custom Storage', async () => {
+      // @ts-ignore
+      _settings.storage.wrapper = undefined;
+
+      const _manager = new SynchroniserManager(_settings);
+      expect(await _manager.initializeStorages()).toBe(false);
+    });
+  });
+});
