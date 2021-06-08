@@ -25,24 +25,27 @@ let customStorage: ICustomStorageWrapper;
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
   .command('sync', 'Start synchronising tasks.')
-  .example('$0 -m json --config path2/file.json -s path2/storage.js', '| Set settings from JSON file.')
+  .example('$0 -m json --config path2/file.json -s path2/storage.js', '| Set settings from JSON file. -d')
   .example('$0 -m env -s path2/storage.js', '| Set settings from .env file.')
   .alias('s', 'storage')
   .nargs('s', 1)
   .alias('m', 'mode')
   .nargs('m', 1)
+  .alias('d', 'debug')
+  .nargs('d', 0)
   .config('json-file', function (configPath) {
     return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   })
   .describe('m', 'Set config mode: json | env')
   .describe('s', 'Path to the JS file exposing the Storage API')
+  .describe('d', 'Set debug Logger enable')
   .demandOption(['m', 's'])
   .help('h')
   .alias('h', 'help')
   .epilog('copyright 2021')
   .argv;
 
-const { mode, storage, APIKEY, API_URL } = yargv;
+const { mode, storage, APIKEY, API_URL, debug } = yargv;
 
 console.log(` > Synchroniser's configs from: ${mode}`);
 
@@ -91,6 +94,7 @@ const settings = synchroniserSettingsValidator({
     // @ts-ignore
     wrapper: customStorage,
   },
+  debug: debug || false,
 });
 
 if (!validateApiKey(settings.log, apikey)) {
