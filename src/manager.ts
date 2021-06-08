@@ -78,18 +78,24 @@ export class SynchroniserManager {
     );
   }
   /**
-   * Function to set a storage.
+   * Function to set a storage. Returns a Promise that will never be rejected.
    *
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
   initializeStorages(): Promise<boolean> {
-    try {
-      this._storage = SynchroniserStorageFactory(this._settings);
-    } catch (error) {
-      return Promise.resolve(false);
-    }
-
-    return Promise.resolve(true);
+    return new Promise<boolean>((res) => {
+      this._storage = SynchroniserStorageFactory(
+        this._settings,
+        (error) => { if (error) {
+          this._settings.log.error('Error when initializing Storages');
+          res(false);
+        } else res(true);},
+      );
+    }).catch((error) => {
+      // logger: show error
+      console.log(error.message);
+      return false;
+    });
   }
   /**
    * Function to set all the required Synchronisers.
@@ -124,30 +130,38 @@ export class SynchroniserManager {
         countsCache,
       );
     } catch (error) {
-      return Promise.reject(new Error('Error'));
+      this._settings.log.error(`Error when initializing Synchroniser: ${error}`);
+      return Promise.resolve(false);
     }
     return Promise.resolve(true);
   }
   /**
    * Method to start the Synchroniser execution.
    *
-   * @throws {Error}
+   * @returns {boolean}
    */
-  async execute() {
+  async execute(): Promise<boolean> {
     console.log('# Synchroniser: Execute');
 
     const isStorageReady = await this.initializeStorages();
-    if (!isStorageReady) throw new Error('Error: Synchronisers are not ready.');
+    if (!isStorageReady) return false;
+    console.log(' > Storage setup:                  Ready');
 
     const areSyncsReady = await this.initializeSynchronisers();
-    if (!areSyncsReady) throw new Error('Error: Some error occurred starting synchronisers. Exiting.');
-    await this._splitsSynchroniser.getSplitChanges();
-    console.log(`> Splits fetched: ${(await this._storage.splits.getAll()).length}`);
-    console.log(`> Segments registered: ${await this._storage.segments.getRegisteredSegments()}`);
-    await this._segmentsSynchroniser.getSegmentsChanges().then((result) => console.log('> Segments Results:', result));
-    await this._eventsSynchroniser.synchroniseEvents().then((data) => console.log('> Events:', data));
-    // await this._impressionsSynchroniser.synchroniseImpressions().then((data) => console.log('> Impresisons:', data));
+    if (!areSyncsReady) return false;
+    console.log(' > Synchronisers components setup: Ready');
+
+    console.log('# Syncronization tasks');
+    const isSplitsSyncReady = await this._splitsSynchroniser.getSplitChanges();
+    console.log(` > Splits Synchroniser task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+    const isSegmentsSyncReady = await this._segmentsSynchroniser.getSegmentsChanges();
+    console.log(` > Segments Synchroniser task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+    const isEventsSyncReady = await this._eventsSynchroniser.synchroniseEvents();
+    console.log(` > Events Synchroniser task:       ${isEventsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+    const isImpressionsSyncReady = await this._impressionsSynchroniser.synchroniseImpressions();
+    console.log(` > Impressions Synchroniser task:  ${isImpressionsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
 
     console.log('# Synchroniser: Execution ended');
+    return true;
   }
 }

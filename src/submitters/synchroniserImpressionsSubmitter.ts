@@ -71,6 +71,7 @@ export function impressionsSubmitterFactory(
 
         if (observer) {
           // Adds previous time if it is enabled
+          // @ts-ignore
           impression.pt = observer.testAndSet(impression);
         }
 
@@ -97,7 +98,6 @@ export function impressionsSubmitterFactory(
           const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
           const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
 
-          // @ts-expect-error
           await postClient(JSON.stringify(impressions), headers);
         });
       } catch (error) {

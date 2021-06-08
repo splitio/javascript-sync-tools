@@ -34,11 +34,12 @@ export class EventsSynchroniser {
 
   /**
    * Function to execute the Events POST request. It can return a boolean if the operation went
-   * good/wrong or a string with a message in case it catches an error.
+   * good/wrong or a string with a message in case it catches an error. The return promise will
+   * never be rejected.
    *
    * @returns {Promise<boolean|string>}
    */
-  synchroniseEvents(): Promise<boolean|string> {
+  synchroniseEvents(): Promise<boolean> {
     return this._eventsSubmitter();
   }
 }

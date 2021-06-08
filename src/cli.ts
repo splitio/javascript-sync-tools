@@ -44,7 +44,7 @@ const yargv = yargs(hideBin(argv))
 
 const { mode, storage, APIKEY, API_URL } = yargv;
 
-console.log(`> Synchroniser's configs from: ${mode}`);
+console.log(` > Synchroniser's configs from: ${mode}`);
 
 switch (mode) {
   case 'json':
@@ -63,6 +63,7 @@ switch (mode) {
 try {
   customStorage = require(storage as string).default;
 } catch (error) {
+  // @ts-ignore
   console.log('Error importing Storage', error.message);
   exit(0);
 }
@@ -99,4 +100,6 @@ if (!validateApiKey(settings.log, apikey)) {
 
 const manager = new SynchroniserManager(settings);
 
-manager.execute();
+manager.execute().then((res) => {
+  if (!res) console.log('# Synchroniser execution failed.');
+});
