@@ -1,3 +1,4 @@
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
@@ -26,12 +27,14 @@ export class ImpressionsSynchroniser {
    *                                                             endpoint.
    * @param {IImpressionsCacheAsync}        impressionsStorage   The reference to the impresions' Storage.
    * @param {ImpressionObserver}            observer             The reference to the impresions' Storage.
+   * @param {ILogger}                       logger               The reference to the Synchroniser's Logger.
    * @param {ImpressionCountsCacheInMemory} countsCache          The reference to the impresions' Storage.
    */
   constructor(
     postImpressionsBulk: IPostTestImpressionsBulk,
     impressionsStorage: IImpressionsCacheAsync,
     observer: ImpressionObserver,
+    logger: ILogger,
     countsCache?: ImpressionCountsCacheInMemory,
   ) {
     this._postImpressionsBulk  = postImpressionsBulk;
@@ -40,6 +43,7 @@ export class ImpressionsSynchroniser {
       this._postImpressionsBulk,
       this._impressionsStorage,
       observer,
+      logger,
       countsCache,
     );
   }

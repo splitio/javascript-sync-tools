@@ -1,4 +1,5 @@
 /* eslint-disable no-magic-numbers */
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
@@ -22,11 +23,13 @@ type ProcessedByMetadataEvents = {
  *
  * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
+ * @param {ILogger}           logger          The Synchroniser's Logger.
  * @returns {() => Promise<boolean|string>}
  */
 export function eventsSubmitterFactory(
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheAsync,
+  logger: ILogger,
   // @todo: Add retry param.
 ): () => Promise<boolean> {
   return () => eventsCache.popNWithMetadata(EVENTS_AMOUNT)
@@ -60,9 +63,8 @@ export function eventsSubmitterFactory(
       }
       return Promise.resolve(true);
     })
-    // @todo: add Logger for error tracking.
     .catch((e) => {
-      console.log(`An error occurred when processing Events: ${e}`);
+      logger.error(`An error occurred when processing Events: ${e}`);
       return false;
     });
 }
