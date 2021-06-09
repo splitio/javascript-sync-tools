@@ -13,6 +13,7 @@ import { impressionObserverSSFactory }
 import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import { ImpressionsCountSynchroniser } from './synchronisers/ImpressionsCountSynchroniser';
 
 /**
  * Main class to handle the Synchroniser execution.
@@ -39,9 +40,13 @@ export class SynchroniserManager {
    */
   _eventsSynchroniser!: EventsSynchroniser;
   /**
-   * The local reference to the EventsSynchroniser class.
+   * The local reference to the ImpressionsSynchroniser class.
    */
   _impressionsSynchroniser!: ImpressionsSynchroniser;
+  /**
+   * The local reference to the ImpressionsCountSynchroniser class.
+   */
+  _impressionsCountSynchroniser!: ImpressionsCountSynchroniser;
   /**
    * The local reference to the Synchroniser's settings configurations.
    */
@@ -86,14 +91,14 @@ export class SynchroniserManager {
     return new Promise<boolean>((res) => {
       this._storage = SynchroniserStorageFactory(
         this._settings,
-        (error) => { if (error) {
-          this._settings.log.error('Error when initializing Storages');
-          res(false);
-        } else res(true);},
+        (error) => {
+          if (error) {
+            this._settings.log.error(`Error when initializing Storages ${error}`);
+            res(false);
+          } else res(true);},
       );
     }).catch((error) => {
-      // logger: show error
-      console.log(error.message);
+      this._settings.log.error(`Error when initializing Storages: ${error}`);
       return false;
     });
   }
@@ -103,6 +108,7 @@ export class SynchroniserManager {
    * @returns {Promise<boolean>}
    */
   initializeSynchronisers(): Promise<boolean> {
+    // @todo: Add Cli paramater to define impressionsMode.
     const countsCache = this._settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
       undefined;
@@ -121,14 +127,23 @@ export class SynchroniserManager {
       );
       this._eventsSynchroniser = new EventsSynchroniser(
         this._splitApi.postEventsBulk,
-        this._storage.events
+        this._storage.events,
+        this._settings.log,
       );
       this._impressionsSynchroniser = new ImpressionsSynchroniser(
         this._splitApi.postTestImpressionsBulk,
         this._storage.impressions,
         this._observer,
+        this._settings.log,
         countsCache,
       );
+      if (countsCache) {
+        this._impressionsCountSynchroniser =  new ImpressionsCountSynchroniser(
+          this._splitApi.postTestImpressionsCount,
+          countsCache,
+          this._settings.log,
+        );
+      }
     } catch (error) {
       this._settings.log.error(`Error when initializing Synchroniser: ${error}`);
       return Promise.resolve(false);
@@ -161,6 +176,12 @@ export class SynchroniserManager {
     const isImpressionsSyncReady = await this._impressionsSynchroniser.synchroniseImpressions();
     console.log(` > Impressions Synchroniser task:  ${isImpressionsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
 
+    if (this._impressionsCountSynchroniser) {
+      const isImpressionsCountSyncReady = await this._impressionsCountSynchroniser.synchroniseImpressionsCount();
+      console.log(
+        ` > ImpressionsCount Synchroniser task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
+      );
+    }
     console.log('# Synchroniser: Execution ended');
     return true;
   }
