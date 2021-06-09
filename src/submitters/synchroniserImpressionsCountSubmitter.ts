@@ -4,6 +4,7 @@ import { ImpressionCountsPayload }
   from '@splitsoftware/splitio-commons/types/sync/submitters/types';
 import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 
 /**
  * Function to process Impressions Count data and transform it into request payload.
@@ -40,25 +41,29 @@ const fromImpressionCountsCollector = (impressionsCount: Record<string, number>)
  *
  * @param {IPostTestImpressionsBulk}      postClient              HTTPClient API to perform the POST request.
  * @param {ImpressionCountsCacheInMemory} impressionsCountsCache  Impressions Cache Storage reference.
- * @returns {() => Promise<boolean|string>}
+ * @param {ILogger}                       logger                  The Synchroniser's Logger reference.
+ * @returns {() => Promise<boolean>}
  */
 export function impressionsCountSubmitterFactory(
   postClient: IPostTestImpressionsCount,
   impressionsCountsCache: ImpressionCountsCacheInMemory,
-) {
+  logger: ILogger,
+): () => Promise<boolean> {
   // eslint-disable-next-line no-async-promise-executor
   return async () => {
     const impressionsCountData = impressionsCountsCache.state();
-    const payload = fromImpressionCountsCollector(impressionsCountData);
+    if (Object.keys(impressionsCountData).length > 0) {
+      const payload = fromImpressionCountsCollector(impressionsCountData);
 
-    impressionsCountsCache.clear();
-    try {
-      await postClient(JSON.stringify(payload));
-    } catch (error) {
-      // @todo: Add logger to handle errors.
-      console.log(`An error occurred when processing Impressions Counts: ${error}`);
-      Promise.resolve(false);
+      impressionsCountsCache.clear();
+      try {
+        await postClient(JSON.stringify(payload));
+      } catch (e) {
+        logger.error(`An error occurred when processing Impressions Count : ${e}`);
+        return Promise.resolve(false);
+      }
     }
-    Promise.resolve(true);
+
+    return Promise.resolve(true);
   };
 }
