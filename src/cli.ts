@@ -35,6 +35,8 @@ const yargv = yargs(hideBin(argv))
     '$0 -k {A_VALID_APIKEY} -s path2/storage.js -r https://events.split.io/api/',
     '| Set APIKEY and Split API URL from param.'
   )
+  .example('$0 -m env [...] -d', '| Set Debug Logging enabled')
+  .example('$0 -m env [...] -i', '| Set Impressions Mode Debug mode')
   .alias('s', 'storage')
   .nargs('s', 1)
   .alias('m', 'mode')
@@ -47,6 +49,7 @@ const yargv = yargs(hideBin(argv))
   .nargs('r', 1)
   .alias('e', 'eventsApiUrl')
   .nargs('e', 1)
+  .alias('i', 'impressionsDebug')
   .config('json-file', function (configPath) {
     return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
   })
@@ -56,13 +59,25 @@ const yargv = yargs(hideBin(argv))
   .describe('k', 'Set the apikey')
   .describe('r', 'Set the Split API URL')
   .describe('e', 'Set the Split Events API URL')
+  .describe('i', 'Set the Impressions Mode debug enabled')
   .demandOption(['s'])
   .help('h')
   .alias('h', 'help')
   .epilog('copyright 2021')
   .argv;
 
-const { mode, storage, APIKEY, apikey, apiUrl, API_URL, eventsApiUrl, EVENTS_API_URL, debug } = yargv;
+const {
+  mode,
+  storage,
+  APIKEY,
+  apikey,
+  apiUrl,
+  API_URL,
+  eventsApiUrl,
+  EVENTS_API_URL,
+  debug,
+  impressionsDebug,
+} = yargv;
 
 console.log(` > Synchroniser's configs from: ${mode || 'CLI params'}`);
 
@@ -115,6 +130,9 @@ const settings = synchroniserSettingsValidator({
     prefix: 'InMemoryWrapper',
     // @ts-ignore
     wrapper: customStorage,
+  },
+  sync: {
+    impressionsMode: impressionsDebug ? 'DEBUG' : 'OPTIMIZED',
   },
   debug: debug || false,
 });
