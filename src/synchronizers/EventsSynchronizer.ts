@@ -1,13 +1,14 @@
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { eventsSubmitterFactory } from '../submitters/synchroniserEventsSubmitter';
+import { eventsSubmitterFactory } from '../submitters/synchronizerEventsSubmitter';
 
 /**
  * Class that manages Events synchronization.
  */
-export class EventsSynchroniser {
+export class EventsSynchronizer {
   /**
-   * The local reference to the Synchroniser's Events' Storage.
+   * The local reference to the Synchronizer's Events' Storage.
    */
   private _eventsStorage;
   /**
@@ -22,23 +23,30 @@ export class EventsSynchroniser {
    *
    * @param {IPostEventsBulk}   postTestEventsBulk  SplitApi's Post request function to Events endpoint.
    * @param {IEventsCacheAsync} eventsStorage       The reference to the event's Storage.
+   * @param {ILogger}           logger              The reference to the Synchronizer's Logger.
    */
   constructor(
     postTestEventsBulk: IPostEventsBulk,
-    eventsStorage: IEventsCacheAsync
+    eventsStorage: IEventsCacheAsync,
+    logger: ILogger,
   ) {
     this._postEventsBulk  = postTestEventsBulk;
     this._eventsStorage = eventsStorage;
-    this._eventsSubmitter = eventsSubmitterFactory(this._postEventsBulk, this._eventsStorage);
+    this._eventsSubmitter = eventsSubmitterFactory(
+      this._postEventsBulk,
+      this._eventsStorage,
+      logger,
+    );
   }
 
   /**
    * Function to execute the Events POST request. It can return a boolean if the operation went
-   * good/wrong or a string with a message in case it catches an error.
+   * good/wrong or a string with a message in case it catches an error. The return promise will
+   * never be rejected.
    *
    * @returns {Promise<boolean|string>}
    */
-  synchroniseEvents(): Promise<boolean|string> {
+  synchroniseEvents(): Promise<boolean> {
     return this._eventsSubmitter();
   }
 }

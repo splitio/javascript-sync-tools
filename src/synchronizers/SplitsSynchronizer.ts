@@ -8,13 +8,13 @@ import { ISegmentsCacheAsync, ISplitsCacheAsync } from '@splitsoftware/splitio-c
 /**
  * Class that manages all the Splits entities related actions.
  */
-export class SplitsSynchroniser {
+export class SplitsSynchronizer {
   /**
-   * The local reference to the Synchroniser's Split Storage.
+   * The local reference to the Synchronizer's Split Storage.
    */
   private _segmentsStorage;
   /**
-   * The local reference to the Synchroniser's Segments Storage.
+   * The local reference to the Synchronizer's Segments Storage.
    */
   private _splitsStorage;
   /**
@@ -27,13 +27,13 @@ export class SplitsSynchroniser {
   // @ts-ignore
   private _splitUpdater;
   /**
-   * The local reference to the Synchroniser's settings configurations.
+   * The local reference to the Synchronizer's settings configurations.
    */
   private _settings;
 
   /**
    * @param {IFetchSplitChanges}  splitFetcher     The SplitChanges fetcher from SplitAPI.
-   * @param {ISettings}           settings         The Synchroniser's settings.
+   * @param {ISettings}           settings         The Synchronizer's settings.
    * @param {ISplitsCacheAsync}   splitsStorage    The reference to the current Storage.
    * @param {ISegmentsCacheAsync} segmentsStorage  The reference to the current Storage.
    */

@@ -1,9 +1,9 @@
 /* eslint-disable max-len, no-magic-numbers */
 import { metadataToHeaders } from '../metadataUtils';
-import { eventsSubmitterFactory } from '../synchroniserEventsSubmitter';
+import { eventsSubmitterFactory } from '../synchronizerEventsSubmitter';
 import { getMultipleEventsSameMetadata } from './eventsMockUtils';
 
-describe('Events Submitter for Lightweight Synchroniser', () => {
+describe('Events Submitter for Lightweight Synchronizer', () => {
   const _postEventsMock = jest.fn(() => Promise.resolve());
   const _eventsCacheMock = {
     popNWithMetadata: jest.fn(),

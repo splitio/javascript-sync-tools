@@ -1,16 +1,17 @@
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
-import { impressionsSubmitterFactory } from '../submitters/synchroniserImpressionsSubmitter';
+import { impressionsSubmitterFactory } from '../submitters/synchronizerImpressionsSubmitter';
 
 /**
  * Class that manages impressions synchronization.
  */
-export class ImpressionsSynchroniser {
+export class ImpressionsSynchronizer {
   /**
-   * The local reference to the Synchroniser's Impressions' Storage.
+   * The local reference to the Synchronizer's Impressions' Storage.
    */
   private _impressionsStorage;
   /**
@@ -26,12 +27,14 @@ export class ImpressionsSynchroniser {
    *                                                             endpoint.
    * @param {IImpressionsCacheAsync}        impressionsStorage   The reference to the impresions' Storage.
    * @param {ImpressionObserver}            observer             The reference to the impresions' Storage.
+   * @param {ILogger}                       logger               The reference to the Synchronizer's Logger.
    * @param {ImpressionCountsCacheInMemory} countsCache          The reference to the impresions' Storage.
    */
   constructor(
     postImpressionsBulk: IPostTestImpressionsBulk,
     impressionsStorage: IImpressionsCacheAsync,
     observer: ImpressionObserver,
+    logger: ILogger,
     countsCache?: ImpressionCountsCacheInMemory,
   ) {
     this._postImpressionsBulk  = postImpressionsBulk;
@@ -40,6 +43,7 @@ export class ImpressionsSynchroniser {
       this._postImpressionsBulk,
       this._impressionsStorage,
       observer,
+      logger,
       countsCache,
     );
   }

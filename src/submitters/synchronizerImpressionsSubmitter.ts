@@ -10,10 +10,11 @@ import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { groupByMetadata, metadataToHeaders } from './metadataUtils';
 import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
- * >>>> TODO: Set this constant when executing the Synchroniser.
+ * >>>> TODO: Set this constant when executing the Synchronizer.
  */
 const IMPRESSIONS_AMOUNT = 1000;
 /**
@@ -50,6 +51,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * @param {IPostTestImpressionsBulk}      postClient        HTTPClient API to perform the POST request.
  * @param {IImpressionsCacheAsync}        impressionsCache  Impressions Cache Storage reference.
  * @param {ImpressionObserver}            observer          The Impression Observer object for the dedupe process.
+ * @param {ILogger}                       logger            The reference to the Synchronizer's Logger.
  * @param {ImpressionCountsCacheInMemory} countsCache       The reference to the Impresion's Count Storage.
  * @returns {() => Promise<boolean>}
  */
@@ -57,12 +59,12 @@ export function impressionsSubmitterFactory(
   postClient: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheAsync,
   observer: ImpressionObserver,
+  logger: ILogger,
   countsCache?: ImpressionCountsCacheInMemory,
 ): () => Promise<boolean> {
   return () => impressionsCache.popNWithMetadata(IMPRESSIONS_AMOUNT)
     .then((dataImpressions: StoredImpressionWithMetadata[]) => {
       const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
-
       // convert Impressions Metadata into Impressions DTO
       const storedImpressions = dataImpressions.map(impression => impressionWithMetadataToImpressionDTO(impression));
 
@@ -71,6 +73,7 @@ export function impressionsSubmitterFactory(
 
         if (observer) {
           // Adds previous time if it is enabled
+          // @ts-ignore
           impression.pt = observer.testAndSet(impression);
         }
 
@@ -89,25 +92,20 @@ export function impressionsSubmitterFactory(
       const impressionsWithMetadataProcessedToPost: { [metadataAsKey: string]: ImpressionsDTOWithMetadata[]} =
         groupByMetadata(impressionsWithMetadataToPost, 'metadata');
 
-      try {
-        const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
+      const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
 
-        Object.keys(impressionsWithMetadataProcessedToPost).forEach(async (key) => {
-          const impressions = impressionsWithMetadataProcessedToPost[key].map((data) => data.impression);
-          const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
-          const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
+      Object.keys(impressionsWithMetadataProcessedToPost).forEach(async (key) => {
+        const impressions = impressionsWithMetadataProcessedToPost[key].map((data) => data.impression);
+        const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
+        const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
 
-          // @ts-expect-error
-          await postClient(JSON.stringify(impressions), headers);
-        });
-      } catch (error) {
-        return Promise.resolve(error);
-      }
+        await postClient(JSON.stringify(impressions), headers);
+      });
+
       return Promise.resolve(true);
     })
-    // @todo: add Logger for error tracking.
     .catch((e) => {
-      console.log(`An error occurred when processing Impressions: ${e}`);
+      logger.error(`An error occurred when processing Impressions: ${e}`);
       return false;
     });
 }

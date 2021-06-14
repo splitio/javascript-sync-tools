@@ -1,5 +1,5 @@
 /**
- * Default values to create settings for the Synchroniser script.
+ * Default values to create settings for the Synchronizer script.
  */
 export const defaults = {
   startup: {
