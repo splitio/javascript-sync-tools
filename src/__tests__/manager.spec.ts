@@ -1,10 +1,10 @@
-import { SynchroniserManager } from '../manager';
-import { synchroniserSettingsValidator } from '../settings';
+import { SynchronizerManager } from '../manager';
+import { synchronizerSettingsValidator } from '../settings';
 import InMemoryStorage from './customStorage/InMemoryStorage';
 
 describe('Manager creation and execution', () => {
   // Teardown
-  const _settings = synchroniserSettingsValidator({
+  const _settings = synchronizerSettingsValidator({
     core: {
       authorizationKey: 'th1s_1sF4keAp1k31',
     },
@@ -22,16 +22,16 @@ describe('Manager creation and execution', () => {
   });
 
   describe('Custom Storage initialization', () => {
-    it('Instantiates the Synchroniser Manager and [SUCCESSFULLY] initializes Custom Storage', async () => {
-      const _manager = new SynchroniserManager(_settings);
+    it('Instantiates the Synchronizer Manager and [SUCCESSFULLY] initializes Custom Storage', async () => {
+      const _manager = new SynchronizerManager(_settings);
       expect(await _manager.initializeStorages()).toBe(true);
     });
 
-    it('Instantiate the Synchroniser Manager and [FAILS] to initialize Custom Storage', async () => {
+    it('Instantiate the Synchronizer Manager and [FAILS] to initialize Custom Storage', async () => {
       // @ts-ignore
       _settings.storage.wrapper = undefined;
 
-      const _manager = new SynchroniserManager(_settings);
+      const _manager = new SynchronizerManager(_settings);
       expect(await _manager.initializeStorages()).toBe(false);
     });
   });

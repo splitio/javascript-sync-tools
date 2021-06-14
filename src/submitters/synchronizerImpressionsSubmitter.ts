@@ -14,7 +14,7 @@ import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
- * >>>> TODO: Set this constant when executing the Synchroniser.
+ * >>>> TODO: Set this constant when executing the Synchronizer.
  */
 const IMPRESSIONS_AMOUNT = 1000;
 /**
@@ -51,7 +51,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * @param {IPostTestImpressionsBulk}      postClient        HTTPClient API to perform the POST request.
  * @param {IImpressionsCacheAsync}        impressionsCache  Impressions Cache Storage reference.
  * @param {ImpressionObserver}            observer          The Impression Observer object for the dedupe process.
- * @param {ILogger}                       logger            The reference to the Synchroniser's Logger.
+ * @param {ILogger}                       logger            The reference to the Synchronizer's Logger.
  * @param {ImpressionCountsCacheInMemory} countsCache       The reference to the Impresion's Count Storage.
  * @returns {() => Promise<boolean>}
  */

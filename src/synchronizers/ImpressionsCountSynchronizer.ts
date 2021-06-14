@@ -2,19 +2,19 @@ import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/services/types';
 import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import { impressionsCountSubmitterFactory } from '../submitters/synchroniserImpressionsCountSubmitter';
+import { impressionsCountSubmitterFactory } from '../submitters/synchronizerImpressionsCountSubmitter';
 
 /**
  * Class to manage the Impressions Count synchronization.
  */
-export class ImpressionsCountSynchroniser {
+export class ImpressionsCountSynchronizer {
   private _impressionsCountSubmitter;
   private _postImpressionsCount;
   /**
    *
    * @param {IPostTestImpressionsCount}     postImpressionsCount  SplitAPI's POST request.
    * @param {ImpressionCountsCacheInMemory} countsCache           The reference to the Impression's Count Storage.
-   * @param {ILogger}                       logger                The reference to the Synchroniser's Logger.
+   * @param {ILogger}                       logger                The reference to the Synchronizer's Logger.
    */
   constructor(
     postImpressionsCount: IPostTestImpressionsCount,

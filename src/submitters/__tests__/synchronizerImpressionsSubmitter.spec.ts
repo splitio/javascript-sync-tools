@@ -1,14 +1,14 @@
 /* eslint-disable no-magic-numbers, max-len*/
 import ImpressionCountsCacheInMemory from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import { impressionsSubmitterFactory, impressionWithMetadataToImpressionDTO } from '../synchroniserImpressionsSubmitter';
+import { impressionsSubmitterFactory, impressionWithMetadataToImpressionDTO } from '../synchronizerImpressionsSubmitter';
 import { getImpressionsListWithSameMetadata } from './impressionsMockUtils';
 import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import { impressionsCountSubmitterFactory } from '../synchroniserImpressionsCountSubmitter';
+import { impressionsCountSubmitterFactory } from '../synchronizerImpressionsCountSubmitter';
 import { metadataToHeaders } from '../metadataUtils';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 
-describe('Impressions Submitter for Lightweight Synchroniser', () => {
+describe('Impressions Submitter for Lightweight Synchronizer', () => {
   const _postImpressionsMock = jest.fn(() => Promise.resolve());
   const _impressionsCacheMock = {
     popNWithMetadata: jest.fn(),

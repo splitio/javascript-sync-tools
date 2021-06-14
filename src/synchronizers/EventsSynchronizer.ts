@@ -1,14 +1,14 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { eventsSubmitterFactory } from '../submitters/synchroniserEventsSubmitter';
+import { eventsSubmitterFactory } from '../submitters/synchronizerEventsSubmitter';
 
 /**
  * Class that manages Events synchronization.
  */
-export class EventsSynchroniser {
+export class EventsSynchronizer {
   /**
-   * The local reference to the Synchroniser's Events' Storage.
+   * The local reference to the Synchronizer's Events' Storage.
    */
   private _eventsStorage;
   /**
@@ -23,7 +23,7 @@ export class EventsSynchroniser {
    *
    * @param {IPostEventsBulk}   postTestEventsBulk  SplitApi's Post request function to Events endpoint.
    * @param {IEventsCacheAsync} eventsStorage       The reference to the event's Storage.
-   * @param {ILogger}           logger              The reference to the Synchroniser's Logger.
+   * @param {ILogger}           logger              The reference to the Synchronizer's Logger.
    */
   constructor(
     postTestEventsBulk: IPostEventsBulk,

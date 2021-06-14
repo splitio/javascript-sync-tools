@@ -23,7 +23,7 @@ type ProcessedByMetadataEvents = {
  *
  * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
- * @param {ILogger}           logger          The Synchroniser's Logger.
+ * @param {ILogger}           logger          The Synchronizer's Logger.
  * @returns {() => Promise<boolean|string>}
  */
 export function eventsSubmitterFactory(

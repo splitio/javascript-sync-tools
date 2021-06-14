@@ -13,7 +13,7 @@ const version = '@VERSION@';
  */
 const params = {
   logger: validateLogger,
-  defaults: Object.assign(defaults, { version: `synchroniser-${version}` }),
+  defaults: Object.assign(defaults, { version: `synchronizer-${version}` }),
 };
 
 /**
@@ -22,6 +22,6 @@ const params = {
  * @param {any} config  Object with the keys and values for instatiating a SettingsInternal object.
  * @returns {ISettingsInternal}
  */
-export function synchroniserSettingsValidator(config: any) {
+export function synchronizerSettingsValidator(config: any) {
   return settingsValidation(config, params);
 }

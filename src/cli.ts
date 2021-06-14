@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { exit, env, argv } from 'process';
-import { synchroniserSettingsValidator } from './settings';
-import { SynchroniserManager } from './manager';
+import { synchronizerSettingsValidator } from './settings';
+import { SynchronizerManager } from './manager';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -10,12 +10,12 @@ import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storag
 
 dotenv.config();
 
-console.log('# Synchroniser: Initialization');
+console.log('# Synchronizer: Initialization');
 
 /**
  * The API Url .
  */
-let _apiUrl: string | undefined;
+let _sdkApiUrl: string | undefined;
 /**
  * The Events API Url.
  */
@@ -24,6 +24,9 @@ let _eventsApiUrl: string | undefined;
  * The API key value.
  */
 let _apikey: string | undefined;
+/**
+ * The reference to the provided Storage.
+ */
 let customStorage: ICustomStorageWrapper;
 
 const yargv = yargs(hideBin(argv))
@@ -79,22 +82,22 @@ const {
   impressionsDebug,
 } = yargv;
 
-console.log(` > Synchroniser's configs from: ${mode || 'CLI params'}`);
+console.log(` > Synchronizer's configs from: ${mode || 'CLI params'}`);
 
 switch (mode) {
   case 'json':
     _apikey = APIKEY as string;
-    _apiUrl = API_URL as string;
+    _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     break;
   case 'env':
     _apikey = env.APIKEY;
-    _apiUrl = env.API_URL;
+    _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     break;
   default:
     _apikey = apikey as string;
-    _apiUrl = apiUrl as string;
+    _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
     break;
 }
@@ -102,48 +105,47 @@ switch (mode) {
 try {
   customStorage = require(storage as string).default;
 } catch (error) {
-  // @ts-ignore
-  console.log('Error importing Storage', error.message);
+  console.log('Error importing Storage', error);
   exit(0);
 }
 
 if (!_apikey) {
-  console.log('Unable to initialize Synchroniser task: missing APIKEY.');
+  console.log('Unable to initialize Synchronizer task: missing APIKEY.');
   exit(0);
 }
 
 /**
  * Settings creation.
  */
-const settings = synchroniserSettingsValidator({
+const settings = synchronizerSettingsValidator({
   core: {
     authorizationKey: _apikey,
   },
   urls: {
     // CDN having all the information for your environment
-    sdk: _apiUrl,
+    sdk: _sdkApiUrl,
     // Storage for your SDK events
     events: _eventsApiUrl,
   },
   storage: {
     type: 'CUSTOM',
     prefix: 'InMemoryWrapper',
-    // @ts-ignore
     wrapper: customStorage,
   },
   sync: {
     impressionsMode: impressionsDebug ? 'DEBUG' : 'OPTIMIZED',
   },
   debug: debug || false,
+  streamingEnabled: false,
 });
 
 if (!validateApiKey(settings.log, _apikey)) {
-  console.log('Unable to initialize Synchroniser task: invalid APIKEY.');
+  console.log('Unable to initialize Synchronizer task: invalid APIKEY.');
   exit(0);
 }
 
-const manager = new SynchroniserManager(settings);
+const manager = new SynchronizerManager(settings);
 
 manager.execute().then((res) => {
-  if (!res) console.log('# Synchroniser execution failed.');
+  if (!res) console.log('# Synchronizer execution failed.');
 });

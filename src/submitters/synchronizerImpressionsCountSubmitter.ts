@@ -41,7 +41,7 @@ const fromImpressionCountsCollector = (impressionsCount: Record<string, number>)
  *
  * @param {IPostTestImpressionsBulk}      postClient              HTTPClient API to perform the POST request.
  * @param {ImpressionCountsCacheInMemory} impressionsCountsCache  Impressions Cache Storage reference.
- * @param {ILogger}                       logger                  The Synchroniser's Logger reference.
+ * @param {ILogger}                       logger                  The Synchronizer's Logger reference.
  * @returns {() => Promise<boolean>}
  */
 export function impressionsCountSubmitterFactory(
