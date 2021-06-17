@@ -181,6 +181,8 @@ export class SynchronizerManager {
         ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
       );
     }
+    this._storage.destroy();
+
     console.log('# Synchronizer: Execution ended');
     return true;
   }
