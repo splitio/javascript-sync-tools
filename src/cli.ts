@@ -25,6 +25,10 @@ let _eventsApiUrl: string | undefined;
  */
 let _apikey: string | undefined;
 /**
+ * The Custom Storage's prefix.
+ */
+let _storagePrefix: string | undefined;
+/**
  * The reference to the provided Storage.
  */
 let customStorage: ICustomStorageWrapper;
@@ -52,16 +56,17 @@ const yargv = yargs(hideBin(argv))
   .nargs('r', 1)
   .alias('e', 'eventsApiUrl')
   .nargs('e', 1)
+  .alias('p', 'prefix')
+  .nargs('p', 1)
   .alias('i', 'impressionsDebug')
-  .config('json-file', function (configPath) {
-    return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  })
+  .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .describe('m', 'Set config mode: json | env')
   .describe('s', 'Path to the JS file exposing the Storage API')
   .describe('d', 'Set debug Logger enable')
   .describe('k', 'Set the apikey')
   .describe('r', 'Set the Split API URL')
   .describe('e', 'Set the Split Events API URL')
+  .describe('p', 'Set the Storage\'s prefix')
   .describe('i', 'Set the Impressions Mode debug enabled')
   .demandOption(['s'])
   .help('h')
@@ -79,6 +84,8 @@ const {
   eventsApiUrl,
   EVENTS_API_URL,
   debug,
+  prefix,
+  STORAGE_PREFIX,
   impressionsDebug,
 } = yargv;
 
@@ -89,16 +96,19 @@ switch (mode) {
     _apikey = APIKEY as string;
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
+    _storagePrefix = STORAGE_PREFIX as string;
     break;
   case 'env':
     _apikey = env.APIKEY;
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
+    _storagePrefix = env.STORAGE_PREFIX as string;
     break;
   default:
     _apikey = apikey as string;
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
+    _storagePrefix = prefix as string;
     break;
 }
 
@@ -114,6 +124,10 @@ if (!_apikey) {
   exit(0);
 }
 
+if (!_storagePrefix) {
+  console.log('Unable to initialize Synchronizer task: missing Storage\'s prefix.');
+  exit(0);
+}
 /**
  * Settings creation.
  */
@@ -129,7 +143,7 @@ const settings = synchronizerSettingsValidator({
   },
   storage: {
     type: 'CUSTOM',
-    prefix: 'InMemoryWrapper',
+    prefix: _storagePrefix,
     wrapper: customStorage,
   },
   sync: {
@@ -147,5 +161,8 @@ if (!validateApiKey(settings.log, _apikey)) {
 const manager = new SynchronizerManager(settings);
 
 manager.execute().then((res) => {
-  if (!res) console.log('# Synchronizer execution failed.');
+  if (!res) {
+    console.log('# Synchronizer execution terminated.');
+    exit(1);
+  }
 });
