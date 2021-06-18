@@ -24,7 +24,8 @@ const IMPRESSIONS_AMOUNT = 1000;
  * @param {StoredImpressionWithMetadata} storedImpression  The target impression.
  * @returns {ImpressionsDTOWithMetadata}
  */
-export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredImpressionWithMetadata) => {
+export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredImpressionWithMetadata):
+  ImpressionsDTOWithMetadata => {
   const {
     m,
     i,
@@ -98,8 +99,23 @@ export function impressionsSubmitterFactory(
         const impressions = impressionsWithMetadataProcessedToPost[key].map((data) => data.impression);
         const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
         const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
+        // Group impressions by Feature key.
+        const impressionsByFeature = groupByMetadata(impressions, 'feature');
 
-        await postClient(JSON.stringify(impressions), headers);
+        try {
+          let impressionsListToPost: { f: string; i: ImpressionDTO[]; }[] = [];
+          Object.keys(impressionsByFeature).forEach((key) => {
+            impressionsListToPost.push({
+              f: JSON.parse(key),
+              i: impressionsByFeature[key] as ImpressionDTO[],
+            });
+          });
+          await postClient(JSON.stringify(impressionsListToPost), headers);
+        } catch (error) {
+          // @ts-ignore
+          logger.error(`An error occurred when processing Impressions: ${error.message}`);
+          Promise.resolve(false);
+        }
       });
 
       return Promise.resolve(true);
