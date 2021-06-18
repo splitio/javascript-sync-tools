@@ -21,7 +21,6 @@ export function SynchronizerStorageFactory(settings: ISettingsInternal, onReadyC
 
   // @ts-ignore
   const storageFactory = PluggableStorage(storage);
-  // @ts-ignore
   // Ignoring metadata parameter since it's use by the Consumer API (like Events.track)
   // and the Synchronizer doesn't need to perform such actions.
   return storageFactory(storageFactorParams);
