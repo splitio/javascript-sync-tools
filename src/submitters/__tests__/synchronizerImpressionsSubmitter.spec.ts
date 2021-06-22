@@ -303,7 +303,8 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(res).toBe(true);
     });
 
-    test('Pop [20] Impressions divided in [2] groups of 10 Impressions with [SAME] Metadata from Storage, then make [2] Impressions POST with [10] Impressions each', async () => {
+    test(`Pop [20] Impressions divided in [2] groups of 10 Impressions with [SAME] Metadata from Storage,
+          then make [2] Impressions POST with [10] Impressions each`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(10, true, true),
         ...getImpressionsListWithSameMetadata(10, true, true),
