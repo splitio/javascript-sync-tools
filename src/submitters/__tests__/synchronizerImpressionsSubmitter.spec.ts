@@ -26,7 +26,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     observer = impressionObserverSSFactory();
   });
 
-  describe('Impressions Submitter OPTIMIZED mode set', () => {
+  describe('Impressions Submitter, with [OPTIMIZED] mode set in settings', () => {
     beforeEach(() => {
       _impressionsSubmiter = impressionsSubmitterFactory(
         // @ts-ignore
@@ -71,7 +71,10 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledWith(
-        JSON.stringify([impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]).impression]),
+        JSON.stringify([{
+          f: impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]).impression.feature,
+          i: [impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]).impression],
+        }]),
         { ...metadataToHeaders(_mockImpressionToDTO.metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(res).toBe(true);
@@ -111,12 +114,22 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         1,
-        JSON.stringify([impression1DTO.impression]),
+        JSON.stringify([{
+          f: impression1DTO.impression.feature,
+          i: [
+            impression1DTO.impression,
+          ],
+        }]),
         { ...metadataToHeaders(impression1DTO.metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         2,
-        JSON.stringify([impression2DTO.impression]),
+        JSON.stringify([{
+          f: impression2DTO.impression.feature,
+          i: [
+            impression2DTO.impression,
+          ],
+        }]),
         { ...metadataToHeaders(impression2DTO.metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(_postImpressionsMock).toBeCalledTimes(2);
@@ -162,12 +175,18 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_postImpressionsMock).toBeCalledTimes(2);
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         1,
-        JSON.stringify([impressionList1DTO[0].impression]),
+        JSON.stringify([{
+          f: impressionList1DTO[0].impression.feature,
+          i: [impressionList1DTO[0].impression],
+        }]),
         { ...metadataToHeaders(impressionList1DTO[0].metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         2,
-        JSON.stringify([impressionList2DTO[0].impression]),
+        JSON.stringify([{
+          f: impressionList2DTO[0].impression.feature,
+          i: [impressionList2DTO[0].impression],
+        }]),
         { ...metadataToHeaders(impressionList2DTO[0].metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       // @ts-ignore
@@ -199,7 +218,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
   });
 
-  describe('Impressions Submitter DEBUG mode set', () => {
+  describe('Impressions Submitter, with [DEBUG] mode set in settings', () => {
     beforeEach(() => {
       _impressionsSubmiter = impressionsSubmitterFactory(
         // @ts-ignore
@@ -210,7 +229,8 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         undefined,
       );
     });
-    test('Pop [2] Impressions with [SAME] metadata from Storage, then make [1] Impressions POST with [2] impressions', async () => {
+    test(`Pop [2] Impressions with [SAME] metadata from Storage,
+          then make [1] Impressions POST with [2] impressions each`, async () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       const _mockImpressionsListToDTO = _mockImpressionsListWMetadata.map(i => impressionWithMetadataToImpressionDTO(i));
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
@@ -219,10 +239,19 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       // The reason we are parsing the object and validating its keys (and its according value type) is because
-      // the `pt` key only exists in some impressions, and comparing the stringigy version of the parameter in the
-      // call againts the expected stringify value is not going to work.
+      // the `pt` key only exists in some impressions (that are repeated), and comparing the stringigy version
+      // of the parameter in the call and the expected stringify value is not going to work.
       // @ts-ignore
-      expect(JSON.parse(_postImpressionsMock.mock.calls[0][0]).pop()).toEqual(
+      const call = JSON.parse(_postImpressionsMock.mock.calls[0][0]);
+
+      expect(call[0]).toEqual(
+        expect.objectContaining({
+          f: expect.any(String),
+          i: expect.any(Array),
+        })
+      );
+
+      expect(call[0].i.pop()).toEqual(
         expect.objectContaining({
           keyName: expect.any(String),
           bucketingKey: expect.any(String),
@@ -241,13 +270,14 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(res).toBe(true);
     });
 
-    test('Pop [2] Impressions with [DIFFERENT] metadata from Storage, then make [2] Impressions POST with [1] impression each', async () => {
+    test(`Pop [2] Impressions with [DIFFERENT] metadata from Storage,
+          then make [2] Impressions POST with [1] impression each`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(1, true, true),
         ...getImpressionsListWithSameMetadata(1, true, true),
       ];
-      const impressionList1DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]);
-      const impressionList2DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[1]);
+      const impression1DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]);
+      const impression2DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[1]);
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
@@ -256,18 +286,25 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         1,
-        JSON.stringify([impressionList1DTO.impression]),
-        { ...metadataToHeaders(impressionList1DTO.metadata), SplitSDKImpressionsMode: 'DEBUG' }
+        JSON.stringify([{
+          f: impression1DTO.impression.feature,
+          i: [impression1DTO.impression],
+        }]),
+        { ...metadataToHeaders(impression1DTO.metadata), SplitSDKImpressionsMode: 'DEBUG' }
       );
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         2,
-        JSON.stringify([impressionList2DTO.impression]),
-        { ...metadataToHeaders(impressionList2DTO.metadata), SplitSDKImpressionsMode: 'DEBUG' }
+        JSON.stringify([{
+          f: impression2DTO.impression.feature,
+          i: [impression2DTO.impression],
+        }]),
+        { ...metadataToHeaders(impression2DTO.metadata), SplitSDKImpressionsMode: 'DEBUG' }
       );
       expect(res).toBe(true);
     });
 
-    test('Pop [20] Impressions divided in [2] groups of 10 Impressions with [SAME] Metadata from Storage, then make [2] Impressions POST with [10] Impressions each', async () => {
+    test(`Pop [20] Impressions divided in [2] groups of 10 Impressions with [SAME] Metadata from Storage,
+          then make [2] Impressions POST with [10] Impressions each`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(10, true, true),
         ...getImpressionsListWithSameMetadata(10, true, true),
@@ -280,9 +317,9 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledTimes(2);
       // @ts-ignore
-      expect(JSON.parse(_postImpressionsMock.mock.calls[0][0]).length).toEqual(10);
+      expect(JSON.parse(_postImpressionsMock.mock.calls[0][0]).length).toEqual(1);
       // @ts-ignore
-      expect(JSON.parse(_postImpressionsMock.mock.calls[1][0]).length).toEqual(10);
+      expect(JSON.parse(_postImpressionsMock.mock.calls[1][0]).length).toEqual(1);
       expect(res).toBe(true);
     });
   });

@@ -86,15 +86,12 @@ export class SynchronizerManager {
    *
    * @returns {Promise<boolean>}
    */
+  // @ts-ignore
   initializeStorages(): Promise<boolean> {
-    return new Promise<boolean>((res) => {
+    return new Promise<boolean>((res, rej) => {
       this._storage = SynchronizerStorageFactory(
         this._settings,
-        (error) => {
-          if (error) {
-            this._settings.log.error(`Error when initializing Storages ${error}`);
-            res(false);
-          } else res(true);},
+        (error) => error ? rej() : res(true)
       );
     }).catch((error) => {
       this._settings.log.error(`Error when initializing Storages: ${error}`);
@@ -181,6 +178,8 @@ export class SynchronizerManager {
         ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
       );
     }
+    this._storage.destroy();
+
     console.log('# Synchronizer: Execution ended');
     return true;
   }
