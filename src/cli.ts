@@ -124,10 +124,6 @@ if (!_apikey) {
   exit(0);
 }
 
-if (!_storagePrefix) {
-  console.log('Unable to initialize Synchronizer task: missing Storage\'s prefix.');
-  exit(0);
-}
 /**
  * Settings creation.
  */
