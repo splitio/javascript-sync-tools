@@ -12,7 +12,9 @@
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
     "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
-    "test": "clear && jest --verbose"
+    "test:unit": "jest --projects src/",
+    "test:e2e": "jest --projects e2e/",
+    "test": "jest --verbose"
   },
   "keywords": [],
   "author": "",
@@ -37,6 +39,7 @@
     "fetch-mock-jest": "^1.5.1",
     "husky": "^6.0.0",
     "jest": "^26.6.3",
+    "jest-fetch-mock": "^3.0.3",
     "replace": "^1.2.0",
     "rimraf": "^3.0.2",
     "ts-jest": "^26.4.4",

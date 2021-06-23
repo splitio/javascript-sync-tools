@@ -2,7 +2,10 @@ module.exports = {
   preset: 'ts-jest',
 
   // Test files are .js and .ts files inside of __tests__ folders and with a suffix of .test or .spec
-  testMatch: ['<rootDir>/src/**/__tests__/**/?(*.)+(spec|test).[jt]s'],
+  testMatch: [
+    '<rootDir>/src/**/__tests__/**/?(*.)+(spec|test).[jt]s',
+    '<rootDir>/e2e/?(*.)+(spec|test).[jt]s',
+  ],
 
   // Required when using Split dependencies via GitHub
   // `"@splitsoftware/splitio-commons": "github:splitio/javascript-commons#branch_name",`
