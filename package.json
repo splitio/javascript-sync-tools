@@ -14,7 +14,7 @@
     "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest --projects src/",
-    "test:e2e": "jest --projects e2e/",
+    "test:e2e": "jest --projects e2e/ --runInBand",
     "test": "jest --verbose"
   },
   "keywords": [],
@@ -27,6 +27,7 @@
     "yargs": "^17.0.1"
   },
   "devDependencies": {
+    "@splitsoftware/splitio": "^10.15.8",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.0.1",
     "@types/node-fetch": "^2.5.10",
