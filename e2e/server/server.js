@@ -14,6 +14,13 @@ server.use(middlewares);
 
 // eslint-disable-next-line
 function modifyResponseBody(req, res, next) {
+  console.log(req.url);
+
+  // To avoid Impressions and Events POSTS request processing.
+  if (req.url.match(/(testImpressions)|(events)/)) {
+    return next();
+  }
+
   var oldSend = res.send;
 
   res.send = function () {
