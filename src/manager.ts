@@ -1,11 +1,10 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
-import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
+import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
 import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
-import fetch from 'node-fetch';
 import { EventsSynchronizer } from './synchronizers/EventsSynchronizer';
 import { ImpressionsSynchronizer } from './synchronizers/ImpressionsSynchronizer';
 import { impressionObserverSSFactory }
@@ -14,6 +13,14 @@ import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
+
+let _fetch: IFetch | undefined;
+try {
+  _fetch = require('node-fetch');
+} catch (e) {
+  // eslint-disable-next-line no-undef
+  _fetch = typeof fetch === 'function' ? fetch : undefined;
+}
 
 /**
  * Main class to handle the Synchronizer execution.
@@ -70,8 +77,7 @@ export class SynchronizerManager {
      * @returns {Promise<Response>}
      */
     const customFetch = () => {
-      // eslint-disable-next-line no-undef
-      return fetch as unknown as () => Promise<Response>;
+      return _fetch;
     };
     /**
      * The Split's HTTPclient, required to make the requests to the API.
@@ -134,7 +140,7 @@ export class SynchronizerManager {
         countsCache,
       );
       if (countsCache) {
-        this._impressionsCountSynchronizer =  new ImpressionsCountSynchronizer(
+        this._impressionsCountSynchronizer = new ImpressionsCountSynchronizer(
           this._splitApi.postTestImpressionsCount,
           countsCache,
           this._settings.log,
