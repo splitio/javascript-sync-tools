@@ -1,4 +1,16 @@
 /* eslint-disable */
+
+/**
+ *
+ *  >>> DO NOT REMOVE THIS FILE ! <<<
+ *
+ * THIS FILE IS AN EXAMPLE OF A CUSTOM STORAGE CREATED TO MANAGE
+ * ALL THE SPLIT'S SYNCHRONIZER OPERATIONS USING REDIS.
+ *
+ * IT'S BEING USED WITH THE E2E TESTS
+ *
+ **/
+
 var util$1 = require('util');
 var events_1 = require('events');
 var url_1 = require('url');
@@ -11434,20 +11446,22 @@ class RedisAdapter extends ioredis {
         this._listenToEvents();
         this._setTimeoutWrappers();
         this._setDisconnectWrapper();
+        this.id = (Math.random().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5)).substring(0, 5);
+        console.log(`>>>> - ${this.id}`);
     }
     _listenToEvents() {
         this.once('ready', () => {
             const commandsCount = this._notReadyCommandsQueue ? this._notReadyCommandsQueue.length : 0;
-            this.log.info(LOG_PREFIX + `Redis connection established. Queued commands: ${commandsCount}.`);
+            // this.log.info(LOG_PREFIX + `Redis connection established. Queued commands: ${commandsCount}.`);
             this._notReadyCommandsQueue && this._notReadyCommandsQueue.forEach(queued => {
-                this.log.info(LOG_PREFIX + `Executing queued ${queued.name} command.`);
+                // this.log.info(LOG_PREFIX + `Executing queued ${queued.name} command.`);
                 queued.command().then(queued.resolve).catch(queued.reject);
             });
             // After the SDK is ready for the first time we'll stop queueing commands. This is just so we can keep handling BUR for them.
             this._notReadyCommandsQueue = undefined;
         });
         this.once('close', () => {
-            this.log.info(LOG_PREFIX + 'Redis connection closed.');
+            // this.log.info(LOG_PREFIX + 'Redis connection closed.');
         });
     }
     _setTimeoutWrappers() {
@@ -11868,16 +11882,19 @@ function redisAdapterWrapperFactory(redisOptions) {
 
     flushDb() {
       try {
-        redis.flushdb();
+        redis.flushall().then((status) => {
+          console.log('{}{}{}{}{}{}{}{}', status)
+        });
       } catch (error) {
         console.log('()()', error);
         return Promise.reject(false)
       }
+      return Promise.resolve();
     },
 
     connect() {
       const log = new Logger({
-        logLevel: 'INFO'
+        logLevel: 'NONE'
       });
       redis = new RedisAdapter(log, redisOptions);
       let retriesCount = 0;
@@ -11893,23 +11910,18 @@ function redisAdapterWrapperFactory(redisOptions) {
           }
         });
         redis.on('connect', () => {
-          res();
+          res(true);
         });
       });
     },
 
     close() {
-      return Promise.resolve(redis && redis.disconnect()); // close the connection
+      console.log(`disconnecting - instance id: ${redis.id}`);
+      return redis.quit();
+      // return Promise.resolve(redis && redis.quit()); // close the connection
     }
-
   };
 }
 
-// var inRedisService = redisAdapterWrapper({
-//   url: '127.0.0.1:6379'
-// });
-
-// var inRedisService = redisAdapterWrapper;
 module.exports = redisAdapterWrapperFactory;
-// module.exports.default = inRedisService;
 //# sourceMappingURL=inRedisStorage.cjs.map
