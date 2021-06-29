@@ -11883,10 +11883,8 @@ function redisAdapterWrapperFactory(redisOptions) {
     flushDb() {
       try {
         redis.flushall().then((status) => {
-          console.log('{}{}{}{}{}{}{}{}', status)
         });
       } catch (error) {
-        console.log('()()', error);
         return Promise.reject(false)
       }
       return Promise.resolve();
