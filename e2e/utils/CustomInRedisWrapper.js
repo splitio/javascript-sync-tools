@@ -11899,7 +11899,6 @@ function redisAdapterWrapperFactory(redisOptions) {
 
       return new Promise((res, rej) => {
         redis.on('error', e => {
-          console.log('Connecting to redis, attempt #', retriesCount);
           retriesCount++;
 
           if (retriesCount === 10) {
@@ -11914,7 +11913,6 @@ function redisAdapterWrapperFactory(redisOptions) {
     },
 
     close() {
-      console.log(`disconnecting - instance id: ${redis.id}`);
       return redis.quit();
       // return Promise.resolve(redis && redis.quit()); // close the connection
     }
