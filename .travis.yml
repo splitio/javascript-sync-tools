@@ -16,5 +16,5 @@ before_script:
 
 script:
   - npm run check
-  - npm run test
+  - npm run test:ci
   - npm run build
