@@ -11447,7 +11447,6 @@ class RedisAdapter extends ioredis {
         this._setTimeoutWrappers();
         this._setDisconnectWrapper();
         this.id = (Math.random().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5)).substring(0, 5);
-        console.log(`>>>> - ${this.id}`);
     }
     _listenToEvents() {
         this.once('ready', () => {
