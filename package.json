@@ -13,8 +13,8 @@
     "check:types": "tsc --noEmit",
     "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
     "json-server": "node ./e2e/server/server.js",
-    "test:unit": "jest --projects src/",
-    "test:e2e": "./scripts/check_redis.sh && jest --projects e2e/ --runInBand --forceExit",
+    "test:unit": "jest src/",
+    "test:e2e": "./scripts/check_redis.sh && jest e2e/ --runInBand --forceExit",
     "test:e2e:ci": "start-server-and-test 'json-server' 3000 'npm run test:e2e'",
     "test:ci": "npm run test:unit && npm run test:e2e:ci",
     "test": "npm run test:unit && npm run test:e2e"
