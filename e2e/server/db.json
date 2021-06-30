@@ -1175,5 +1175,10 @@
       "since": 1617053238061,
       "till": 1617053238061
     }
-  ]
+  ],
+  "version": {
+    "version": "0.0.1-SNAPSHOT-20210622-09",
+    "commitHash": "a249b81",
+    "region": "us-east-1"
+  }
 }
