@@ -81,6 +81,16 @@ export class SynchronizerManager {
       { getFetch: customFetch },
     );
   }
+
+  /**
+   * Function to check the health status of both Split and Events API.
+   *
+   * @returns {Promise<boolean>}
+   */
+  async _checkEndpointHealth(): Promise<boolean> {
+    return await this._splitApi.getSplitAPIHealthCheck() &&
+      await this._splitApi.getEventsAPIHealthCheck();
+  }
   /**
    * Function to set a storage. Returns a Promise that will never be rejected.
    *
@@ -153,6 +163,10 @@ export class SynchronizerManager {
    */
   async execute(): Promise<boolean> {
     console.log('# Synchronizer: Execute');
+
+    const areAPIsReady = await this._checkEndpointHealth();
+    if (!areAPIsReady) return false;
+    console.log('Split API and Events API ready.');
 
     const isStorageReady = await this.initializeStorages();
     if (!isStorageReady) return false;
