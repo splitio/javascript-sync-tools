@@ -1,5 +1,5 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
-import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
+import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
@@ -70,9 +70,9 @@ export class SynchronizerManager {
      * @returns {Promise<Response>}
      */
     const customFetch = () => {
-      // eslint-disable-next-line no-undef
-      return fetch as unknown as () => Promise<Response>;
+      return this._getFetch();
     };
+
     /**
      * The Split's HTTPclient, required to make the requests to the API.
      */
@@ -162,6 +162,7 @@ export class SynchronizerManager {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
+    if (this._getFetch() === undefined) return false;
     console.log('# Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
@@ -196,5 +197,23 @@ export class SynchronizerManager {
 
     console.log('# Synchronizer: Execution ended');
     return true;
+  }
+  /**
+   * Function to set the Node Fetch library to perform the requests. It can be provided throruh
+   * the NPM package, or the it tries to find any global Fetch function. In case
+   * there is no fetch globally, returns undefined.
+   *
+   * @returns {IFetch|undefined}
+   */
+  _getFetch(): IFetch | undefined {
+    let _fetch;
+    try {
+      _fetch = require('node-fetch');
+      // Handle node-fetch issue https://github.com/node-fetch/node-fetch/issues/1037
+      if (typeof _fetch !== 'function') _fetch = _fetch.default;
+    } catch (e) {
+      _fetch = typeof fetch === 'function' ? fetch : undefined;
+    }
+    return _fetch;
   }
 }
