@@ -88,7 +88,7 @@ export class SynchronizerManager {
    * @returns {Promise<boolean>}
    */
   async _checkEndpointHealth(): Promise<boolean> {
-    return await this._splitApi.getSplitAPIHealthCheck() &&
+    return await this._splitApi.getSdkAPIHealthCheck() &&
       await this._splitApi.getEventsAPIHealthCheck();
   }
   /**
