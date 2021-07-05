@@ -1,11 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import { SynchronizerManager } from '../src/manager';
 import { synchronizerSettingsValidator } from '../src/settings';
-import redisAdapterWrapperFactory from './utils/CustomInRedisWrapper';
+// import redisAdapterWrapperFactory from './utils/CustomInRedisWrapper';
 import { ICustomStorageWrapper }
   from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
+import redisAdapterWrapper from './utils/inRedisService';
 
 // @ts-ignore
 let _redisServer: ICustomStorageWrapper;
@@ -31,7 +32,7 @@ const createSynchroniser = () => {
       type: 'CUSTOM_TEST',
       prefix: PREFIX,
       // @ts-ignore
-      wrapper: redisAdapterWrapperFactory(REDIS_URL),
+      wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
@@ -44,9 +45,12 @@ const createSynchroniser = () => {
   return new SynchronizerManager(settings);
 };
 
+const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
+
 describe('Synchroniser e2e tests', () => {
   beforeAll(async (done) => {
-    _redisServer = redisAdapterWrapperFactory(REDIS_URL);
+    // @ts-ignore
+    _redisServer = _redisStorage;
     await _redisServer.connect();
 
     done();
