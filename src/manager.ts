@@ -1,5 +1,5 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
-import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
+import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
@@ -63,22 +63,13 @@ export class SynchronizerManager {
   constructor(settings: ISettingsInternal) {
     this._settings = settings;
     this._observer = impressionObserverSSFactory();
-    /**
-     * Function to wrapp whatever fetch the app is using.
-     * Todo: Check if this belongs here.
-     *
-     * @returns {Promise<Response>}
-     */
-    const customFetch = () => {
-      // eslint-disable-next-line no-undef
-      return fetch as unknown as () => Promise<Response>;
-    };
+
     /**
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
       settings,
-      { getFetch: customFetch },
+      { getFetch: SynchronizerManager._getFetch },
     );
   }
 
@@ -162,6 +153,10 @@ export class SynchronizerManager {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
+    if (SynchronizerManager._getFetch() === undefined) {
+      console.log('Global fetch API is not available.');
+      return false;
+    }
     console.log('# Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
@@ -196,5 +191,23 @@ export class SynchronizerManager {
 
     console.log('# Synchronizer: Execution ended');
     return true;
+  }
+  /**
+   * Function to set the Fetch function to perform the requests. It can be provided through
+   * the NPM package, or fallbacks to the global Fetch function if available. In case
+   * there is no fetch globally, returns undefined.
+   *
+   * @returns {IFetch|undefined}
+   */
+  static _getFetch(): IFetch | undefined {
+    let _fetch;
+    try {
+      _fetch = require('node-fetch');
+      // Handle node-fetch issue https://github.com/node-fetch/node-fetch/issues/1037
+      if (typeof _fetch !== 'function') _fetch = _fetch.default;
+    } catch (e) {
+      _fetch = typeof fetch === 'function' ? fetch : undefined;
+    }
+    return _fetch;
   }
 }
