@@ -153,7 +153,10 @@ export class SynchronizerManager {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-    if (SynchronizerManager._getFetch() === undefined) return false;
+    if (SynchronizerManager._getFetch() === undefined) {
+      console.log('Global fetch API is not available.');
+      return false;
+    }
     console.log('# Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
@@ -190,8 +193,8 @@ export class SynchronizerManager {
     return true;
   }
   /**
-   * Function to set the Node Fetch library to perform the requests. It can be provided throruh
-   * the NPM package, or the it tries to find any global Fetch function. In case
+   * Function to set the Fetch function to perform the requests. It can be provided through
+   * the NPM package, or fallbacks to the global Fetch function if available. In case
    * there is no fetch globally, returns undefined.
    *
    * @returns {IFetch|undefined}
