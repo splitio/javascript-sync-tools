@@ -63,22 +63,13 @@ export class SynchronizerManager {
   constructor(settings: ISettingsInternal) {
     this._settings = settings;
     this._observer = impressionObserverSSFactory();
-    /**
-     * Function to wrapp whatever fetch the app is using.
-     * Todo: Check if this belongs here.
-     *
-     * @returns {Promise<Response>}
-     */
-    const customFetch = () => {
-      return this._getFetch();
-    };
 
     /**
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
       settings,
-      { getFetch: customFetch },
+      { getFetch: SynchronizerManager._getFetch },
     );
   }
 
@@ -162,7 +153,7 @@ export class SynchronizerManager {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-    if (this._getFetch() === undefined) return false;
+    if (SynchronizerManager._getFetch() === undefined) return false;
     console.log('# Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
@@ -205,7 +196,7 @@ export class SynchronizerManager {
    *
    * @returns {IFetch|undefined}
    */
-  _getFetch(): IFetch | undefined {
+  static _getFetch(): IFetch | undefined {
     let _fetch;
     try {
       _fetch = require('node-fetch');

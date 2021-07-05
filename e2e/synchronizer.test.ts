@@ -1,7 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { SynchronizerManager } from '../src/manager';
 import { synchronizerSettingsValidator } from '../src/settings';
-// import redisAdapterWrapperFactory from './utils/CustomInRedisWrapper';
 import { ICustomStorageWrapper }
   from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
