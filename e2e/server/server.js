@@ -6,7 +6,6 @@ const middlewares = jsonServer.defaults();
 const PORT = 3000;
 
 server.use(jsonServer.rewriter({
-  '/api/*': '/$1',
   '/segmentChanges/:name\\?since=:since': '/segmentChanges?name=:name&since=:since',
 }));
 
@@ -17,8 +16,9 @@ function modifyResponseBody(req, res, next) {
   console.log(req.url);
 
   // To avoid Impressions and Events POSTS request processing.
-  if (req.url.match(/(testImpressions)|(events)/)) {
-    return next();
+  if (req.url.match(/(testImpressions)|(events)|(version)/)) {
+    // eslint-disable-next-line no-magic-numbers
+    return res.sendStatus(200);
   }
 
   var oldSend = res.send;

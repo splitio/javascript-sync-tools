@@ -21,6 +21,13 @@ describe('Manager creation and execution', () => {
     },
   });
 
+  describe('Synchronizer execution halt because APIs check failed', () => {
+    it('Fails to execute Synchronizer because APIs are not available', async () => {
+      const _manager = new SynchronizerManager(_settings);
+      expect(await _manager._checkEndpointHealth()).toBe(false);
+    });
+  });
+
   describe('Custom Storage initialization', () => {
     it('Instantiates the Synchronizer Manager and [SUCCESSFULLY] initializes Custom Storage', async () => {
       const _manager = new SynchronizerManager(_settings);
