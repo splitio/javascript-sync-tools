@@ -148,11 +148,12 @@ export class SynchronizerManager {
     return Promise.resolve(true);
   }
   /**
-   * Method to start the Synchronizer execution.
+   * Function to prepare for sync tasks. Checks for Fetch API availability and
+   * initialize Syncs and Storages.
    *
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
-  async execute(): Promise<boolean> {
+  async preExecute(): Promise<boolean> {
     if (SynchronizerManager._getFetch() === undefined) {
       console.log('Global fetch API is not available.');
       return false;
@@ -171,11 +172,59 @@ export class SynchronizerManager {
     if (!areSyncsReady) return false;
     console.log(' > Synchronizers components setup: Ready');
 
+    return true;
+  }
+  /**
+   * Function to wrap actions to perform after the sync tasks have been executed.
+   */
+  async postExecute(): Promise<void> {
+    await this._storage.destroy();
+  }
+  /**
+   * Method to start the Synchronizer execution.
+   *
+   * @param {executionMode} mode  Constant that define which mode/s the execution would run.
+   * @returns {boolean}
+   */
+  async execute(): Promise<boolean> {
+
+    // @ts-ignore @todo:check this setting type
+    const mode = this._settings.synchronizerMode || 'MODE_RUN_ALL';
+    const hasPreExecutionSucceded = await this.preExecute();
+    if (!hasPreExecutionSucceded) return false;
+
     console.log('# Syncronization tasks');
+    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') await this.executeSplitsAndSegments(false);
+    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
+      await this.executeImpressionsAndEvents(false);
+    }
+
+    this.postExecute();
+
+    console.log('# Synchronizer: Execution ended');
+    return true;
+  }
+  /**
+   * Function to wrap the execution of the Split and Segment's synchronizers.
+   *
+   * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
+   */
+  async executeSplitsAndSegments(standalone = true) {
+    if (standalone) await this.preExecute;
+
     const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
     console.log(` > Segments Synchronizer task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+  }
+  /**
+   * Function to wrap the execution of the Impressions and Event's synchronizers.
+   *
+   * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
+   */
+  async executeImpressionsAndEvents(standalone = true) {
+    if (standalone) await this.preExecute;
+
     const isEventsSyncReady = await this._eventsSynchronizer.synchroniseEvents();
     console.log(` > Events Synchronizer task:       ${isEventsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     const isImpressionsSyncReady = await this._impressionsSynchronizer.synchroniseImpressions();
@@ -187,10 +236,6 @@ export class SynchronizerManager {
         ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
       );
     }
-    await this._storage.destroy();
-
-    console.log('# Synchronizer: Execution ended');
-    return true;
   }
   /**
    * Function to set the Fetch function to perform the requests. It can be provided through
