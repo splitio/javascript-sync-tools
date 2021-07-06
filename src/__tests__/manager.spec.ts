@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { SynchronizerManager } from '../manager';
 import { synchronizerSettingsValidator } from '../settings';
 import InMemoryStorage from './customStorage/InMemoryStorage';
@@ -53,6 +54,51 @@ describe('Manager creation and execution', () => {
 
       const _manager = new SynchronizerManager(_settings);
       expect(await _manager.initializeStorages()).toBe(false);
+    });
+  });
+
+  describe('Synchronizer execution mode flow through setting definition', () => {
+    const _manager = new SynchronizerManager(_settings);
+
+    let executeSplitsAndSegmentsCallSpy: jest.SpyInstance;
+    let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
+
+    beforeAll(() => {
+      jest.spyOn(_manager, 'preExecute').mockImplementation(() => Promise.resolve(true));
+      jest.spyOn(_manager, 'postExecute').mockImplementation(() => Promise.resolve());
+      executeSplitsAndSegmentsCallSpy = jest.spyOn(_manager, 'executeSplitsAndSegments').mockImplementation(() => Promise.resolve());
+      executeImpressionsAndEventsCallSpy = jest.spyOn(_manager, 'executeImpressionsAndEvents').mockImplementation(() => Promise.resolve());
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('runs [ALL] Synchronizer tasks.', async () => {
+      // @ts-ignore
+      _manager._settings.synchronizerMode = 'MODE_RUN_ALL';
+
+      await _manager.execute();
+      expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
+      expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
+    });
+
+    it('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
+      // @ts-ignore
+      _manager._settings.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+
+      await _manager.execute();
+      expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
+      expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(0);
+    });
+
+    it('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
+      // @ts-ignore
+      _manager._settings.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+
+      await _manager.execute();
+      expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(0);
+      expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
     });
   });
 });
