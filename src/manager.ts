@@ -126,6 +126,8 @@ export class SynchronizerManager {
         this._splitApi.postEventsBulk,
         this._storage.events,
         this._settings.log,
+        // @ts-ignore
+        this._settings.synchronizerConfigs.eventsBatchSize,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,
@@ -165,7 +167,10 @@ export class SynchronizerManager {
     console.log('Split API and Events API ready.');
 
     const isStorageReady = await this.initializeStorages();
-    if (!isStorageReady) return false;
+    if (!isStorageReady) {
+      console.log('Custom Storage not ready. Run the cli with -d option for debugging information.');
+      return false;
+    }
     console.log(' > Storage setup:                  Ready');
 
     const areSyncsReady = await this.initializeSynchronizers();
@@ -183,13 +188,11 @@ export class SynchronizerManager {
   /**
    * Method to start the Synchronizer execution.
    *
-   * @param {executionMode} mode  Constant that define which mode/s the execution would run.
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-
     // @ts-ignore @todo:check this setting type
-    const mode = this._settings.synchronizerMode || 'MODE_RUN_ALL';
+    const mode = this._settings.synchronizerConfigs?.synchronizerMode || 'MODE_RUN_ALL';
     const hasPreExecutionSucceded = await this.preExecute();
     if (!hasPreExecutionSucceded) return false;
 

@@ -7,7 +7,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
 import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
-import { executionMode } from './types';
+import { SynchronizerConfigs } from './types';
 
 dotenv.config();
 
@@ -33,7 +33,12 @@ let _storagePrefix: string | undefined;
  * The reference to the provided Storage.
  */
 let customStorage: ICustomStorageWrapper;
-let synchronizerMode: executionMode = 'MODE_RUN_ALL';
+/**
+ * Object that contains Synchronizer's specific configs.
+ */
+const synchronizerConfigs: SynchronizerConfigs = {
+  synchronizerMode: 'MODE_RUN_ALL',
+};
 
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
@@ -62,6 +67,8 @@ const yargv = yargs(hideBin(argv))
   .nargs('p', 1)
   .alias('c', 'customRun')
   .nargs('c', 1)
+  .alias('n', 'eventsBatchSize')
+  .nargs('n', 1)
   .alias('i', 'impressionsDebug')
   .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .describe('m', 'Set config mode: json | env')
@@ -71,7 +78,8 @@ const yargv = yargs(hideBin(argv))
   .describe('r', 'Set the Split API URL')
   .describe('e', 'Set the Split Events API URL')
   .describe('p', 'Set the Storage\'s prefix')
-  .describe('C', 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions')
+  .describe('c', 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions')
+  .describe('n', 'Set a batch size amount to process Events')
   .describe('i', 'Set the Impressions Mode debug enabled')
   .demandOption(['s'])
   .help('h')
@@ -93,6 +101,8 @@ const {
   STORAGE_PREFIX,
   customRun,
   impressionsDebug,
+  eventsBatchSize,
+  EVENTS_BATCH_SIZE,
 } = yargv;
 
 console.log(` > Synchronizer's configs from: ${mode || 'CLI params'}`);
@@ -103,32 +113,33 @@ switch (mode) {
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
+    synchronizerConfigs.eventsBatchSize = EVENTS_BATCH_SIZE as number;
     break;
   case 'env':
     _apikey = env.APIKEY;
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
+    synchronizerConfigs.eventsBatchSize = env.EVENTS_BATCH_SIZE as unknown as number;
     break;
   default:
     _apikey = apikey as string;
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
+    synchronizerConfigs.eventsBatchSize = eventsBatchSize as number;
     break;
 }
 
-console.log('customRun', customRun);
-
 switch (customRun) {
   case 'splitsAndSegments':
-    synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+    synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
     break;
   case 'eventsAndImpressions':
-    synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+    synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
     break;
   case undefined:
-    synchronizerMode = 'MODE_RUN_ALL';
+    synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
     break;
   default:
     console.log(`Error: invalid custom execution parameter: ${customRun}`);
@@ -155,9 +166,7 @@ const settings = synchronizerSettingsValidator({
     authorizationKey: _apikey,
   },
   urls: {
-    // CDN having all the information for your environment
     sdk: _sdkApiUrl,
-    // Storage for your SDK events
     events: _eventsApiUrl,
   },
   storage: {
@@ -168,7 +177,7 @@ const settings = synchronizerSettingsValidator({
   sync: {
     impressionsMode: impressionsDebug ? 'DEBUG' : 'OPTIMIZED',
   },
-  synchronizerMode,
+  synchronizerConfigs,
   debug: debug || false,
   streamingEnabled: false,
 });

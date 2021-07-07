@@ -6,4 +6,13 @@ export type ImpressionsDTOWithMetadata = {
   impression: ImpressionDTO;
 }
 
-export type executionMode = 'MODE_RUN_ALL' | 'MODE_RUN_EVENTS_IMPRESSIONS' | 'MODE_RUN_SPLIT_SEGMENTS';
+export type ExecutionMode = 'MODE_RUN_ALL' | 'MODE_RUN_EVENTS_IMPRESSIONS' | 'MODE_RUN_SPLIT_SEGMENTS';
+
+/**
+ * Type for specific Synchronizer's configs.
+ */
+export type SynchronizerConfigs = {
+  synchronizerMode: ExecutionMode;
+  eventsBatchSize?: number;
+  eventsRequestRetriesAmount?: number;
+}
