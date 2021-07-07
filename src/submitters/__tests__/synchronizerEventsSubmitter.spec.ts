@@ -7,15 +7,21 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
   const _postEventsMock = jest.fn(() => Promise.resolve());
   const _eventsCacheMock = {
     popNWithMetadata: jest.fn(),
+    count: jest.fn(),
   };
   const _fakeLogger = { error: () => {} };
 
   // @ts-ignore
   const _eventsSubmitter = eventsSubmitterFactory(_postEventsMock, _eventsCacheMock);
 
+  beforeEach(() => {
+    _eventsCacheMock.count.mockReturnValue(Promise.resolve(0));
+  });
+
   afterEach(() => {
     _postEventsMock.mockClear();
     _eventsCacheMock.popNWithMetadata.mockClear();
+    _eventsCacheMock.count.mockClear();
   });
 
   test('Pop 3 events from Storage and make an Events POST', async () => {
@@ -94,5 +100,27 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
     expect(_failPostEventsMock).toBeCalledWith(JSON.stringify(_eventsList), _metadata);
     expect(_failPostEventsMock).toBeCalledTimes(3);
     expect(res).toBe(false);
+  });
+
+  test('Multiple runs [2] times, until storage count is 0', async () => {
+    _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve([]));
+    _eventsCacheMock.count
+      .mockReturnValueOnce(Promise.resolve(3))
+      .mockReturnValue(Promise.resolve(0));
+
+    const res = await _eventsSubmitter();
+
+    expect(_eventsCacheMock.popNWithMetadata).toBeCalledTimes(2);
+    expect(res).toBe(true);
+  });
+
+  test('Define specific batch size', async () => {
+    _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve([]));
+
+    const res = await _eventsSubmitter(30);
+
+    expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(30);
+    expect(_eventsCacheMock.popNWithMetadata).toBeCalledTimes(1);
+    expect(res).toBe(true);
   });
 });
