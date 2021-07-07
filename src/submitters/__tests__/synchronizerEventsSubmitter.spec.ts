@@ -1,4 +1,4 @@
-/* eslint-disable max-len, no-magic-numbers */
+/* eslint-disable max-len, no-magic-numbers, jsdoc/require-jsdoc */
 import { metadataToHeaders } from '../metadataUtils';
 import { eventsSubmitterFactory } from '../synchronizerEventsSubmitter';
 import { getMultipleEventsSameMetadata } from './eventsMockUtils';
@@ -8,6 +8,7 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
   const _eventsCacheMock = {
     popNWithMetadata: jest.fn(),
   };
+  const _fakeLogger = { error: () => {} };
 
   // @ts-ignore
   const _eventsSubmitter = eventsSubmitterFactory(_postEventsMock, _eventsCacheMock);
@@ -76,4 +77,22 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
 
       expect(_postEventsMock).toBeCalledTimes(6);
     });
+
+  test('Abort Sync tasks after all [3] set retries attempts fail', async () => {
+    const _failPostEventsMock = jest.fn(() => Promise.reject());
+    // @ts-ignore
+    const _eventsSubmitterToFail = eventsSubmitterFactory(_failPostEventsMock, _eventsCacheMock, _fakeLogger);
+
+    const _eventsMock = getMultipleEventsSameMetadata(3);
+    const _metadata = metadataToHeaders(_eventsMock[0].m);
+    const _eventsList = _eventsMock.map(i => i.e);
+    _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_eventsMock)));
+
+    const res = await _eventsSubmitterToFail();
+
+    expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(1000);
+    expect(_failPostEventsMock).toBeCalledWith(JSON.stringify(_eventsList), _metadata);
+    expect(_failPostEventsMock).toBeCalledTimes(3);
+    expect(res).toBe(false);
+  });
 });
