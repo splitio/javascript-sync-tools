@@ -49,14 +49,16 @@ function retry(
  * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
  * @param {ILogger}           logger          The Synchronizer's Logger.
+ * @param {number}            batchSize       The amount of elements to pop from Storage.
  * @returns {() => Promise<boolean>}
  */
 export function eventsSubmitterFactory(
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheAsync,
   logger: ILogger,
+  batchSize?: number
   // @todo: Add retry param.
-): (batchSize?: number) => Promise<boolean> {
+): () => Promise<boolean> {
   /**
    * Function to wrap the POST requests and retries attempt.
    *
@@ -106,7 +108,7 @@ export function eventsSubmitterFactory(
           }
         }
         const count = await eventsCache.count();
-        if (count !== 0) processEventsBatch();
+        if (count !== 0) await processEventsBatch(batchSize);
         return Promise.resolve(true);
       })
       .catch((e) => {
@@ -115,5 +117,5 @@ export function eventsSubmitterFactory(
       });
   }
 
-  return (batchSize?: number) => processEventsBatch(batchSize);
+  return () => processEventsBatch(batchSize);
 }

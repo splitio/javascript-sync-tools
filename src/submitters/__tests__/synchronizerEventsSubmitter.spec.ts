@@ -114,13 +114,18 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
     expect(res).toBe(true);
   });
 
-  test('Define specific batch size', async () => {
+  test('Define specific batch size of [30] Events from storage', async () => {
+    // @ts-ignore
+    const _customEventsSubmitter = eventsSubmitterFactory(_postEventsMock, _eventsCacheMock, _fakeLogger, 30);
     _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve([]));
 
-    const res = await _eventsSubmitter(30);
+    _eventsCacheMock.count
+      .mockReturnValueOnce(Promise.resolve(30))
+      .mockReturnValue(Promise.resolve(0));
+    const res = await _customEventsSubmitter();
 
     expect(_eventsCacheMock.popNWithMetadata).toBeCalledWith(30);
-    expect(_eventsCacheMock.popNWithMetadata).toBeCalledTimes(1);
+    expect(_eventsCacheMock.popNWithMetadata).toBeCalledTimes(2);
     expect(res).toBe(true);
   });
 });
