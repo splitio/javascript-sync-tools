@@ -18,7 +18,7 @@ const config = {
 
 /**
  * Function to run an example SDK in Consumer mode, in order to generate Events and Impressions
- * to be then processed by the Synchroniser.
+ * to be then processed by the Synchronizer.
  *
  * @returns {Promise}
  */
