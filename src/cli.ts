@@ -67,7 +67,7 @@ const yargv = yargs(hideBin(argv))
   .nargs('p', 1)
   .alias('c', 'customRun')
   .nargs('c', 1)
-  .alias('n', 'eventsBatchSize')
+  .alias('n', 'eventsPerPost')
   .nargs('n', 1)
   .alias('i', 'impressionsDebug')
   .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
@@ -79,7 +79,7 @@ const yargv = yargs(hideBin(argv))
   .describe('e', 'Set the Split Events API URL')
   .describe('p', 'Set the Storage\'s prefix')
   .describe('c', 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions')
-  .describe('n', 'Set a batch size amount to process Events')
+  .describe('n', 'Set the number of events to send in a POST request')
   .describe('i', 'Set the Impressions Mode debug enabled')
   .demandOption(['s'])
   .help('h')
@@ -101,7 +101,7 @@ const {
   STORAGE_PREFIX,
   customRun,
   impressionsDebug,
-  eventsBatchSize,
+  eventsPerPost,
   EVENTS_BATCH_SIZE,
 } = yargv;
 
@@ -113,21 +113,21 @@ switch (mode) {
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
-    synchronizerConfigs.eventsBatchSize = EVENTS_BATCH_SIZE as number;
+    synchronizerConfigs.eventsPerPost = EVENTS_BATCH_SIZE as number;
     break;
   case 'env':
     _apikey = env.APIKEY;
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
-    synchronizerConfigs.eventsBatchSize = env.EVENTS_BATCH_SIZE as unknown as number;
+    synchronizerConfigs.eventsPerPost = env.EVENTS_BATCH_SIZE as unknown as number;
     break;
   default:
     _apikey = apikey as string;
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
-    synchronizerConfigs.eventsBatchSize = eventsBatchSize as number;
+    synchronizerConfigs.eventsPerPost = eventsPerPost as number;
     break;
 }
 

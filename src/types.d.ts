@@ -13,6 +13,6 @@ export type ExecutionMode = 'MODE_RUN_ALL' | 'MODE_RUN_EVENTS_IMPRESSIONS' | 'MO
  */
 export type SynchronizerConfigs = {
   synchronizerMode: ExecutionMode;
-  eventsBatchSize?: number;
+  eventsPerPost?: number;
   eventsRequestRetriesAmount?: number;
 }

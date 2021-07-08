@@ -127,7 +127,7 @@ export class SynchronizerManager {
         this._storage.events,
         this._settings.log,
         // @ts-ignore
-        this._settings.synchronizerConfigs.eventsBatchSize,
+        this._settings.synchronizerConfigs.eventsPerPost,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,
