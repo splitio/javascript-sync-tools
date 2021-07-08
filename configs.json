@@ -1,0 +1,7 @@
+{
+	"APIKEY": "A_VALID_STAGING_APIKEY",
+	"API_URL": "https://sdk.split-stage.io/api",
+	"EVENTS_API_URL": "https://events.split-stage.io/api",
+	"STORAGE_PREFIX:": "storagePrefix",
+  "EVENTS_PER_POST": 300
+}
