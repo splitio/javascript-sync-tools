@@ -102,7 +102,7 @@ const {
   customRun,
   impressionsDebug,
   eventsPerPost,
-  EVENTS_BATCH_SIZE,
+  EVENTS_PER_POST,
 } = yargv;
 
 console.log(` > Synchronizer's configs from: ${mode || 'CLI params'}`);
@@ -113,14 +113,14 @@ switch (mode) {
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
-    synchronizerConfigs.eventsPerPost = EVENTS_BATCH_SIZE as number;
+    synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
     break;
   case 'env':
     _apikey = env.APIKEY;
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
-    synchronizerConfigs.eventsPerPost = env.EVENTS_BATCH_SIZE as unknown as number;
+    synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
     break;
   default:
     _apikey = apikey as string;
