@@ -13,7 +13,7 @@ const EVENTS_AMOUNT_DEFAULT = 1000;
 /**
  * Amount of attempts to retry a POST request action.
  */
-const ATTEMPTS_NUMBER = 3;
+const MAX_RETRIES = 3;
 /**
  * Maximum number of bytes to be fetched from cache before posting to the backend.
  */
@@ -50,14 +50,15 @@ function retry(
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
  * @param {ILogger}           logger          The Synchronizer's Logger.
  * @param {number}            batchSize       The amount of elements to pop from Storage.
+ * @param {number}            maxRetries      The amount of retries attempt to perform the POST request.
  * @returns {() => Promise<boolean>}
  */
 export function eventsSubmitterFactory(
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheAsync,
   logger: ILogger,
-  batchSize?: number
-  // @todo: Add retry param.
+  batchSize?: number,
+  maxRetries?: number,
 ): () => Promise<boolean> {
   /**
    * Function to wrap the POST requests and retries attempt.
@@ -68,7 +69,7 @@ export function eventsSubmitterFactory(
   async function tryPostEventsBulk(eventsQueue: SplitIO.EventData[], metadataHeaders: Record<string, string>) {
     await retry(
       () => postEventsBulk(JSON.stringify(eventsQueue), metadataHeaders),
-      ATTEMPTS_NUMBER
+      maxRetries || MAX_RETRIES
     );
   }
   /**

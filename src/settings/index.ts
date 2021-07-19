@@ -1,3 +1,4 @@
+import { isNaNNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
 import { defaults } from './defaults';
@@ -23,5 +24,15 @@ const params = {
  * @returns {ISettingsInternal}
  */
 export function synchronizerSettingsValidator(config: any) {
+  const { eventsPerPost, maxRetries } = config.synchronizerConfigs;
+
+  if (isNaNNumber(eventsPerPost) || maxRetries <= 0 ) {
+    config.log.warn('EVENTS_PER_POST must be a positive integer number. Using default value instead.');
+  }
+
+  if (isNaNNumber(maxRetries) || maxRetries <= 0 ) {
+    config.log.warn('MAX_RETRIES must be a positive integer number. Using default values instead.');
+  }
+
   return settingsValidation(config, params);
 }
