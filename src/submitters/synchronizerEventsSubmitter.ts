@@ -15,10 +15,6 @@ const EVENTS_AMOUNT_DEFAULT = 1000;
  */
 const MAX_RETRIES = 3;
 /**
- * Amount of attempts to retry a POST request action.
- */
-const ATTEMPTS_NUMBER = 3;
-/**
  * Maximum number of bytes to be fetched from cache before posting to the backend.
  */
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -96,7 +92,7 @@ export function eventsSubmitterFactory(
           while (currentMetadataEventsQueue.length > 0) {
             const currentEvent = currentMetadataEventsQueue.shift() as StoredEventWithMetadata;
             const currentEventSize = JSON.stringify(currentEvent).length;
-            
+
             // Case when the Queue size is already full.
             if ((eventsQueueSize + currentEventSize) > MAX_QUEUE_BYTE_SIZE) {
               await tryPostEventsBulk(eventsQueue, metadataToHeaders(currentEvent.m));
