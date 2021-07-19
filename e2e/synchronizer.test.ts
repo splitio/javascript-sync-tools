@@ -7,6 +7,7 @@ import { ICustomStorageWrapper }
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
 import redisAdapterWrapper from './utils/inRedisService';
+import { SynchronizerConfigs } from './types';
 
 // @ts-ignore
 let _redisServer: ICustomStorageWrapper;
@@ -17,6 +18,9 @@ let _redisServer: ICustomStorageWrapper;
  * @returns {SynchronizerManager}
  */
 const createSynchronizer = () => {
+  const synchronizerConfigs: SynchronizerConfigs = {
+    synchronizerMode: 'MODE_RUN_ALL',
+  };
   /**
    * Settings creation.
    */
@@ -37,7 +41,7 @@ const createSynchronizer = () => {
     sync: {
       impressionsMode: 'OPTIMIZED',
     },
-    synchronizerMode: 'MODE_RUN_ALL',
+    synchronizerConfigs,
     logger: 'NONE',
     streamingEnabled: false,
   });
@@ -137,7 +141,7 @@ describe('Synchronizer - only Splits & Segments mode', () => {
   beforeAll(async (done) => {
     manager = await createSynchronizer();
     // @ts-ignore
-    manager._settings.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+    manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
     await manager.initializeStorages();
     await manager.initializeSynchronizers();
     executeSplitsAndSegmentsCallSpy = jest.spyOn(manager, 'executeSplitsAndSegments');
@@ -173,7 +177,7 @@ describe('Synchronizer - only Events & Impressions', () => {
   beforeAll(async (done) => {
     manager = await createSynchronizer();
     // @ts-ignore
-    manager._settings.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+    manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
     await manager.initializeStorages();
     await manager.initializeSynchronizers();
     executeSplitsAndSegmentsCallSpy = jest.spyOn(manager, 'executeSplitsAndSegments');

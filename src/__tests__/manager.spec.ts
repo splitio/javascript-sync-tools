@@ -15,6 +15,7 @@ describe('Manager creation and execution', () => {
       // Storage for your SDK events
       events: 'https://fake.events.split.io/api',
     },
+    synchronizerConfigs: {},
     storage: {
       type: 'CUSTOM',
       prefix: 'InMemoryWrapper',
@@ -76,7 +77,7 @@ describe('Manager creation and execution', () => {
 
     it('runs [ALL] Synchronizer tasks.', async () => {
       // @ts-ignore
-      _manager._settings.synchronizerMode = 'MODE_RUN_ALL';
+      _manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
 
       await _manager.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
@@ -85,7 +86,7 @@ describe('Manager creation and execution', () => {
 
     it('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
       // @ts-ignore
-      _manager._settings.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      _manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
 
       await _manager.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
@@ -94,7 +95,7 @@ describe('Manager creation and execution', () => {
 
     it('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
       // @ts-ignore
-      _manager._settings.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      _manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
 
       await _manager.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(0);
