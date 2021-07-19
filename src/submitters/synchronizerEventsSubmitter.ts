@@ -46,12 +46,11 @@ function retry(
  * events from the Storage, process and group by Metadata and/or max bundle size, and finally push
  * to Split's BE services. The result of this method is always a promise that will never be rejected.
  *
- * @param {IPostEventsBulk}   postEventsBulk              The Split's HTTPClient API to perform the POST request.
- * @param {IEventsCacheAsync} eventsCache                 The Events storage Cache from where to retrieve the
- *                                                        Events data.
- * @param {ILogger}           logger                      The Synchronizer's Logger.
- * @param {number}            batchSize                   The amount of elements to pop from Storage.
- * @param {number}            eventsRequestRetriesAmount  The amount of elements to pop from Storage.
+ * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
+ * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
+ * @param {ILogger}           logger          The Synchronizer's Logger.
+ * @param {number}            batchSize       The amount of elements to pop from Storage.
+ * @param {number}            maxRetries      The amount of retries attempt to perform the POST request.
  * @returns {() => Promise<boolean>}
  */
 export function eventsSubmitterFactory(
@@ -59,7 +58,7 @@ export function eventsSubmitterFactory(
   eventsCache: IEventsCacheAsync,
   logger: ILogger,
   batchSize?: number,
-  eventsRequestRetriesAmount?: number,
+  maxRetries?: number,
 ): () => Promise<boolean> {
   /**
    * Function to wrap the POST requests and retries attempt.
@@ -70,7 +69,7 @@ export function eventsSubmitterFactory(
   async function tryPostEventsBulk(eventsQueue: SplitIO.EventData[], metadataHeaders: Record<string, string>) {
     await retry(
       () => postEventsBulk(JSON.stringify(eventsQueue), metadataHeaders),
-      eventsRequestRetriesAmount || ATTEMPTS_NUMBER
+      maxRetries || ATTEMPTS_NUMBER
     );
   }
   /**
