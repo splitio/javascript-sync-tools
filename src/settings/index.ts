@@ -18,20 +18,22 @@ const params = {
 };
 
 /**
- * Returning function with .
+ * Function to validate SDK settings and Synchronizer configs.
  *
  * @param {any} config  Object with the keys and values for instatiating a SettingsInternal object.
  * @returns {ISettingsInternal}
  */
 export function synchronizerSettingsValidator(config: any) {
-  const { eventsPerPost, maxRetries } = config.synchronizerConfigs;
+  let { eventsPerPost, maxRetries } = config.synchronizerConfigs;
 
-  if (isNaNNumber(eventsPerPost) || maxRetries <= 0 ) {
-    config.log.warn('EVENTS_PER_POST must be a positive integer number. Using default value instead.');
+  if (eventsPerPost && isNaNNumber(eventsPerPost) || eventsPerPost <= 0 ) {
+    console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
+    config.synchronizerConfigs.eventsPerPost = undefined;
   }
 
-  if (isNaNNumber(maxRetries) || maxRetries <= 0 ) {
-    config.log.warn('MAX_RETRIES must be a positive integer number. Using default values instead.');
+  if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0) ) {
+    console.log('MAX_RETRIES parameter must be a positive integer number. Using default values instead.');
+    config.synchronizerConfigs.maxRetries = undefined;
   }
 
   return settingsValidation(config, params);

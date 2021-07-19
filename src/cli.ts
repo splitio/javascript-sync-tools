@@ -9,6 +9,8 @@ import dotenv from 'dotenv';
 import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { SynchronizerConfigs } from './types';
 
+type CustomModeOption = 'splitsAndSegments' | 'eventsAndImpressions' | undefined;
+
 dotenv.config();
 
 console.log('# Synchronizer: Initialization');
@@ -40,6 +42,7 @@ const synchronizerConfigs: SynchronizerConfigs = {
   synchronizerMode: 'MODE_RUN_ALL',
 };
 
+// @todo: refactor param alias and args to be all wrapped under the `options` function.
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
   .command('sync', 'Start synchronising tasks.')
@@ -51,40 +54,80 @@ const yargv = yargs(hideBin(argv))
   )
   .example('$0 -m env [...] -d', '| Set Debug Logging enabled')
   .example('$0 -m env [...] -i', '| Set Impressions Mode Debug mode')
-  .alias('s', 'storage')
-  .nargs('s', 1)
-  .alias('m', 'mode')
-  .nargs('m', 1)
-  .alias('d', 'debug')
-  .nargs('d', 0)
-  .alias('k', 'apikey')
-  .nargs('k', 1)
-  .alias('r', 'apiUrl')
-  .nargs('r', 1)
-  .alias('e', 'eventsApiUrl')
-  .nargs('e', 1)
-  .alias('p', 'prefix')
-  .nargs('p', 1)
-  .alias('c', 'customRun')
-  .nargs('c', 1)
-  .alias('n', 'eventsPerPost')
-  .nargs('n', 1)
-  .alias('i', 'impressionsDebug')
+  .options({
+    c: {
+      alias: 'customRun',
+      type: 'string',
+      description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
+      choices: ['splitsAndSegments', 'eventsAndImpressions'],
+    },
+    s: {
+      alias: 'storage',
+      demandOption: true,
+      describe: 'Path to the JS file exposing the Storage API',
+      type: 'string',
+      nargs: 1,
+    },
+    d: {
+      alias: 'debug',
+      describe: 'Set debug Logger enable',
+      type: 'string',
+      nargs: 0,
+    },
+    k: {
+      alias: 'apikey',
+      describe: 'Set the apikey',
+      type: 'string',
+      nargs: 1,
+    },
+    r: {
+      alias: 'apiUrl',
+      describe: 'Set the Split API URL',
+      type: 'string',
+      nargs: 1,
+    },
+    e: {
+      alias: 'eventsApiUrl',
+      describe: 'Set the Split Events API URL',
+      type: 'string',
+      nargs: 1,
+    },
+    m: {
+      alias: 'mode',
+      type: 'string',
+      description: 'Set config mode: json | env',
+      choices: ['env', 'json'],
+      nargs: 1,
+    },
+    p: {
+      alias: 'prefix',
+      describe: 'Set the Storage\'s prefix',
+      type: 'string',
+      nargs: 1,
+    },
+    n: {
+      alias: 'eventsPerPost',
+      description: 'Set the number of events to send in a POST request',
+      nargs: 1,
+    },
+    t: {
+      alias: 'maxRetries',
+      description: 'Set the number of retries attempt perform an Event\'s a POST request',
+      nargs: 1,
+    },
+    i: {
+      alias: 'impressionsMode',
+      type: 'string',
+      description: 'This configuration defines how impressions are queued: optimized | debug',
+      choices: ['optimized', 'debug'],
+      nargs: 1,
+    },
+  })
   .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
-  .describe('m', 'Set config mode: json | env')
-  .describe('s', 'Path to the JS file exposing the Storage API')
-  .describe('d', 'Set debug Logger enable')
-  .describe('k', 'Set the apikey')
-  .describe('r', 'Set the Split API URL')
-  .describe('e', 'Set the Split Events API URL')
-  .describe('p', 'Set the Storage\'s prefix')
-  .describe('c', 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions')
-  .describe('n', 'Set the number of events to send in a POST request')
-  .describe('i', 'Set the Impressions Mode debug enabled')
   .demandOption(['s'])
   .help('h')
   .alias('h', 'help')
-  .epilog('copyright 2021')
+  .epilog(`copyright ${new Date().getFullYear()}`)
   .argv;
 
 const {
@@ -100,12 +143,32 @@ const {
   prefix,
   STORAGE_PREFIX,
   customRun,
-  impressionsDebug,
+  CUSTOM_RUN,
+  impressionsMode,
   eventsPerPost,
+  maxRetries,
+  MAX_RETRIES,
   EVENTS_PER_POST,
 } = yargv;
 
 console.log(` > Synchronizer's configs from: ${mode || 'CLI params'}`);
+/**
+ * Function to set the Synchronizer Execution Mode.
+ *
+ * @param {CustomModeOption} _customRun  Option provided by the CLI or config (env|json).
+ */
+const setCustomRun = (_customRun: CustomModeOption | undefined) => {
+  switch (_customRun) {
+    case 'splitsAndSegments':
+      synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      break;
+    case 'eventsAndImpressions':
+      synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      break;
+    default:
+      synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
+  }
+};
 
 switch (mode) {
   case 'json':
@@ -114,6 +177,8 @@ switch (mode) {
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
+    synchronizerConfigs.maxRetries= MAX_RETRIES as number;
+    setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
   case 'env':
     _apikey = env.APIKEY;
@@ -121,6 +186,8 @@ switch (mode) {
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
+    synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
+    setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
   default:
     _apikey = apikey as string;
@@ -128,22 +195,9 @@ switch (mode) {
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
+    synchronizerConfigs.maxRetries = maxRetries as number;
+    setCustomRun(customRun as CustomModeOption);
     break;
-}
-
-switch (customRun) {
-  case 'splitsAndSegments':
-    synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
-    break;
-  case 'eventsAndImpressions':
-    synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
-    break;
-  case undefined:
-    synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
-    break;
-  default:
-    console.log(`Error: invalid custom execution parameter: ${customRun}`);
-    exit(0);
 }
 
 try {
@@ -175,7 +229,8 @@ const settings = synchronizerSettingsValidator({
     wrapper: customStorage,
   },
   sync: {
-    impressionsMode: impressionsDebug ? 'DEBUG' : 'OPTIMIZED',
+    // @ts-ignore
+    impressionsMode: impressionsMode?.toUpperCase() || 'OPTIMIZED',
   },
   synchronizerConfigs,
   debug: debug || false,
