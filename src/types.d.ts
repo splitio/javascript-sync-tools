@@ -5,3 +5,5 @@ export type ImpressionsDTOWithMetadata = {
   metadata: IMetadata;
   impression: ImpressionDTO;
 }
+
+export type executionMode = 'MODE_RUN_ALL' | 'MODE_RUN_EVENTS_IMPRESSIONS' | 'MODE_RUN_SPLIT_SEGMENTS';

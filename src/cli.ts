@@ -7,6 +7,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
 import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
+import { executionMode } from './types';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ let _storagePrefix: string | undefined;
  * The reference to the provided Storage.
  */
 let customStorage: ICustomStorageWrapper;
+let synchronizerMode: executionMode = 'MODE_RUN_ALL';
 
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
@@ -58,6 +60,8 @@ const yargv = yargs(hideBin(argv))
   .nargs('e', 1)
   .alias('p', 'prefix')
   .nargs('p', 1)
+  .alias('c', 'customRun')
+  .nargs('c', 1)
   .alias('i', 'impressionsDebug')
   .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .describe('m', 'Set config mode: json | env')
@@ -67,6 +71,7 @@ const yargv = yargs(hideBin(argv))
   .describe('r', 'Set the Split API URL')
   .describe('e', 'Set the Split Events API URL')
   .describe('p', 'Set the Storage\'s prefix')
+  .describe('C', 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions')
   .describe('i', 'Set the Impressions Mode debug enabled')
   .demandOption(['s'])
   .help('h')
@@ -86,6 +91,7 @@ const {
   debug,
   prefix,
   STORAGE_PREFIX,
+  customRun,
   impressionsDebug,
 } = yargv;
 
@@ -110,6 +116,23 @@ switch (mode) {
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
     break;
+}
+
+console.log('customRun', customRun);
+
+switch (customRun) {
+  case 'splitsAndSegments':
+    synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+    break;
+  case 'eventsAndImpressions':
+    synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+    break;
+  case undefined:
+    synchronizerMode = 'MODE_RUN_ALL';
+    break;
+  default:
+    console.log(`Error: invalid custom execution parameter: ${customRun}`);
+    exit(0);
 }
 
 try {
@@ -145,6 +168,7 @@ const settings = synchronizerSettingsValidator({
   sync: {
     impressionsMode: impressionsDebug ? 'DEBUG' : 'OPTIMIZED',
   },
+  synchronizerMode,
   debug: debug || false,
   streamingEnabled: false,
 });

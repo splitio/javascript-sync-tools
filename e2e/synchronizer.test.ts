@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable no-magic-numbers */
 import { SynchronizerManager } from '../src/manager';
 import { synchronizerSettingsValidator } from '../src/settings';
@@ -11,11 +12,11 @@ import redisAdapterWrapper from './utils/inRedisService';
 let _redisServer: ICustomStorageWrapper;
 
 /**
- * Function to create a Synchroniser instance/task.
+ * Function to create a Synchronizer instance/task.
  *
  * @returns {SynchronizerManager}
  */
-const createSynchroniser = () => {
+const createSynchronizer = () => {
   /**
    * Settings creation.
    */
@@ -36,7 +37,7 @@ const createSynchroniser = () => {
     sync: {
       impressionsMode: 'OPTIMIZED',
     },
-    // debug: true,
+    synchronizerMode: 'MODE_RUN_ALL',
     logger: 'NONE',
     streamingEnabled: false,
   });
@@ -46,7 +47,7 @@ const createSynchroniser = () => {
 
 const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
 
-describe('Synchroniser e2e tests', () => {
+describe('Synchronizer e2e tests', () => {
   beforeAll(async (done) => {
     // @ts-ignore
     _redisServer = _redisStorage;
@@ -60,19 +61,9 @@ describe('Synchroniser e2e tests', () => {
     done();
   });
 
-  // describe('Check that Redis DB is empty', () => {
-  //   it('it flushes the REDIS DB', async () => {
-  //     // @ts-ignore
-  //     await _redisServer.flushDb();
-  //     const keys = await _redisServer.getKeysByPrefix('*');
-
-  //     expect([]).toHaveLength(0);
-  //   });
-  // });
-
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
     beforeAll(async (done) => {
-      const manager = await createSynchroniser();
+      const manager = await createSynchronizer();
       await manager.initializeStorages();
       await manager.initializeSynchronizers();
       await manager.execute();
@@ -115,7 +106,7 @@ describe('Synchroniser e2e tests', () => {
 
   describe('Runs Synchronizer a [SECOND] time', () => {
     beforeAll(async () => {
-      const manager = await createSynchroniser();
+      const manager = await createSynchronizer();
       await manager.initializeStorages();
       await manager.initializeSynchronizers();
       await manager.execute();
@@ -138,3 +129,74 @@ describe('Synchroniser e2e tests', () => {
   });
 });
 
+describe('Synchronizer - only Splits & Segments mode', () => {
+  let manager: SynchronizerManager;
+  let executeSplitsAndSegmentsCallSpy;
+  let executeImpressionsAndEventsCallSpy;
+
+  beforeAll(async (done) => {
+    manager = await createSynchronizer();
+    // @ts-ignore
+    manager._settings.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+    await manager.initializeStorages();
+    await manager.initializeSynchronizers();
+    executeSplitsAndSegmentsCallSpy = jest.spyOn(manager, 'executeSplitsAndSegments');
+    executeImpressionsAndEventsCallSpy = jest.spyOn(manager, 'executeImpressionsAndEvents');
+    await manager.execute();
+
+    // @ts-ignore
+    _redisServer = _redisStorage;
+    await _redisServer.connect();
+
+    done();
+  });
+
+  it('executes Splits & Segments Producer Sync tasks', () => {
+    expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
+  });
+
+  it('won\'t execute Events & Impressions Consumer Sync tasks', () => {
+    expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(0);
+  });
+
+  afterAll(async (done) => {
+    await _redisServer.close();
+    done();
+  });
+});
+
+describe('Synchronizer - only Events & Impressions', () => {
+  let manager: SynchronizerManager;
+  let executeSplitsAndSegmentsCallSpy;
+  let executeImpressionsAndEventsCallSpy;
+
+  beforeAll(async (done) => {
+    manager = await createSynchronizer();
+    // @ts-ignore
+    manager._settings.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+    await manager.initializeStorages();
+    await manager.initializeSynchronizers();
+    executeSplitsAndSegmentsCallSpy = jest.spyOn(manager, 'executeSplitsAndSegments');
+    executeImpressionsAndEventsCallSpy = jest.spyOn(manager, 'executeImpressionsAndEvents');
+    await manager.execute();
+
+    // @ts-ignore
+    _redisServer = _redisStorage;
+    await _redisServer.connect();
+
+    done();
+  });
+
+  it('executes Splits & Segments Producer Sync tasks', () => {
+    expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(0);
+  });
+
+  it('won\'t execute Events & Impressions Consumer Sync tasks', () => {
+    expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
+  });
+
+  afterAll(async (done) => {
+    await _redisServer.close();
+    done();
+  });
+});
