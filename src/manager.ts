@@ -128,6 +128,8 @@ export class SynchronizerManager {
         this._settings.log,
         // @ts-ignore
         this._settings.synchronizerConfigs.eventsPerPost,
+        // @ts-ignore
+        this._settings.synchronizerConfigs.eventsRequestRetriesAmount,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,

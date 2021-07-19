@@ -21,16 +21,18 @@ export class EventsSynchronizer {
   private _eventsSubmitter;
   /**
    *
-   * @param {IPostEventsBulk}   postTestEventsBulk  SplitApi's Post request function to Events endpoint.
-   * @param {IEventsCacheAsync} eventsStorage       The reference to the event's Storage.
-   * @param {ILogger}           logger              The reference to the Synchronizer's Logger.
-   * @param {number}            eventsPerPost     Amount of elements to pop from storage.
+   * @param {IPostEventsBulk}   postTestEventsBulk          SplitApi's Post request function to Events endpoint.
+   * @param {IEventsCacheAsync} eventsStorage               The reference to the event's Storage.
+   * @param {ILogger}           logger                      The reference to the Synchronizer's Logger.
+   * @param {number}            eventsPerPost               Amount of elements to pop from storage.
+   * @param {number}            eventsRequestRetriesAmount  Amount of elements to pop from storage.
    */
   constructor(
     postTestEventsBulk: IPostEventsBulk,
     eventsStorage: IEventsCacheAsync,
     logger: ILogger,
     eventsPerPost?: number,
+    eventsRequestRetriesAmount?: number,
   ) {
     this._postEventsBulk  = postTestEventsBulk;
     this._eventsStorage = eventsStorage;
@@ -38,7 +40,8 @@ export class EventsSynchronizer {
       this._postEventsBulk,
       this._eventsStorage,
       logger,
-      eventsPerPost
+      eventsPerPost,
+      eventsRequestRetriesAmount,
     );
   }
 
