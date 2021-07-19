@@ -13,7 +13,7 @@ const EVENTS_AMOUNT_DEFAULT = 1000;
 /**
  * Amount of attempts to retry a POST request action.
  */
-const ATTEMPTS_NUMBER = 3;
+const MAX_RETRIES = 3;
 /**
  * Maximum number of bytes to be fetched from cache before posting to the backend.
  */
@@ -69,7 +69,7 @@ export function eventsSubmitterFactory(
   async function tryPostEventsBulk(eventsQueue: SplitIO.EventData[], metadataHeaders: Record<string, string>) {
     await retry(
       () => postEventsBulk(JSON.stringify(eventsQueue), metadataHeaders),
-      maxRetries || ATTEMPTS_NUMBER
+      maxRetries || MAX_RETRIES
     );
   }
   /**
