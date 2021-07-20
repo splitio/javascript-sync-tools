@@ -1,12 +1,18 @@
 import { IMetadata } from '@splitsoftware/splitio-commons/types/dtos/types';
 
+const DEFAULT_RETRIES_AMOUNT = 3;
+
 /**
  * Function to generate the Metadata Headers required for Impressions and Events POST requests.
  *
  * @param {IMetadata} metadata  The object containing the Metadata SDK Version, IP and Machine name.
  * @returns {{ SplitSDKVersion: string, SplitSDKMachineIP: string, SplitSDKMachineName: string }}
  */
-export const metadataToHeaders = (metadata: IMetadata) => {
+export const metadataToHeaders = (metadata: IMetadata): {
+  SplitSDKVersion: string;
+  SplitSDKMachineIP: string;
+  SplitSDKMachineName: string;
+} => {
   return { SplitSDKVersion: metadata.s, SplitSDKMachineIP: metadata.i, SplitSDKMachineName: metadata.n };
 };
 /**
@@ -29,4 +35,24 @@ export function groupByMetadata<T>(listOfElements: Array<any>, objectKey: string
   });
 
   return _resultMap;
+}
+/**
+ * Retries a async function recursively n times.
+ *
+ * @param {Function}    fn       The function to attempt retry.
+ * @param {number}      retries  The amount of attempts to retries. Default 3.
+ * @param {string|null} err      A custom error message to display when error.
+ * @returns {Promise}
+ */
+export function retry(
+  fn: () => any,
+  retries: number = DEFAULT_RETRIES_AMOUNT,
+  err: string | null = null
+): Promise<any> {
+  if (retries === 0) {
+    return Promise.reject(err);
+  }
+  return fn().catch((err: string) => {
+    return retry(fn, (retries - 1), err);
+  });
 }
