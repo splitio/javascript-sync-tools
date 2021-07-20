@@ -136,6 +136,10 @@ export class SynchronizerManager {
         this._storage.impressions,
         this._observer,
         this._settings.log,
+        // @ts-ignore
+        this._settings.synchronizerConfigs.impressionsPerPost,
+        // @ts-ignore
+        this._settings.synchronizerConfigs.maxRetries,
         countsCache,
       );
       if (countsCache) {

@@ -24,11 +24,16 @@ const params = {
  * @returns {ISettingsInternal}
  */
 export function synchronizerSettingsValidator(config: any) {
-  let { eventsPerPost, maxRetries } = config.synchronizerConfigs;
+  let { eventsPerPost, impressionsPerPost, maxRetries } = config.synchronizerConfigs;
 
   if (eventsPerPost && isNaNNumber(eventsPerPost) || eventsPerPost <= 0 ) {
     console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
     config.synchronizerConfigs.eventsPerPost = undefined;
+  }
+
+  if (impressionsPerPost && isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0 ) {
+    console.log('IMPRESSIONS_PER_POST parameter must be a positive integer number. Using default value instead.');
+    config.synchronizerConfigs.impressionsPerPost = undefined;
   }
 
   if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0) ) {
