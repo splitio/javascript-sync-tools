@@ -1,5 +1,5 @@
 /* eslint-disable max-len, no-magic-numbers, jsdoc/require-jsdoc */
-import { metadataToHeaders } from '../metadataUtils';
+import { metadataToHeaders } from '../utils';
 import { eventsSubmitterFactory } from '../synchronizerEventsSubmitter';
 import { getMultipleEventsSameMetadata } from './eventsMockUtils';
 
