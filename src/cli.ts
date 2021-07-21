@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fs from 'fs';
 import { exit, env, argv } from 'process';
 import { synchronizerSettingsValidator } from './settings';
@@ -32,6 +34,10 @@ let _apikey: string | undefined;
  */
 let _storagePrefix: string | undefined;
 /**
+ * The reference to the provided Storage's path file.
+ */
+let _customStoragePath: string;
+/**
  * The reference to the provided Storage.
  */
 let customStorage: ICustomStorageWrapper;
@@ -63,7 +69,6 @@ const yargv = yargs(hideBin(argv))
     },
     s: {
       alias: 'storage',
-      demandOption: true,
       describe: 'Path to the JS file exposing the Storage API',
       type: 'string',
       nargs: 1,
@@ -129,7 +134,6 @@ const yargv = yargs(hideBin(argv))
     },
   })
   .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
-  .demandOption(['s'])
   .help('h')
   .alias('h', 'help')
   .epilog(`copyright ${new Date().getFullYear()}`)
@@ -138,6 +142,7 @@ const yargv = yargs(hideBin(argv))
 const {
   mode,
   storage,
+  STORAGE_PATH,
   APIKEY,
   apikey,
   apiUrl,
@@ -183,6 +188,7 @@ switch (mode) {
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
+    _customStoragePath = STORAGE_PATH as string;
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
     synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
     synchronizerConfigs.maxRetries= MAX_RETRIES as number;
@@ -193,6 +199,7 @@ switch (mode) {
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
+    _customStoragePath = env.STORAGE_PATH as string;
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
     synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
     synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
@@ -203,6 +210,7 @@ switch (mode) {
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
+    _customStoragePath = storage as string;
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
     synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
     synchronizerConfigs.maxRetries = maxRetries as number;
@@ -211,7 +219,7 @@ switch (mode) {
 }
 
 try {
-  customStorage = require(storage as string).default;
+  customStorage = require(_customStoragePath as string).default;
 } catch (error) {
   console.log('Error importing Storage', error);
   exit(0);
