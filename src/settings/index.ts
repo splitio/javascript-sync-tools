@@ -14,7 +14,7 @@ const version = '@VERSION@';
  */
 const params = {
   logger: validateLogger,
-  defaults: Object.assign(defaults, { version: `synchronizer-${version}` }),
+  defaults: Object.assign(defaults, { version: `synchronizer-${version}`, streamingEnabled: false }),
 };
 
 /**
@@ -23,22 +23,34 @@ const params = {
  * @param {any} config  Object with the keys and values for instatiating a SettingsInternal object.
  * @returns {ISettingsInternal}
  */
-export function synchronizerSettingsValidator(config: any) {
-  let { eventsPerPost, impressionsPerPost, maxRetries } = config.synchronizerConfigs;
+export default function synchronizerSettingsValidator(config: any) {
+  const synchronizerDefaults = {
+    synchronizerMode: 'MODE_RUN_ALL',
+    eventsPerPost: 1000,
+    impressionsPerPost: 1000,
+    maxRetries: 3,
+  };
 
-  if (eventsPerPost && isNaNNumber(eventsPerPost) || eventsPerPost <= 0 ) {
-    console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
-    config.synchronizerConfigs.eventsPerPost = undefined;
-  }
+  if (config.synchronizerConfigs) {
+    let {
+      eventsPerPost = undefined,
+      impressionsPerPost = undefined,
+      maxRetries = undefined,
+    } = config.synchronizerConfigs;
 
-  if (impressionsPerPost && isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0 ) {
-    console.log('IMPRESSIONS_PER_POST parameter must be a positive integer number. Using default value instead.');
-    config.synchronizerConfigs.impressionsPerPost = undefined;
-  }
+    if (eventsPerPost && isNaNNumber(eventsPerPost) || eventsPerPost <= 0) {
+      console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
+    }
 
-  if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0) ) {
-    console.log('MAX_RETRIES parameter must be a positive integer number. Using default values instead.');
-    config.synchronizerConfigs.maxRetries = undefined;
+    if (impressionsPerPost && isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0) {
+      console.log('IMPRESSIONS_PER_POST parameter must be a positive integer number. Using default value instead.');
+    }
+
+    if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0)) {
+      console.log('MAX_RETRIES parameter must be a positive integer number. Using default values instead.');
+    }
+  } else {
+    Object.assign(config, { ...config }, { synchronizerConfigs: synchronizerDefaults });
   }
 
   return settingsValidation(config, params);
