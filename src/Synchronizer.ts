@@ -18,7 +18,7 @@ import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSy
 /**
  * Main class to handle the Synchronizer execution.
  */
-export class SynchronizerManager {
+export default class Synchronizer {
   /**
    * The local reference to the Synchronizer's Storage.
    */
@@ -69,7 +69,7 @@ export class SynchronizerManager {
      */
     this._splitApi = splitApiFactory(
       settings,
-      { getFetch: SynchronizerManager._getFetch },
+      { getFetch: Synchronizer._getFetch },
     );
   }
 
@@ -162,7 +162,7 @@ export class SynchronizerManager {
    * @returns {Promise<boolean>}
    */
   async preExecute(): Promise<boolean> {
-    if (SynchronizerManager._getFetch() === undefined) {
+    if (Synchronizer._getFetch() === undefined) {
       console.log('Global fetch API is not available.');
       return false;
     }

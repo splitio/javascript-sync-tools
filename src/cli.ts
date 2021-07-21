@@ -1,9 +1,7 @@
-#!/usr/bin/env node
-
 import fs from 'fs';
 import { exit, env, argv } from 'process';
-import { synchronizerSettingsValidator } from './settings';
-import { SynchronizerManager } from './manager';
+import { synchronizerSettingsValidator } from './';
+import { Synchronizer } from './';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -252,7 +250,6 @@ const settings = synchronizerSettingsValidator({
   },
   synchronizerConfigs,
   debug: debug || false,
-  streamingEnabled: false,
 });
 
 if (!validateApiKey(settings.log, _apikey)) {
@@ -260,7 +257,7 @@ if (!validateApiKey(settings.log, _apikey)) {
   exit(0);
 }
 
-const manager = new SynchronizerManager(settings);
+const manager = new Synchronizer(settings);
 
 manager.execute().then((res) => {
   if (!res) {
