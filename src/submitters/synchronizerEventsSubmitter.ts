@@ -4,7 +4,7 @@ import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/typ
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
 import { SplitIO } from '@splitsoftware/splitio-commons/types/types';
-import { groupByMetadata, metadataToHeaders } from './metadataUtils';
+import { groupByMetadata, metadataToHeaders, retry } from './utils';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
@@ -22,26 +22,6 @@ type ProcessedByMetadataEvents = {
   [metadataAsKey: string]: StoredEventWithMetadata[];
 };
 /**
- * Retries a async function recursively n times.
- *
- * @param {Function}    fn       The function to attempt retry.
- * @param {number}      retries  The amount of attempts to retries. Default 3.
- * @param {string|null} err      A custom error message to display when error.
- * @returns {Promise}
- */
-function retry(
-  fn: () => any,
-  retries = 3,
-  err: string | null = null
-): Promise<any> {
-  if (retries === 0) {
-    return Promise.reject(err);
-  }
-  return fn().catch((err: string) => {
-    return retry(fn, (retries - 1), err);
-  });
-}
-/**
  * Function factory that will return an Event Submitter, that will be able to retrieve the
  * events from the Storage, process and group by Metadata and/or max bundle size, and finally push
  * to Split's BE services. The result of this method is always a promise that will never be rejected.
@@ -49,7 +29,7 @@ function retry(
  * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
  * @param {ILogger}           logger          The Synchronizer's Logger.
- * @param {number}            batchSize       The amount of elements to pop from Storage.
+ * @param {number}            eventsPerPost   The amount of elements to pop from Storage.
  * @param {number}            maxRetries      The amount of retries attempt to perform the POST request.
  * @returns {() => Promise<boolean>}
  */
@@ -57,7 +37,7 @@ export function eventsSubmitterFactory(
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheAsync,
   logger: ILogger,
-  batchSize?: number,
+  eventsPerPost?: number,
   maxRetries?: number,
 ): () => Promise<boolean> {
   /**
@@ -109,7 +89,7 @@ export function eventsSubmitterFactory(
           }
         }
         const count = await eventsCache.count();
-        if (count !== 0) await processEventsBatch(batchSize);
+        if (count > 0) await processEventsBatch(batchSize);
         return Promise.resolve(true);
       })
       .catch((e) => {
@@ -118,5 +98,5 @@ export function eventsSubmitterFactory(
       });
   }
 
-  return () => processEventsBatch(batchSize);
+  return () => processEventsBatch(eventsPerPost);
 }

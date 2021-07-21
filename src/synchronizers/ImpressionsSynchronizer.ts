@@ -28,6 +28,8 @@ export class ImpressionsSynchronizer {
    * @param {IImpressionsCacheAsync}        impressionsStorage   The reference to the impresions' Storage.
    * @param {ImpressionObserver}            observer             The reference to the impresions' Storage.
    * @param {ILogger}                       logger               The reference to the Synchronizer's Logger.
+   * @param {number}                        impressionsPerPost   Amount of elements to pop from storage.
+   * @param {number}                        maxRetries           Amount of attempt retries to perform the POST request.
    * @param {ImpressionCountsCacheInMemory} countsCache          The reference to the impresions' Storage.
    */
   constructor(
@@ -35,6 +37,8 @@ export class ImpressionsSynchronizer {
     impressionsStorage: IImpressionsCacheAsync,
     observer: ImpressionObserver,
     logger: ILogger,
+    impressionsPerPost?: number,
+    maxRetries?: number,
     countsCache?: ImpressionCountsCacheInMemory,
   ) {
     this._postImpressionsBulk  = postImpressionsBulk;
@@ -44,6 +48,8 @@ export class ImpressionsSynchronizer {
       this._impressionsStorage,
       observer,
       logger,
+      impressionsPerPost,
+      maxRetries,
       countsCache,
     );
   }

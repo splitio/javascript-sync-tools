@@ -110,6 +110,11 @@ const yargv = yargs(hideBin(argv))
       description: 'Set the number of events to send in a POST request',
       nargs: 1,
     },
+    f: {
+      alias: 'impressionsPerPost',
+      description: 'Set the number of impressions to send in a POST request',
+      nargs: 1,
+    },
     t: {
       alias: 'maxRetries',
       description: 'Set the number of retries attempt perform an Event\'s a POST request',
@@ -146,9 +151,11 @@ const {
   CUSTOM_RUN,
   impressionsMode,
   eventsPerPost,
+  impressionsPerPost,
   maxRetries,
   MAX_RETRIES,
   EVENTS_PER_POST,
+  IMPRESSIONS_PER_POST,
 } = yargv;
 
 console.log(` > Synchronizer's configs from: ${mode || 'CLI params'}`);
@@ -177,6 +184,7 @@ switch (mode) {
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
+    synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
     synchronizerConfigs.maxRetries= MAX_RETRIES as number;
     setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
@@ -186,6 +194,7 @@ switch (mode) {
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
+    synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
     synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
     setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
@@ -195,6 +204,7 @@ switch (mode) {
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
+    synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
     synchronizerConfigs.maxRetries = maxRetries as number;
     setCustomRun(customRun as CustomModeOption);
     break;
