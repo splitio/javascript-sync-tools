@@ -1,13 +1,12 @@
-// @ts-nocheck
 /* eslint-disable no-magic-numbers */
-import { SynchronizerManager } from '../src/manager';
-import { synchronizerSettingsValidator } from '../src/settings';
+// @ts-nocheck
+import { Synchronizer, synchronizerSettingsValidator } from '../src/index';
 import { ICustomStorageWrapper }
   from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
 import redisAdapterWrapper from './utils/inRedisService';
-import { SynchronizerConfigs } from './types';
+import { SynchronizerConfigs } from '../src/types';
 
 // @ts-ignore
 let _redisServer: ICustomStorageWrapper;
@@ -15,7 +14,7 @@ let _redisServer: ICustomStorageWrapper;
 /**
  * Function to create a Synchronizer instance/task.
  *
- * @returns {SynchronizerManager}
+ * @returns {Synchronizer}
  */
 const createSynchronizer = () => {
   const synchronizerConfigs: SynchronizerConfigs = {
@@ -44,9 +43,10 @@ const createSynchronizer = () => {
     synchronizerConfigs,
     logger: 'NONE',
     streamingEnabled: false,
+    debug: true,
   });
 
-  return new SynchronizerManager(settings);
+  return new Synchronizer(settings);
 };
 
 const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
@@ -113,7 +113,6 @@ describe('Synchronizer e2e tests', () => {
       const manager = await createSynchronizer();
       await manager.initializeStorages();
       await manager.initializeSynchronizers();
-      await manager.execute();
 
       const hasExecute = await manager.execute();
       expect(hasExecute).toBe(true);
@@ -134,7 +133,7 @@ describe('Synchronizer e2e tests', () => {
 });
 
 describe('Synchronizer - only Splits & Segments mode', () => {
-  let manager: SynchronizerManager;
+  let manager: Synchronizer;
   let executeSplitsAndSegmentsCallSpy;
   let executeImpressionsAndEventsCallSpy;
 
@@ -170,7 +169,7 @@ describe('Synchronizer - only Splits & Segments mode', () => {
 });
 
 describe('Synchronizer - only Events & Impressions', () => {
-  let manager: SynchronizerManager;
+  let manager: Synchronizer;
   let executeSplitsAndSegmentsCallSpy;
   let executeImpressionsAndEventsCallSpy;
 
