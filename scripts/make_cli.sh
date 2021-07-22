@@ -1,3 +1,3 @@
 #!/bin/bash
-echo "$(echo '#!/usr/bin/env node' | cat - dist/cli.js)" > dist/cli.js
-chmod u+x dist/cli.js
+echo "$(echo '#!/usr/bin/env node' | cat - lib/cli/SplitSynchronizerCLI.js)" > lib/cli/SplitSynchronizerCLI.js
+chmod u+x lib/cli/SplitSynchronizerCLI.js

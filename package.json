@@ -2,16 +2,31 @@
   "name": "@splitsoftware/splitio-node-slim-synchronizer",
   "version": "0.0.1",
   "description": "",
-  "main": "cli.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "bin": {
-    "synchronizer": "./dist/cli.js"
+    "split-node-synchronizer": "lib/cli/SplitSynchronizerCLI.js"
   },
+  "files": [
+    "cjs",
+    "esm",
+    "lib",
+    "types",
+    "src"
+  ],
   "scripts": {
-    "add-version": "replace @VERSION@ $npm_package_version dist/settings/index.js",
+    "add-version": "replace @VERSION@ $npm_package_version cjs/settings/index.js",
     "check": "npm run check:lint && npm run check:types",
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
-    "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
+    "build": "npm run build:cjs && npm run build:esm && npm run add-version",
+    "build:esm": "rimraf esm && tsc -m es2015 --outDir esm -d true --declarationDir esm/types --importHelpers && scripts/build_esm_replace_imports.sh",
+    "build:cjs": "rimraf cjs && tsc -m CommonJS --outDir cjs --importHelpers && scripts/build_cjs_replace_imports.sh",
+    "make:cli": "npm run bundle && scripts/make_cli.sh",
+    "make:bin": "rimraf bin && npm run make:cli && pkg .",
+    "bundle": "npm run build && rollup -c",
+    "bundle:only": "rollup -c",
+    "bundle:min": "npm run build && NODE_ENV=production rollup -c",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
     "test:e2e": "./scripts/check_redis.sh && jest e2e/ --runInBand --forceExit",
@@ -29,6 +44,8 @@
     "yargs": "^17.0.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^19.0.1",
+    "@rollup/plugin-node-resolve": "^13.0.2",
     "@splitsoftware/splitio": "^10.15.8",
     "@types/ioredis": "^4.26.4",
     "@types/jest": "^26.0.23",
@@ -45,10 +62,17 @@
     "ioredis": "^4.27.6",
     "jest": "^26.6.3",
     "json-server": "^0.16.3",
+    "pkg": "^5.3.0",
     "replace": "^1.2.0",
     "rimraf": "^3.0.2",
+    "rollup": "^2.53.3",
+    "rollup-plugin-terser": "^7.0.2",
     "start-server-and-test": "^1.12.5",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.3"
+  },
+  "pkg": {
+    "scripts": "lib/cli/SplitSynchronizerCLI.js",
+    "outputPath": "bin/"
   }
 }
