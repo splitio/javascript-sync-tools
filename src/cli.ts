@@ -219,7 +219,8 @@ switch (mode) {
 try {
   customStorage = require(_customStoragePath as string).default;
 } catch (error) {
-  console.log('Error importing Storage', error);
+  // @ts-ignore
+  console.log('Error importing Storage', error.message);
   exit(0);
 }
 
