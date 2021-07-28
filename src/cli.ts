@@ -258,9 +258,9 @@ if (!validateApiKey(settings.log, _apikey)) {
   exit(0);
 }
 
-const manager = new Synchronizer(settings);
+const synchronizer = new Synchronizer(settings);
 
-manager.execute().then((res) => {
+synchronizer.execute().then((res) => {
   if (!res) {
     console.log('# Synchronizer execution terminated.');
     exit(1);

@@ -67,10 +67,10 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
     beforeAll(async (done) => {
-      const manager = await createSynchronizer();
-      await manager.initializeStorages();
-      await manager.initializeSynchronizers();
-      await manager.execute();
+      const _synchronizer = await createSynchronizer();
+      await _synchronizer.initializeStorages();
+      await _synchronizer.initializeSynchronizers();
+      await _synchronizer.execute();
 
       done();
     });
@@ -110,11 +110,11 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer a [SECOND] time', () => {
     beforeAll(async () => {
-      const manager = await createSynchronizer();
-      await manager.initializeStorages();
-      await manager.initializeSynchronizers();
+      const _synchronizer = await createSynchronizer();
+      await _synchronizer.initializeStorages();
+      await _synchronizer.initializeSynchronizers();
 
-      const hasExecute = await manager.execute();
+      const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);
     });
 
@@ -133,19 +133,19 @@ describe('Synchronizer e2e tests', () => {
 });
 
 describe('Synchronizer - only Splits & Segments mode', () => {
-  let manager: Synchronizer;
+  let _synchronizer: Synchronizer;
   let executeSplitsAndSegmentsCallSpy;
   let executeImpressionsAndEventsCallSpy;
 
   beforeAll(async (done) => {
-    manager = await createSynchronizer();
+    _synchronizer = await createSynchronizer();
     // @ts-ignore
-    manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
-    await manager.initializeStorages();
-    await manager.initializeSynchronizers();
-    executeSplitsAndSegmentsCallSpy = jest.spyOn(manager, 'executeSplitsAndSegments');
-    executeImpressionsAndEventsCallSpy = jest.spyOn(manager, 'executeImpressionsAndEvents');
-    await manager.execute();
+    _synchronizer._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+    await _synchronizer.initializeStorages();
+    await _synchronizer.initializeSynchronizers();
+    executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments');
+    executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
+    await _synchronizer.execute();
 
     // @ts-ignore
     _redisServer = _redisStorage;
@@ -169,19 +169,19 @@ describe('Synchronizer - only Splits & Segments mode', () => {
 });
 
 describe('Synchronizer - only Events & Impressions', () => {
-  let manager: Synchronizer;
+  let _synchronizer: Synchronizer;
   let executeSplitsAndSegmentsCallSpy;
   let executeImpressionsAndEventsCallSpy;
 
   beforeAll(async (done) => {
-    manager = await createSynchronizer();
+    _synchronizer = await createSynchronizer();
     // @ts-ignore
-    manager._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
-    await manager.initializeStorages();
-    await manager.initializeSynchronizers();
-    executeSplitsAndSegmentsCallSpy = jest.spyOn(manager, 'executeSplitsAndSegments');
-    executeImpressionsAndEventsCallSpy = jest.spyOn(manager, 'executeImpressionsAndEvents');
-    await manager.execute();
+    _synchronizer._settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+    await _synchronizer.initializeStorages();
+    await _synchronizer.initializeSynchronizers();
+    executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments');
+    executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
+    await _synchronizer.execute();
 
     // @ts-ignore
     _redisServer = _redisStorage;
