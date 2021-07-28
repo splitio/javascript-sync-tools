@@ -18,7 +18,7 @@ import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSy
 /**
  * Main class to handle the Synchronizer execution.
  */
-export class SynchronizerManager {
+export default class Synchronizer {
   /**
    * The local reference to the Synchronizer's Storage.
    */
@@ -69,7 +69,7 @@ export class SynchronizerManager {
      */
     this._splitApi = splitApiFactory(
       settings,
-      { getFetch: SynchronizerManager._getFetch },
+      { getFetch: Synchronizer._getFetch },
     );
   }
 
@@ -162,7 +162,7 @@ export class SynchronizerManager {
    * @returns {Promise<boolean>}
    */
   async preExecute(): Promise<boolean> {
-    if (SynchronizerManager._getFetch() === undefined) {
+    if (Synchronizer._getFetch() === undefined) {
       console.log('Global fetch API is not available.');
       return false;
     }
@@ -187,6 +187,7 @@ export class SynchronizerManager {
   }
   /**
    * Function to wrap actions to perform after the sync tasks have been executed.
+   * Currently, it discconects from the Storage.
    */
   async postExecute(): Promise<void> {
     await this._storage.destroy();
@@ -219,12 +220,14 @@ export class SynchronizerManager {
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
   async executeSplitsAndSegments(standalone = true) {
-    if (standalone) await this.preExecute;
+    if (standalone) await this.preExecute();
 
     const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
     console.log(` > Segments Synchronizer task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+
+    if (standalone) await this.postExecute();
   }
   /**
    * Function to wrap the execution of the Impressions and Event's synchronizers.
@@ -232,7 +235,7 @@ export class SynchronizerManager {
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
   async executeImpressionsAndEvents(standalone = true) {
-    if (standalone) await this.preExecute;
+    if (standalone) await this.preExecute();
 
     const isEventsSyncReady = await this._eventsSynchronizer.synchroniseEvents();
     console.log(` > Events Synchronizer task:       ${isEventsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
