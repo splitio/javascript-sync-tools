@@ -36,6 +36,10 @@ let _storagePrefix: string | undefined;
  */
 let _customStoragePath: string;
 /**
+ * The reference for the Impressions Mode configuration.
+ */
+let _impressionsMode: string;
+/**
  * The reference to the provided Storage.
  */
 let customStorage: ICustomStorageWrapper;
@@ -120,7 +124,7 @@ const yargv = yargs(hideBin(argv))
     },
     t: {
       alias: 'maxRetries',
-      description: 'Set the number of retries attempt perform an Event\'s a POST request',
+      description: 'Set the number of retries attempt perform an Event or Impression POST request',
       nargs: 1,
     },
     i: {
@@ -148,11 +152,13 @@ const {
   eventsApiUrl,
   EVENTS_API_URL,
   debug,
+  DEBUG,
   prefix,
   STORAGE_PREFIX,
   customRun,
   CUSTOM_RUN,
   impressionsMode,
+  IMPRESIONS_MODE,
   eventsPerPost,
   impressionsPerPost,
   maxRetries,
@@ -187,6 +193,7 @@ switch (mode) {
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
     _customStoragePath = STORAGE_PATH as string;
+    _impressionsMode = IMPRESIONS_MODE as string;
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
     synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
     synchronizerConfigs.maxRetries= MAX_RETRIES as number;
@@ -198,6 +205,7 @@ switch (mode) {
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
     _customStoragePath = env.STORAGE_PATH as string;
+    _impressionsMode = env.IMPRESIONS_MODE as string;
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
     synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
     synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
@@ -209,6 +217,7 @@ switch (mode) {
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
     _customStoragePath = storage as string;
+    _impressionsMode = impressionsMode as string;
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
     synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
     synchronizerConfigs.maxRetries = maxRetries as number;
@@ -247,10 +256,10 @@ const settings = synchronizerSettingsValidator({
   },
   sync: {
     // @ts-ignore
-    impressionsMode: impressionsMode?.toUpperCase() || 'OPTIMIZED',
+    impressionsMode: _impressionsMode?.toUpperCase() || 'OPTIMIZED',
   },
   synchronizerConfigs,
-  debug: debug || false,
+  debug: debug || DEBUG,
 });
 
 if (!validateApiKey(settings.log, _apikey)) {
