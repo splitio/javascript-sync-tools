@@ -1,32 +1,35 @@
 {
   "name": "@splitsoftware/splitio-node-slim-synchronizer",
   "version": "0.0.1",
-  "description": "",
-  "main": "cjs/index.js",
-  "module": "esm/index.js",
+  "description": "Split NodeJS Synchronizer",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "exports": {
+    ".": "./lib/cjs/index.js",
+    "./esm": "./lib/esm/Synchronizer.js"
+  },
   "bin": {
-    "split-node-synchronizer": "lib/cli/SplitSynchronizerCLI.js"
+    "splitio-node-synchronizer": "bin/splitio-node-synchronizer.js"
   },
   "files": [
-    "cjs",
-    "esm",
     "lib",
-    "types",
+    "bin",
     "src"
   ],
+  "types": "lib/esm/types/index.d.ts",
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
   "scripts": {
-    "add-version": "replace @VERSION@ $npm_package_version cjs/settings/index.js",
     "check": "npm run check:lint && npm run check:types",
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
-    "build": "npm run build:cjs && npm run build:esm && npm run add-version",
-    "build:esm": "rimraf esm && tsc -m es2015 --outDir esm -d true --declarationDir esm/types --importHelpers && scripts/build_esm_replace_imports.sh",
-    "build:cjs": "rimraf cjs && tsc -m CommonJS --outDir cjs --importHelpers && scripts/build_cjs_replace_imports.sh",
+    "clean": "rimraf dist/**",
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "rimraf lib/esm && tsc -m es2015 --outDir lib/esm -d true --declarationDir lib/esm/types --importHelpers && scripts/build_esm_replace_imports.sh && replace @VERSION@ $npm_package_version lib/esm/settings/index.js",
+    "build:cjs": "rimraf lib/cjs && tsc -m CommonJS --outDir lib/cjs --importHelpers && scripts/build_cjs_replace_imports.sh && replace @VERSION@ $npm_package_version lib/cjs/settings/index.js",
     "bundle": "npm run build && rollup -c",
-    "bundle:only": "rollup -c",
-    "bundle:min": "npm run build && NODE_ENV=production rollup -c",
     "make:cli": "npm run bundle && scripts/make_cli.sh",
-    "make:bin": "rimraf bin && npm run make:cli && pkg .",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
     "test:e2e": "./scripts/check_redis.sh && jest e2e/ --runInBand --forceExit",
@@ -34,9 +37,6 @@
     "test:ci": "npm run test:unit && npm run test:e2e:ci",
     "test": "npm run test:unit && npm run test:e2e"
   },
-  "keywords": [],
-  "author": "",
-  "license": "Apache-2.0",
   "dependencies": {
     "@splitsoftware/splitio-commons": "0.1.1-canary.9",
     "dotenv": "^9.0.1",
@@ -62,17 +62,11 @@
     "ioredis": "^4.27.6",
     "jest": "^26.6.3",
     "json-server": "^0.16.3",
-    "pkg": "^5.3.0",
     "replace": "^1.2.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.53.3",
-    "rollup-plugin-terser": "^7.0.2",
     "start-server-and-test": "^1.12.5",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.3"
-  },
-  "pkg": {
-    "scripts": "lib/cli/SplitSynchronizerCLI.js",
-    "outputPath": "bin/"
   }
 }
