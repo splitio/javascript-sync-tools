@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* eslint-disable no-magic-numbers */
-import { Synchronizer, synchronizerSettingsValidator } from '../src/';
+// @ts-nocheck
+import { Synchronizer, synchronizerSettingsValidator } from '../src/index';
 import { ICustomStorageWrapper }
   from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
@@ -43,6 +43,7 @@ const createSynchronizer = () => {
     synchronizerConfigs,
     logger: 'NONE',
     streamingEnabled: false,
+    debug: true,
   });
 
   return new Synchronizer(settings);
@@ -112,7 +113,6 @@ describe('Synchronizer e2e tests', () => {
       const _synchronizer = await createSynchronizer();
       await _synchronizer.initializeStorages();
       await _synchronizer.initializeSynchronizers();
-      await _synchronizer.execute();
 
       const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);

@@ -1,17 +1,35 @@
 {
   "name": "@splitsoftware/splitio-node-slim-synchronizer",
   "version": "0.0.1",
-  "description": "",
-  "main": "cli.js",
-  "bin": {
-    "synchronizer": "./dist/cli.js"
+  "description": "Split NodeJS Synchronizer",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "exports": {
+    ".": "./lib/cjs/index.js",
+    "./esm": "./lib/esm/Synchronizer.js"
   },
+  "bin": {
+    "splitio-node-synchronizer": "bin/splitio-node-synchronizer.js"
+  },
+  "files": [
+    "lib",
+    "bin",
+    "src"
+  ],
+  "types": "lib/esm/types/index.d.ts",
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
   "scripts": {
-    "add-version": "replace @VERSION@ $npm_package_version dist/settings/index.js",
     "check": "npm run check:lint && npm run check:types",
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
-    "build": "rimraf dist && tsc -outDir dist --importHelpers && scripts/build_cjs_replace_imports.sh && npm run add-version && scripts/make_cli.sh",
+    "clean": "rimraf dist/**",
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "rimraf lib/esm && tsc -m es2015 --outDir lib/esm -d true --declarationDir lib/esm/types --importHelpers && scripts/build_esm_replace_imports.sh && replace @VERSION@ $npm_package_version lib/esm/settings/index.js",
+    "build:cjs": "rimraf lib/cjs && tsc -m CommonJS --outDir lib/cjs --importHelpers && scripts/build_cjs_replace_imports.sh && replace @VERSION@ $npm_package_version lib/cjs/settings/index.js",
+    "bundle": "npm run build && rollup -c",
+    "make:cli": "npm run bundle && scripts/make_cli.sh",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
     "test:e2e": "./scripts/check_redis.sh && jest e2e/ --runInBand --forceExit",
@@ -19,9 +37,6 @@
     "test:ci": "npm run test:unit && npm run test:e2e:ci",
     "test": "npm run test:unit && npm run test:e2e"
   },
-  "keywords": [],
-  "author": "",
-  "license": "Apache-2.0",
   "dependencies": {
     "@splitsoftware/splitio-commons": "0.1.1-canary.9",
     "dotenv": "^9.0.1",
@@ -29,6 +44,8 @@
     "yargs": "^17.0.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^19.0.1",
+    "@rollup/plugin-node-resolve": "^13.0.2",
     "@splitsoftware/splitio": "^10.15.8",
     "@types/ioredis": "^4.26.4",
     "@types/jest": "^26.0.23",
@@ -47,6 +64,7 @@
     "json-server": "^0.16.3",
     "replace": "^1.2.0",
     "rimraf": "^3.0.2",
+    "rollup": "^2.53.3",
     "start-server-and-test": "^1.12.5",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.3"
