@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 // @ts-nocheck
-import { Synchronizer, synchronizerSettingsValidator } from '../src/index';
+import { Synchronizer } from '../src/index';
 import { ICustomStorageWrapper }
   from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
@@ -23,7 +23,7 @@ const createSynchronizer = () => {
   /**
    * Settings creation.
    */
-  const settings = synchronizerSettingsValidator({
+  const settings = {
     core: {
       authorizationKey: 'fakeapikeyfortesting',
     },
@@ -44,7 +44,7 @@ const createSynchronizer = () => {
     logger: 'NONE',
     streamingEnabled: false,
     debug: true,
-  });
+  };
 
   return new Synchronizer(settings);
 };
