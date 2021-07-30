@@ -14,6 +14,8 @@ import ImpressionCountsCacheInMemory
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
+import synchronizerSettingsValidator from './settings';
+import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 
 /**
  * Main class to handle the Synchronizer execution.
@@ -60,15 +62,20 @@ export default class Synchronizer {
    * @param  {ISettingsInternal} settings  Object containing the minimum settings required
    *                                       to instantiate the Manager.
    */
-  constructor(settings: ISettingsInternal) {
-    this._settings = settings;
+  constructor(settings: any) {
     this._observer = impressionObserverSSFactory();
+    const validatedSettings = synchronizerSettingsValidator(settings);
 
+    if (!validateApiKey(settings.log, settings.core.authorizationKey)) {
+      throw new Error('Unable to initialize Synchronizer task: invalid APIKEY.');
+    }
+
+    this._settings = validatedSettings;
     /**
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
-      settings,
+      this._settings,
       { getFetch: Synchronizer._getFetch },
     );
   }
