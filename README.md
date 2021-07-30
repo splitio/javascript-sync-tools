@@ -2,7 +2,7 @@
 [![Build Status](https://api.travis-ci.com/splitio/javascript-slim-synchronizer.svg?branch=main)](https://api.travis-ci.com/splitio/javascript-slim-synchronizer)
 
 ## Overview
-Thin version of Synchronizer supporting the core of the synchronization mechanisms used by Split SDK producer libaries
+Thin version of Split Synchronizer supporting the core of the synchronization mechanisms used by Split SDK producer libraries.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
@@ -14,39 +14,38 @@ Below is a simple example that describes the execution or instantiation of Split
 
 ### Install package as global dependency and run CLI
 1. Install npm package via `npm install -g @splitsoftware/splitio-node-slim-synchronizer`
-2. Then, execute the CLI `split-nodejs-synchronizer [...args]`
+2. Then, execute the CLI `split-node-synchronizer [...args]`
 
-### Install package as a library
+### Install package as a dependency in your project
 1. Install npm package via `npm install @splitsoftware/splitio-node-slim-synchronizer`
-2. Inside your app, import the Synchronizer and the Settings Validator
+2. Inside your app, import the `Synchronizer`
 ```
-const { Synchronizer, synchronizerSettingsValidator } = require('@splitsoftware/splitio-node-slim-synchronizer')
+const { Synchronizer } = require('@splitsoftware/splitio-node-slim-synchronizer')
+// or if your project supports modules and ESM
+import { Synchronizer } from '@splitsoftware/splitio-node-slim-synchronizer';
 ```
 
 3. Set the configurations:
 ```
-const settings = synchronizerSettingsValidator({
+// Example:
+const settings = {
   core: {
     authorizationKey: '<A_VALID_STAGING_APIKEY>',
   },
   urls: {
-    sdk: 'https://sdk.split-stage.io/api',
-    events: 'https://events.split-stage.io/api',
+    sdk: 'https://sdk.split.io/api',       // already a default value
+    events: 'https://events.split.io/api', // already a default value
   },
+  // Mandatory: provide a valid Storage wrapper.
   storage: {
     type: 'CUSTOM',
     prefix: 'storagePrefix',
     wrapper: customStorage,
   },
-  sync: {
-    // @ts-ignore
-    impressionsMode: 'OPTIMIZED',
-  },
   synchronizerConfigs: {
 
   },
-  debug: true,
-});
+};
 const _sync = new Synchronizer(settings);
 ```
 
