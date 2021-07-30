@@ -1,8 +1,6 @@
 import fs from 'fs';
 import { exit, env, argv } from 'process';
-import { synchronizerSettingsValidator } from './';
 import { Synchronizer } from './';
-import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
@@ -232,7 +230,7 @@ if (!_apikey) {
 /**
  * Settings creation.
  */
-const settings = synchronizerSettingsValidator({
+const settings = {
   core: {
     authorizationKey: _apikey,
   },
@@ -251,12 +249,8 @@ const settings = synchronizerSettingsValidator({
   },
   synchronizerConfigs,
   debug: debug || false,
-});
+};
 
-if (!validateApiKey(settings.log, _apikey)) {
-  console.log('Unable to initialize Synchronizer task: invalid APIKEY.');
-  exit(0);
-}
 
 const synchronizer = new Synchronizer(settings);
 
