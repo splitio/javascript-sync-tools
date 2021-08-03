@@ -3,7 +3,6 @@ import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/types/sto
 import { StoredImpressionWithMetadata }
   from '@splitsoftware/splitio-commons/types/sync/submitters/types';
 import { ImpressionDTO } from '@splitsoftware/splitio-commons/types/types';
-import { ImpressionsDTOWithMetadata } from '../types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import ImpressionCountsCacheInMemory
@@ -20,34 +19,6 @@ const IMPRESSIONS_AMOUNT_DEFAULT = 1000;
  * Amount of attempts to retry a POST request action.
  */
 const MAX_RETRIES = 3;
-/**
- * Function to create an ImpressionDTOWithMetadata object from a StoredImpressionWithMetadata.
- * Basically it's transforming each StoredImpression key to its full name.
- *
- * @param {StoredImpressionWithMetadata} storedImpression  The target impression.
- * @returns {ImpressionsDTOWithMetadata}
- */
-export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredImpressionWithMetadata):
-  ImpressionsDTOWithMetadata => {
-  const {
-    m,
-    i,
-  } = storedImpression;
-
-  return {
-    metadata: m,
-    impression: {
-      keyName: i.k,
-      bucketingKey: i.b,
-      feature: i.f,
-      treatment: i.t,
-      label: i.r,
-      changeNumber: i.c,
-      time: i.m,
-    } as ImpressionDTO,
-  };
-};
-
 /**
  * Factory that returns an Impressions submitter, capable of fetching the Impressions from the storage,
  * process them and sent to the Split's Services.
@@ -93,46 +64,45 @@ export function impressionsSubmitterFactory(
    */
   function processImpressionsBatch(batchSize: number = IMPRESSIONS_AMOUNT_DEFAULT) {
     return impressionsCache.popNWithMetadata(batchSize)
-      .then(async (dataImpressions: StoredImpressionWithMetadata[]) => {
-        const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
-        // convert Impressions Metadata into Impressions DTO
-        const storedImpressions = dataImpressions.map(impression => impressionWithMetadataToImpressionDTO(impression));
+      .then(async (storedImpressions: StoredImpressionWithMetadata[]) => {
+        const impressionsWithMetadataToPost: StoredImpressionWithMetadata[] = [];
 
         storedImpressions.forEach((impressionWithMetadata) => {
-          const { impression } = impressionWithMetadata;
+          const { i } = impressionWithMetadata;
 
           if (observer) {
             // Adds previous time if it is enabled
             // @ts-ignore
-            impression.pt = observer.testAndSet(impression);
+            i.pt = observer.testAndSet(i);
           }
 
           const now = Date.now();
           if (countsCache) {
             // Increments impression counter per featureName
-            countsCache.track(impression.feature, now, 1);
+            countsCache.track(i.f, now, 1);
           }
 
           // Checks if the impression should be added in queue to be sent
-          if (!countsCache || !impression.pt || impression.pt < truncateTimeFrame(now)) {
+          // @ts-ignore
+          if (!countsCache || !i.pt || i.pt < truncateTimeFrame(now)) {
             impressionsWithMetadataToPost.push(impressionWithMetadata);
           }
         });
 
-        const impressionsWithMetadataProcessedToPost: { [metadataAsKey: string]: ImpressionsDTOWithMetadata[] } =
-          groupByMetadata(impressionsWithMetadataToPost, 'metadata');
+        const impressionsWithMetadataProcessedToPost: { [metadataAsKey: string]: StoredImpressionWithMetadata[] } =
+          groupByMetadata(impressionsWithMetadataToPost, 'm');
 
         const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
 
         const keys = Object.keys(impressionsWithMetadataProcessedToPost);
         for (let i = 0; i < keys.length; i++) {
           const key = keys[i];
-          const impressions = impressionsWithMetadataProcessedToPost[key]
-            .map((data) => data.impression);
-          const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
+          const impressions = impressionsWithMetadataProcessedToPost[key].map((data) => data.i);
+          // @ts-ignore
+          const metadata = impressionsWithMetadataProcessedToPost[key][0].m;
           const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
           // Group impressions by Feature key.
-          const impressionsByFeature = groupByMetadata(impressions, 'feature');
+          const impressionsByFeature = groupByMetadata(impressions, 'f');
 
           let impressionsListToPost: { f: string; i: ImpressionDTO[]; }[] = [];
           Object.keys(impressionsByFeature).forEach((key) => {
