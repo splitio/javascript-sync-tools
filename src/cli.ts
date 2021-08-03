@@ -34,6 +34,14 @@ let _storagePrefix: string | undefined;
  */
 let _customStoragePath: string;
 /**
+ * The reference for the Impressions Mode configuration.
+ */
+let _impressionsMode: string;
+/**
+ * The flag to enable the Logger debug mode.
+ */
+let _debug: boolean;
+/**
  * The reference to the provided Storage.
  */
 let customStorage: ICustomStorageWrapper;
@@ -118,7 +126,7 @@ const yargv = yargs(hideBin(argv))
     },
     t: {
       alias: 'maxRetries',
-      description: 'Set the number of retries attempt perform an Event\'s a POST request',
+      description: 'Set the number of retries attempt perform an Event or Impression POST request',
       nargs: 1,
     },
     i: {
@@ -146,11 +154,13 @@ const {
   eventsApiUrl,
   EVENTS_API_URL,
   debug,
+  DEBUG,
   prefix,
   STORAGE_PREFIX,
   customRun,
   CUSTOM_RUN,
   impressionsMode,
+  IMPRESSIONS_MODE,
   eventsPerPost,
   impressionsPerPost,
   maxRetries,
@@ -185,6 +195,8 @@ switch (mode) {
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
     _customStoragePath = STORAGE_PATH as string;
+    _impressionsMode = IMPRESSIONS_MODE as string;
+    _debug = DEBUG as unknown as boolean;
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
     synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
     synchronizerConfigs.maxRetries= MAX_RETRIES as number;
@@ -196,6 +208,8 @@ switch (mode) {
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
     _customStoragePath = env.STORAGE_PATH as string;
+    _impressionsMode = env.IMPRESSIONS_MODE as string;
+    _debug = env.DEBUG as unknown as boolean;
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
     synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
     synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
@@ -207,6 +221,8 @@ switch (mode) {
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
     _customStoragePath = storage as string;
+    _impressionsMode = impressionsMode as string;
+    _debug = debug as boolean;
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
     synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
     synchronizerConfigs.maxRetries = maxRetries as number;
@@ -245,12 +261,11 @@ const settings = {
   },
   sync: {
     // @ts-ignore
-    impressionsMode: impressionsMode?.toUpperCase() || 'OPTIMIZED',
+    impressionsMode: _impressionsMode?.toUpperCase() || 'OPTIMIZED',
   },
   synchronizerConfigs,
-  debug: debug || false,
+  debug: _debug || DEBUG,
 };
-
 
 const synchronizer = new Synchronizer(settings);
 
