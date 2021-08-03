@@ -30,8 +30,8 @@ _Note:_ In order to run build/tests commands, Node 10 or higher is required.
 
 ### Building the Synchronizer's CLI
 
-To create the CLI that will be set as `bin` in the package, run the comman `npm run make:cli`. Refer to [package.json](package.json) for more insight on the build scripts.
-_Note:_ the CLI capabilites rely on [yargs](https://www.npmjs.com/package/yargs), which requires Node 12 or higher.
+To create the CLI that will be set as `bin` in the package, run the command `npm run make:cli`. Refer to [package.json](package.json) for more insight on the build scripts.
+_Note:_ the CLI capabilities rely on [yargs](https://www.npmjs.com/package/yargs), which requires Node 12 or higher.
 
 ### Running tests
 

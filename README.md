@@ -9,7 +9,7 @@ Thin version of Split Synchronizer supporting the core of the synchronization me
 ## Compatibility
 Split Synchronizer supports:
 - Node version 12 or higher to execute the CLI.
-- Node 8 or higher to import the package as dependency.
+- Node version 8 or higher to import the package as dependency.
 
 ## Getting started
 Below is a simple example that describes the execution or instantiation of Split NodeJS Synchronizer:
