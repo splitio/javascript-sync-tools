@@ -137,7 +137,7 @@ const yargv = yargs(hideBin(argv))
       nargs: 1,
     },
   })
-  .config('json-file', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
+  .config('config', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .help('h')
   .alias('h', 'help')
   .epilog(`copyright ${new Date().getFullYear()}`)
@@ -231,10 +231,10 @@ switch (mode) {
 }
 
 try {
-  customStorage = require(_customStoragePath as string).default;
+  customStorage = require(`${process.cwd()}/${_customStoragePath}` as string).default;
 } catch (error) {
   // @ts-ignore
-  console.log('Error importing Storage', error.message);
+  console.log('Error importing Storage: ', error.message);
   exit(0);
 }
 
