@@ -94,13 +94,13 @@ export default class Synchronizer {
    *
    * @returns {Promise<boolean>}
    */
-  // @ts-ignore
   initializeStorages(): Promise<boolean> {
     return new Promise<boolean>((res, rej) => {
       this._storage = SynchronizerStorageFactory(
         this._settings,
         (error) => error ? rej() : res(true)
       );
+      return true;
     }).catch((error) => {
       this._settings.log.error(`Error when initializing Storages: ${error}`);
       return false;
