@@ -5,6 +5,8 @@ import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/s
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { ISegmentsCacheAsync, ISplitsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
 
+type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
+
 /**
  * Class that manages all the Splits entities related actions.
  */
@@ -24,8 +26,7 @@ export class SplitsSynchronizer {
   /**
    * The local reference to the SplitUpdater from @splitio/javascript-commons.
    */
-  // @ts-ignore
-  private _splitUpdater;
+  private _splitUpdater?: ISplitChangesUpdater;
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
@@ -47,6 +48,7 @@ export class SplitsSynchronizer {
     this._segmentsStorage = segmentsStorage;
     this._settings = settings;
     this._fetcher = splitChangesFetcherFactory(splitFetcher);
+    this._splitUpdater = undefined;
   }
 
   /**
