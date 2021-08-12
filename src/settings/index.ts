@@ -2,6 +2,7 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { isNaNNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
+import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SynchronizerConfigs } from '../types';
 import { defaults } from './defaults';
 
@@ -28,7 +29,7 @@ const params = {
 export default function synchronizerSettingsValidator(
   config: ISettings &
   { synchronizerConfigs: SynchronizerConfigs }
-) {
+): ISettingsInternal {
   const synchronizerDefaults = {
     synchronizerMode: 'MODE_RUN_ALL',
     eventsPerPost: 1000,
