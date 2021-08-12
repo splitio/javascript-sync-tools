@@ -41,11 +41,11 @@ export default function synchronizerSettingsValidator(config: any) {
     /**
      * TODO: validate if we need to set a something like MINIMUM_EVENTS/IMPRESSIONS_PER_POST.
      */
-    if (eventsPerPost && isNaNNumber(eventsPerPost) || eventsPerPost <= 0) {
+    if (eventsPerPost && (isNaNNumber(eventsPerPost) || eventsPerPost <= 0)) {
       console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
     }
 
-    if (impressionsPerPost && isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0) {
+    if (impressionsPerPost && (isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0)) {
       console.log('IMPRESSIONS_PER_POST parameter must be a positive integer number. Using default value instead.');
     }
 
