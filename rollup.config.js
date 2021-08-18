@@ -10,6 +10,7 @@ const config = [
       file: 'bin/splitio-node-synchronizer.js',
       format: 'cjs',
       name: 'SplitSynchronizerCLI',
+      exports: 'auto',
     },
     plugins: [
       resolve(),
