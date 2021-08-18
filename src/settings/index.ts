@@ -35,6 +35,7 @@ export default function synchronizerSettingsValidator(
     eventsPerPost: 1000,
     impressionsPerPost: 1000,
     maxRetries: 3,
+    inMemoryOperation: false,
   };
 
   if (config.synchronizerConfigs) {
