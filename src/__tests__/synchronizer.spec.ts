@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+// @ts-nocheck
 import Synchronizer from '../Synchronizer';
 import synchronizerSettingsValidator from '../settings';
 import InMemoryStorage from './customStorage/InMemoryStorage';
