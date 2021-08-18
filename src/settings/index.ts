@@ -29,7 +29,7 @@ const params = {
 export default function synchronizerSettingsValidator(
   config: ISettings &
   { synchronizerConfigs: SynchronizerConfigs }
-): ISettingsInternal {
+): ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs } {
   const synchronizerDefaults = {
     synchronizerMode: 'MODE_RUN_ALL',
     eventsPerPost: 1000,
@@ -62,5 +62,5 @@ export default function synchronizerSettingsValidator(
     Object.assign(config, { ...config }, { synchronizerConfigs: synchronizerDefaults });
   }
 
-  return settingsValidation(config, params);
+  return settingsValidation(config, params) as ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs };
 }
