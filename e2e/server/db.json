@@ -3,7 +3,7 @@
     {
       "splits": [
         {
-          "trafficTypeName": "account",
+          "trafficTypeName": "testTT",
           "name": "MATIAS_TEST",
           "trafficAllocation": 92,
           "trafficAllocationSeed": 59120715,
@@ -837,6 +837,55 @@
           ]
         },
         {
+          "trafficTypeName": "account",
+          "name": "old_split",
+          "trafficAllocation": 100,
+          "trafficAllocationSeed": 466758093,
+          "seed": -2090341508,
+          "status": "ARCHIVED",
+          "killed": true,
+          "defaultTreatment": "off",
+          "changeNumber": 1564514736413,
+          "algo": 2,
+          "configurations": {},
+          "conditions": [
+            {
+              "conditionType": "ROLLOUT",
+              "matcherGroup": {
+                "combiner": "AND",
+                "matchers": [
+                  {
+                    "keySelector": {
+                      "trafficType": "account",
+                      "attribute": null
+                    },
+                    "matcherType": "ALL_KEYS",
+                    "negate": false,
+                    "userDefinedSegmentMatcherData": null,
+                    "whitelistMatcherData": null,
+                    "unaryNumericMatcherData": null,
+                    "betweenMatcherData": null,
+                    "booleanMatcherData": null,
+                    "dependencyMatcherData": null,
+                    "stringMatcherData": null
+                  }
+                ]
+              },
+              "partitions": [
+                {
+                  "treatment": "on",
+                  "size": 0
+                },
+                {
+                  "treatment": "off",
+                  "size": 100
+                }
+              ],
+              "label": "default rule"
+            }
+          ]
+        },
+        {
           "trafficTypeName": "user",
           "name": "barca_tiny_rules",
           "trafficAllocation": 100,
@@ -1001,57 +1050,6 @@
         },
         {
           "trafficTypeName": "desded",
-          "name": "TEST_RULO",
-          "trafficAllocation": 100,
-          "trafficAllocationSeed": -1845986406,
-          "seed": 255141922,
-          "status": "ACTIVE",
-          "killed": false,
-          "defaultTreatment": "off",
-          "changeNumber": 1555536480284,
-          "algo": 2,
-          "configurations": {
-            "on": "{\"ojoijoii\":\"oijoijioj\",\"\":\"\"}"
-          },
-          "conditions": [
-            {
-              "conditionType": "ROLLOUT",
-              "matcherGroup": {
-                "combiner": "AND",
-                "matchers": [
-                  {
-                    "keySelector": {
-                      "trafficType": "desded",
-                      "attribute": null
-                    },
-                    "matcherType": "ALL_KEYS",
-                    "negate": false,
-                    "userDefinedSegmentMatcherData": null,
-                    "whitelistMatcherData": null,
-                    "unaryNumericMatcherData": null,
-                    "betweenMatcherData": null,
-                    "booleanMatcherData": null,
-                    "dependencyMatcherData": null,
-                    "stringMatcherData": null
-                  }
-                ]
-              },
-              "partitions": [
-                {
-                  "treatment": "on",
-                  "size": 0
-                },
-                {
-                  "treatment": "off",
-                  "size": 100
-                }
-              ],
-              "label": "default rule"
-            }
-          ]
-        },
-        {
-          "trafficTypeName": "desded",
           "name": "delete_rulo1",
           "trafficAllocation": 100,
           "trafficAllocationSeed": -1537956463,
@@ -1106,9 +1104,149 @@
       "till": 1619720346271
     },
     {
-      "splits": [],
+      "splits": [
+        {
+          "trafficTypeName": "desded",
+          "name": "TEST_RULO",
+          "trafficAllocation": 100,
+          "trafficAllocationSeed": -1845986406,
+          "seed": 255141922,
+          "status": "ACTIVE",
+          "killed": false,
+          "defaultTreatment": "off",
+          "changeNumber": 1555536480284,
+          "algo": 2,
+          "configurations": {
+            "on": "{\"ojoijoii\":\"oijoijioj\",\"\":\"\"}"
+          },
+          "conditions": [
+            {
+              "conditionType": "ROLLOUT",
+              "matcherGroup": {
+                "combiner": "AND",
+                "matchers": [
+                  {
+                    "keySelector": {
+                      "trafficType": "desded",
+                      "attribute": null
+                    },
+                    "matcherType": "ALL_KEYS",
+                    "negate": false,
+                    "userDefinedSegmentMatcherData": null,
+                    "whitelistMatcherData": null,
+                    "unaryNumericMatcherData": null,
+                    "betweenMatcherData": null,
+                    "booleanMatcherData": null,
+                    "dependencyMatcherData": null,
+                    "stringMatcherData": null
+                  }
+                ]
+              },
+              "partitions": [
+                {
+                  "treatment": "on",
+                  "size": 0
+                },
+                {
+                  "treatment": "off",
+                  "size": 100
+                }
+              ],
+              "label": "default rule"
+            }
+          ]
+        },
+        {
+          "trafficTypeName": "account",
+          "name": "MATIAS_TEST",
+          "trafficAllocation": 92,
+          "trafficAllocationSeed": 59120715,
+          "seed": -2094556730,
+          "status": "ACTIVE",
+          "killed": false,
+          "defaultTreatment": "off",
+          "changeNumber": 1619720346272,
+          "algo": 2,
+          "configurations": {},
+          "conditions": [
+            {
+              "conditionType": "ROLLOUT",
+              "matcherGroup": {
+                "combiner": "AND",
+                "matchers": [
+                  {
+                    "keySelector": {
+                      "trafficType": "account",
+                      "attribute": "test"
+                    },
+                    "matcherType": "MATCHES_STRING",
+                    "negate": false,
+                    "userDefinedSegmentMatcherData": null,
+                    "whitelistMatcherData": null,
+                    "unaryNumericMatcherData": null,
+                    "betweenMatcherData": null,
+                    "booleanMatcherData": null,
+                    "dependencyMatcherData": null,
+                    "stringMatcherData": "/matias/i"
+                  }
+                ]
+              },
+              "partitions": [
+                {
+                  "treatment": "on",
+                  "size": 100
+                },
+                {
+                  "treatment": "off",
+                  "size": 0
+                }
+              ],
+              "label": "test matches /matias/i"
+            },
+            {
+              "conditionType": "ROLLOUT",
+              "matcherGroup": {
+                "combiner": "AND",
+                "matchers": [
+                  {
+                    "keySelector": {
+                      "trafficType": "account",
+                      "attribute": null
+                    },
+                    "matcherType": "ALL_KEYS",
+                    "negate": false,
+                    "userDefinedSegmentMatcherData": null,
+                    "whitelistMatcherData": null,
+                    "unaryNumericMatcherData": null,
+                    "betweenMatcherData": null,
+                    "booleanMatcherData": null,
+                    "dependencyMatcherData": null,
+                    "stringMatcherData": null
+                  }
+                ]
+              },
+              "partitions": [
+                {
+                  "treatment": "on",
+                  "size": 0
+                },
+                {
+                  "treatment": "off",
+                  "size": 100
+                }
+              ],
+              "label": "default rule"
+            }
+          ]
+        }
+      ],
       "since": 1619720346271,
-      "till": 1619720346271
+      "till": 1619720346272
+    },
+    {
+      "splits": [],
+      "since": 1619720346272,
+      "till": 1619720346272
     }
   ],
   "segmentChanges": [

@@ -35,14 +35,20 @@ export class SplitsSynchronizer {
   /**
    * The local reference to the InMemory cache used when InMemoryOperation mode is enabled.
    */
-  private _inMemoryStorage: IStorageSync;
+  _inMemoryStorage: IStorageSync;
+  /**
+   * The local reference to the InMemory cache initial Snapshot used when InMemoryOperation mode is enabled to detect
+   * differences between the current Storage's data with the InMemory updated data post synchronization.
+   */
+  _inMemoryStorageSnapshot: IStorageSync;
 
   /**
    * @param {IFetchSplitChanges}   splitFetcher     The SplitChanges fetcher from SplitAPI.
    * @param {ISettings}            settings         The Synchronizer's settings.
    * @param {ISplitsCacheAsync}    splitsStorage    The reference to the current Split Storage.
    * @param {ISegmentsCacheAsync}  segmentsStorage  The reference to the current Cache Storage.
-   * @param {IStorageSync}         inMemoryStorage  The reference to local InMemoryStorage cache.
+   * @param {IStorageSync}  inMemoryStorage  The reference to the current Cache Storage.
+   * @param {IStorageSync}  inMemoryStorageSnapshot  The reference to the current Cache Storage.
    */
   constructor(
     splitFetcher: IFetchSplitChanges,
@@ -50,6 +56,7 @@ export class SplitsSynchronizer {
     splitsStorage: ISplitsCacheAsync,
     segmentsStorage: ISegmentsCacheAsync,
     inMemoryStorage: IStorageSync,
+    inMemoryStorageSnapshot: IStorageSync,
   ) {
     this._splitsStorage = splitsStorage;
     this._segmentsStorage = segmentsStorage;
@@ -57,6 +64,7 @@ export class SplitsSynchronizer {
     this._fetcher = splitChangesFetcherFactory(splitFetcher);
     this._splitUpdater = undefined;
     this._inMemoryStorage = inMemoryStorage;
+    this._inMemoryStorageSnapshot = inMemoryStorageSnapshot;
   }
 
   /**
@@ -89,15 +97,19 @@ export class SplitsSynchronizer {
         if (splitDefinition) _splitsList.push([name, splitDefinition]);
       }
 
-      this._inMemoryStorage?.splits.addSplits(_splitsList);
+      this._inMemoryStorage.splits.addSplits(_splitsList);
+      this._inMemoryStorageSnapshot.splits.addSplits(_splitsList);
 
       const registeredSegments = await this._segmentsStorage.getRegisteredSegments();
-      if (registeredSegments.length > 0)
+      if (registeredSegments.length > 0) {
         this._inMemoryStorage.segments.registerSegments(registeredSegments);
-
+        this._inMemoryStorageSnapshot.segments.registerSegments(registeredSegments);
+      }
       const changeNumber = await this._splitsStorage.getChangeNumber();
 
-      this._inMemoryStorage?.splits.setChangeNumber(changeNumber);
+      this._inMemoryStorage.splits.setChangeNumber(changeNumber);
+      this._inMemoryStorageSnapshot.splits.setChangeNumber(changeNumber);
+
     } catch (error) {
       this._settings.log.error(
         `Split InMemory Sinchronization: Error when retreving data from external Storage. Error: ${error}`
@@ -110,13 +122,14 @@ export class SplitsSynchronizer {
    */
   async putDataToStorage() {
     try {
+      const diffResult = await this.processDifferences();
+      if (diffResult > 0) this._settings.log.info(`Removed ${diffResult} splits from storage`);
       const splitsNames = this._inMemoryStorage.splits.getSplitNames() || [];
 
       if (splitsNames.length > 0) {
         const splitsToStore: [string, string][] = [];
         for (let i = 0; i < splitsNames?.length; i++) {
           const name = splitsNames[i];
-          // @ts-ignore
           const splitDefinition = this._inMemoryStorage.splits.getSplit(name);
           if (splitDefinition)
             splitsToStore.push([ name, splitDefinition ]);
@@ -133,7 +146,6 @@ export class SplitsSynchronizer {
 
       if (registeredSegments.length > 0)
         await this._segmentsStorage.registerSegments(registeredSegments);
-
     } catch (error) {
       this._settings.log.error(
         `Split InMemory Sinchronization: Error when storing data to external Storage. Error: ${error}`
@@ -157,6 +169,7 @@ export class SplitsSynchronizer {
     try {
       this._settings.log.info('InMemoryOperation config enabled.');
       await this.getDataFromStorage();
+
       const res = await this._splitUpdater();
       if (!res) {
         return Promise.resolve(false);
@@ -167,5 +180,29 @@ export class SplitsSynchronizer {
       this._settings.log.error(`Error executing Splits Synchronization with InMemory cache. ${error}`);
       return Promise.resolve(false);
     }
+  }
+  /**
+   * Function to compare an inital InMemory cache snapshot with the updated InMemory cache after synchronization.
+   * It will calculate differences, removing splits that are no longer required and updating splits with new data.
+   *
+   * @returns {any}
+   */
+  async processDifferences() {
+    let deletedAmount = 0;
+    const oldSplitsKeys = this._inMemoryStorageSnapshot.splits.getSplitNames() || [];
+    const newSplitsKeys = this._inMemoryStorage.splits.getSplitNames() || [];
+    const splitKeysToRemove = [];
+
+    for (let i = 0; i < oldSplitsKeys.length; i++) {
+      const splitName = oldSplitsKeys[i];
+      if (!newSplitsKeys.some((k) => k === splitName)) {
+        splitKeysToRemove.push(splitName);
+        deletedAmount++;
+      }
+    }
+
+    await this._splitsStorage.removeSplits(splitKeysToRemove);
+
+    return deletedAmount;
   }
 }

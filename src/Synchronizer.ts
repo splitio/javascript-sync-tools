@@ -1,6 +1,6 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
 import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { IStorageAsync, IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
@@ -16,8 +16,8 @@ import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impr
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
 import synchronizerSettingsValidator from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
-import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { SynchronizerConfigs } from './types';
+import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -58,10 +58,6 @@ export default class Synchronizer {
    * The local reference for the Impression Observer.
    */
   _observer: ImpressionObserver;
-  /**
-   * The local reference for the InMemory Storage implementation.
-   */
-  _inMemoryStorage: IStorageSync;
 
   /**
    * @param  {ISettingsInternal} settings  Object containing the minimum settings required
@@ -83,10 +79,6 @@ export default class Synchronizer {
       this._settings,
       { getFetch: Synchronizer._getFetch },
     );
-
-    // @ts-ignore
-    // {metadata} is not required.
-    this._inMemoryStorage = InMemoryStorageFactory({ log: this._settings.log });
   }
 
   /**
@@ -137,7 +129,10 @@ export default class Synchronizer {
         this._settings,
         this._storage.splits,
         this._storage.segments,
-        this._inMemoryStorage,
+        // @ts-ignore
+        InMemoryStorageFactory({ log: this._settings.log }),
+        // @ts-ignore
+        InMemoryStorageFactory({ log: this._settings.log })
       );
       this._eventsSynchronizer = new EventsSynchronizer(
         this._splitApi.postEventsBulk,
