@@ -141,7 +141,7 @@ export class SplitsSynchronizer {
           const oldSplitDefinition = this._inMemoryStorageSnapshot.splits.getSplit(name);
 
           if (splitDefinition) {
-            // If the Split doesn't exists (new split).
+            // If the Split doesn't exists.
             if (!oldSplitDefinition) {
               splitsToStore.push([name, splitDefinition]);
               continue;
