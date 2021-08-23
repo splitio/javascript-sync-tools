@@ -21,7 +21,10 @@ describe('Splits Synchronizer', () => {
         });
       }),
       getSplitNames: jest.fn(() => _splitsCache.map(i => i[0])),
-      getSplit: jest.fn((name) => _splitsCache.find(i => i[0] === name)[1]),
+      getSplit: jest.fn((name) => {
+        const res = _splitsCache.find(i => i[0] === name);
+        return res ? res[1] : null;
+      }),
       setChangeNumber: jest.fn((number) => _changeNumber = number),
       getChangeNumber: jest.fn(() => _changeNumber),
       getAll: jest.fn(() => _splitsCache),
@@ -44,8 +47,11 @@ describe('Splits Synchronizer', () => {
   };
 
   const _splitStorageMock = (() => {
-    const _splitsStored = { pepito1: 'splitDefinition1', pepito2: 'splitDefinition2' };
-    let _changeNumber = 10;
+    const _splitsStored = {
+      pepito1: JSON.stringify({ name: 'pepito1', changeNumber: 0 }),
+      pepito2: JSON.stringify({ name: 'pepito2', changeNumber: 0 }),
+    };
+    let _changeNumber = 1;
 
     return {
       addSplits: jest.fn((list) => {
@@ -98,12 +104,12 @@ describe('Splits Synchronizer', () => {
       });
 
       it('retrieves [SPLITS] stored from Storage into InMemory cache', () => {
-        expect(_splitsSynchronizer._inMemoryStorage.splits.getAll()).toEqual([
-          ['pepito1', 'splitDefinition1'],
-          ['pepito2', 'splitDefinition2'],
-        ]);
+        const splitsNames = _splitsSynchronizer._inMemoryStorage.splits.getAll()
+          .map(split => JSON.parse(split[1]).name);
 
-        expect(_splitsSynchronizer._inMemoryStorage.splits.getChangeNumber()).toBe(10);
+        expect(splitsNames).toEqual(['pepito1', 'pepito2']);
+
+        expect(_splitsSynchronizer._inMemoryStorage.splits.getChangeNumber()).toBe(1);
       });
 
       it('retrieves [SEGMENTS] stored from Storage into InMemory cache', () => {
@@ -115,16 +121,16 @@ describe('Splits Synchronizer', () => {
       beforeAll(() => {
         createNewSynchronizer();
         _splitsSynchronizer._inMemoryStorageSnapshot.splits.addSplits([
-          ['pepito1', '{"name":"pepito1","changeNumber":1}'],
+          ['pepito1', '{"name":"pepito1","changeNumber":4}'],
         ]);
         _splitsSynchronizer._inMemoryStorageSnapshot.splits.addSplits([
-          ['pepito2', '{"name":"pepito2","changeNumber":1}'],
+          ['pepito2', '{"name":"pepito2","changeNumber":4}'],
         ]);
         _splitsSynchronizer._inMemoryStorage.splits.addSplits([
-          ['pepito2', '{"name":"pepito2","changeNumber":3}'],
+          ['pepito2', '{"name":"pepito2","changeNumber":5}'],
         ]);
         _splitsSynchronizer._inMemoryStorage.splits.addSplits([
-          ['pepito3', '{"name":"pepito3","changeNumber":1}'],
+          ['pepito3', '{"name":"pepito3","changeNumber":3}'],
         ]);
       });
 
@@ -139,11 +145,15 @@ describe('Splits Synchronizer', () => {
       beforeAll(async () => {
         createNewSynchronizer();
         // adding some data simulating Synchronization execution')
-        _splitsSynchronizer._inMemoryStorage.splits.addSplits([['pepito3', 'splitDefinition3']]);
+        _splitsSynchronizer._inMemoryStorage.splits.addSplits([
+          ['pepito3', JSON.stringify({ name: 'pepito3', changeNumber: 6 })],
+        ]);
+
         _splitsSynchronizer._inMemoryStorage.splits.setChangeNumber(12);
         _splitsSynchronizer._inMemoryStorage.segments.registerSegments(['anotherSegment']);
 
         await _splitsSynchronizer.putDataToStorage();
+        console.log('lslslls', _splitsSynchronizer._inMemoryStorageSnapshot.splits.getAll());
       });
 
       it('has stored [SPLITS] data from InMemory cache to Storage.', async () => {
