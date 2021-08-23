@@ -3,6 +3,7 @@ import splitChangesFetcherFactory from '@splitsoftware/splitio-commons/src/sync/
 import { splitChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { ISplit } from '@splitsoftware/splitio-commons/types/dtos/types';
 import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync }
   from '@splitsoftware/splitio-commons/types/storages/types';
 
@@ -122,7 +123,13 @@ export class SplitsSynchronizer {
    */
   async putDataToStorage() {
     try {
+      const snapshotChangeNumber = this._inMemoryStorageSnapshot?.splits.getChangeNumber() || 0;
+      const changeNumber = this._inMemoryStorage?.splits.getChangeNumber() || 0;
+
+      if (snapshotChangeNumber === changeNumber) return;
+
       const diffResult = await this.processDifferences();
+
       if (diffResult > 0) this._settings.log.info(`Removed ${diffResult} splits from storage`);
       const splitsNames = this._inMemoryStorage.splits.getSplitNames() || [];
 
@@ -131,16 +138,27 @@ export class SplitsSynchronizer {
         for (let i = 0; i < splitsNames?.length; i++) {
           const name = splitsNames[i];
           const splitDefinition = this._inMemoryStorage.splits.getSplit(name);
-          if (splitDefinition)
-            splitsToStore.push([ name, splitDefinition ]);
+          const oldSplitDefinition = this._inMemoryStorageSnapshot.splits.getSplit(name);
 
-          await this._splitsStorage.addSplits(splitsToStore);
-
-          const changeNumber = this._inMemoryStorage?.splits.getChangeNumber();
-          if (changeNumber)
-            await this._splitsStorage.setChangeNumber(changeNumber);
+          if (splitDefinition) {
+            // If the Split doesn't exists (new split).
+            if (!oldSplitDefinition) {
+              splitsToStore.push([name, splitDefinition]);
+              continue;
+            }
+            const parsedSplitDefinition: ISplit = splitDefinition ? JSON.parse(splitDefinition) : {};
+            const parsedOldSplitDefinition: ISplit = oldSplitDefinition ? JSON.parse(oldSplitDefinition) : {};
+            // If the Split exists and needs to be updated.
+            if (parsedOldSplitDefinition.changeNumber !== parsedSplitDefinition.changeNumber) {
+              splitsToStore.push([ name, splitDefinition ]);
+              continue;
+            }
+          }
         }
+
+        await this._splitsStorage.addSplits(splitsToStore);
       }
+      await this._splitsStorage.setChangeNumber(changeNumber);
 
       const registeredSegments = this._inMemoryStorage.segments.getRegisteredSegments();
 
@@ -191,15 +209,16 @@ export class SplitsSynchronizer {
     let deletedAmount = 0;
     const oldSplitsKeys = this._inMemoryStorageSnapshot.splits.getSplitNames() || [];
     const newSplitsKeys = this._inMemoryStorage.splits.getSplitNames() || [];
-    const splitKeysToRemove = [];
+    const splitKeysToRemove: string[] = [];
 
-    for (let i = 0; i < oldSplitsKeys.length; i++) {
-      const splitName = oldSplitsKeys[i];
+    oldSplitsKeys.forEach((key) => {
+      const splitName = key;
+
       if (!newSplitsKeys.some((k) => k === splitName)) {
         splitKeysToRemove.push(splitName);
         deletedAmount++;
       }
-    }
+    });
 
     await this._splitsStorage.removeSplits(splitKeysToRemove);
 
