@@ -14,6 +14,7 @@
 | -f        | --impressionsPerPost  | IMPRESSIONS_PER_POST  | NO    		| Set a custom execution to run 	                                                                    | N/A		                                        |
 | -t        | --maxRetries          | MAX_RETRIES           | NO    		| Set the number of retries attempt perform an Event or Impression POST request.	                    | N/A		                                        |
 | -i        | --impressionsMode     | IMPRESSIONS_MODE      | NO    		| This configuration defines how impressions are queued.                                              | `optimized` or `debug`                        |
+| -g        | --inMemoryOperation   | IN_MEMORY_OPERATION   | NO    		| Flag that enables all the Splits Synchronization operations to be proccessed in Memory.             |                                               |
 
 ## CLI usage example
 ```

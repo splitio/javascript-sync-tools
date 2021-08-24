@@ -139,7 +139,7 @@ const yargv = yargs(hideBin(argv))
     g: {
       alias: 'inMemoryOperation',
       type: 'boolean',
-      description: 'This configuration enables all the Splits Synchronization operations to happen in Memory.',
+      description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
       nargs: 0,
     },
   })
