@@ -53,6 +53,7 @@ const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
 
 describe('Synchronizer e2e tests', () => {
   beforeAll(async (done) => {
+    // @TODO: Flush db prior to any tests
     // @ts-ignore
     _redisServer = _redisStorage;
     await _redisServer.connect();
@@ -129,6 +130,66 @@ describe('Synchronizer e2e tests', () => {
 
       expect(events).toHaveLength(0);
     });
+  });
+});
+
+describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mode', () => {
+  const synchronizerConfigs: SynchronizerConfigs = {
+    synchronizerMode: 'MODE_RUN_SPLIT_SEGMENTS',
+    inMemoryOperation: true,
+  };
+  /**
+   * Settings creation.
+   */
+  const settings = {
+    core: {
+      authorizationKey: 'fakeapikeyfortesting',
+    },
+    urls: {
+      sdk: SERVER_MOCK_URL,
+      events: SERVER_MOCK_URL,
+    },
+    storage: {
+      type: 'CUSTOM_TEST',
+      prefix: PREFIX,
+      // @ts-ignore
+      wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
+    },
+    sync: {
+      impressionsMode: 'OPTIMIZED',
+    },
+    synchronizerConfigs,
+    logger: 'NONE',
+    streamingEnabled: false,
+    debug: true,
+  };
+
+  beforeAll(async () => {
+    const _synchronizer = new Synchronizer(settings);
+    // @ts-ignore
+    _redisServer = _redisStorage;
+    await _redisServer.connect();
+
+    await _synchronizer.set;
+    await _synchronizer.initializeStorages();
+    await _synchronizer.initializeSynchronizers();
+    await _synchronizer.execute();
+
+    // done();
+  });
+
+  it('saves [17] Splits as keys in Redis', async () => {
+    const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split*`);
+
+    expect(splits).toHaveLength(18);
+  });
+
+  it('saves [2] Segments as keys in Redis', async () => {
+    const segments = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segment.*`);
+    const segmentsRegistered = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segments.*`);
+
+    expect(segments).toHaveLength(6);
+    expect(segmentsRegistered).toHaveLength(1);
   });
 });
 

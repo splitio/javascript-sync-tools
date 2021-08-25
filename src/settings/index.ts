@@ -1,6 +1,9 @@
+import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { isNaNNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
+import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { SynchronizerConfigs } from '../types';
 import { defaults } from './defaults';
 
 /**
@@ -23,12 +26,16 @@ const params = {
  * @param {any} config  Object with the keys and values for instatiating a SettingsInternal object.
  * @returns {ISettingsInternal}
  */
-export default function synchronizerSettingsValidator(config: any) {
+export default function synchronizerSettingsValidator(
+  config: ISettings &
+  { synchronizerConfigs: SynchronizerConfigs }
+): ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs } {
   const synchronizerDefaults = {
     synchronizerMode: 'MODE_RUN_ALL',
     eventsPerPost: 1000,
     impressionsPerPost: 1000,
     maxRetries: 3,
+    inMemoryOperation: false,
   };
 
   if (config.synchronizerConfigs) {
@@ -41,11 +48,11 @@ export default function synchronizerSettingsValidator(config: any) {
     /**
      * TODO: validate if we need to set a something like MINIMUM_EVENTS/IMPRESSIONS_PER_POST.
      */
-    if (eventsPerPost && isNaNNumber(eventsPerPost) || eventsPerPost <= 0) {
+    if (eventsPerPost && (isNaNNumber(eventsPerPost) || eventsPerPost <= 0)) {
       console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
     }
 
-    if (impressionsPerPost && isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0) {
+    if (impressionsPerPost && (isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0)) {
       console.log('IMPRESSIONS_PER_POST parameter must be a positive integer number. Using default value instead.');
     }
 
@@ -56,5 +63,5 @@ export default function synchronizerSettingsValidator(config: any) {
     Object.assign(config, { ...config }, { synchronizerConfigs: synchronizerDefaults });
   }
 
-  return settingsValidation(config, params);
+  return settingsValidation(config, params) as ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs };
 }

@@ -1,6 +1,6 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
 import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IStorageAsync, IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
@@ -16,7 +16,8 @@ import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impr
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
 import synchronizerSettingsValidator from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
-
+import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
+import { SynchronizerConfigs } from './types';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -52,11 +53,15 @@ export default class Synchronizer {
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
-  _settings: ISettingsInternal;
+  _settings: ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs };
   /**
    * The local reference for the Impression Observer.
    */
   _observer: ImpressionObserver;
+  /**
+   * The local reference for the InMemory Storage implementation.
+   */
+  _inMemoryStorage: IStorageSync;
 
   /**
    * @param  {ISettingsInternal} settings  Object containing the minimum settings required
@@ -78,6 +83,10 @@ export default class Synchronizer {
       this._settings,
       { getFetch: Synchronizer._getFetch },
     );
+
+    // @ts-ignore
+    // {metadata} is not required.
+    this._inMemoryStorage = InMemoryStorageFactory({ log: this._settings.log });
   }
 
   /**
@@ -94,13 +103,13 @@ export default class Synchronizer {
    *
    * @returns {Promise<boolean>}
    */
-  // @ts-ignore
   initializeStorages(): Promise<boolean> {
     return new Promise<boolean>((res, rej) => {
       this._storage = SynchronizerStorageFactory(
         this._settings,
         (error) => error ? rej() : res(true)
       );
+      return true;
     }).catch((error) => {
       this._settings.log.error(`Error when initializing Storages: ${error}`);
       return false;
@@ -128,14 +137,13 @@ export default class Synchronizer {
         this._settings,
         this._storage.splits,
         this._storage.segments,
+        this._inMemoryStorage,
       );
       this._eventsSynchronizer = new EventsSynchronizer(
         this._splitApi.postEventsBulk,
         this._storage.events,
         this._settings.log,
-        // @ts-ignore
         this._settings.synchronizerConfigs.eventsPerPost,
-        // @ts-ignore
         this._settings.synchronizerConfigs.maxRetries,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
@@ -143,9 +151,7 @@ export default class Synchronizer {
         this._storage.impressions,
         this._observer,
         this._settings.log,
-        // @ts-ignore
         this._settings.synchronizerConfigs.impressionsPerPost,
-        // @ts-ignore
         this._settings.synchronizerConfigs.maxRetries,
         countsCache,
       );
@@ -205,7 +211,6 @@ export default class Synchronizer {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-    // @ts-ignore @todo:check this setting type
     const mode = this._settings.synchronizerConfigs?.synchronizerMode || 'MODE_RUN_ALL';
     const hasPreExecutionSucceded = await this.preExecute();
     if (!hasPreExecutionSucceded) return false;
@@ -229,7 +234,9 @@ export default class Synchronizer {
   async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
+    const isSplitsSyncReady = this._settings.synchronizerConfigs.inMemoryOperation ?
+      await this._splitsSynchronizer.getSplitChangesInMemory() :
+      await this._splitsSynchronizer.getSplitChanges();
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
     console.log(` > Segments Synchronizer task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
