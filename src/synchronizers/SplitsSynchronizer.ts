@@ -33,6 +33,10 @@ export class SplitsSynchronizer {
    * The local reference to the Synchronizer's settings configurations.
    */
   private _settings;
+  /*
+   * @todo: Implement Event Emitter param from splitUpdater and segmentsUpdater to calculate the
+   *        differences between both storage.
+   */
   /**
    * The local reference to the InMemory cache used when InMemoryOperation mode is enabled.
    */
@@ -123,8 +127,8 @@ export class SplitsSynchronizer {
    */
   async putDataToStorage() {
     try {
-      const snapshotChangeNumber = this._inMemoryStorageSnapshot?.splits.getChangeNumber() || 0;
-      const changeNumber = this._inMemoryStorage?.splits.getChangeNumber() || 0;
+      const snapshotChangeNumber = this._inMemoryStorageSnapshot?.splits.getChangeNumber();
+      const changeNumber = this._inMemoryStorage?.splits.getChangeNumber();
 
       if (snapshotChangeNumber === changeNumber) return;
 
@@ -163,6 +167,7 @@ export class SplitsSynchronizer {
 
       const registeredSegments = this._inMemoryStorage.segments.getRegisteredSegments();
 
+      // @todo: Update segment definitions and change number
       if (registeredSegments.length > 0)
         await this._segmentsStorage.registerSegments(registeredSegments);
     } catch (error) {
