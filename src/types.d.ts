@@ -17,5 +17,4 @@ export type SynchronizerConfigs = {
   impressionsPerPost?: number;
   maxRetries?: number;
   inMemoryOperation?: boolean;
-  customStorageWrapper?: any;
 }

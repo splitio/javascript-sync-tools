@@ -90,15 +90,15 @@ export class SplitsSynchronizer {
   async getDataFromStorage() {
     const _splitsList: [string, string][] = [];
     try {
-      const splitsNames = await this._splitsStorage.getSplitNames();
+      const splits = await this._splitsStorage.getAll();
 
-      for (let i = 0; i < splitsNames.length; i++) {
-        const name = splitsNames[i];
-        const splitDefinition = await this._splitsStorage.getSplit(name);
-        if (splitDefinition) _splitsList.push([name, splitDefinition]);
-      }
+      splits.forEach((split) => {
+        const name = JSON.parse(split).name;
+        _splitsList.push([name, split]);
+      });
 
       this._inMemoryStorage.splits.addSplits(_splitsList);
+
       this._inMemoryStorageSnapshot.splits.addSplits(_splitsList);
 
       const registeredSegments = await this._segmentsStorage.getRegisteredSegments();
@@ -131,26 +131,27 @@ export class SplitsSynchronizer {
       const diffResult = await this.processDifferences();
 
       if (diffResult > 0) this._settings.log.info(`Removed ${diffResult} splits from storage`);
-      const splitsNames = this._inMemoryStorage.splits.getSplitNames() || [];
+      const splits = this._inMemoryStorage.splits.getAll() || [];
 
-      if (splitsNames.length > 0) {
+      if (splits.length > 0) {
+
         const splitsToStore: [string, string][] = [];
-        for (let i = 0; i < splitsNames?.length; i++) {
-          const name = splitsNames[i];
-          const splitDefinition = this._inMemoryStorage.splits.getSplit(name);
+        for (let i = 0; i < splits?.length; i++) {
+          const split = splits[i];
+          const { name, changeNumber } = JSON.parse(splits[i]);
+          // const name = JSON.parsesplits[i];
           const oldSplitDefinition = this._inMemoryStorageSnapshot.splits.getSplit(name);
 
-          if (splitDefinition) {
+          if (split) {
             // If the Split doesn't exists.
             if (!oldSplitDefinition) {
-              splitsToStore.push([name, splitDefinition]);
+              splitsToStore.push([name, split]);
               continue;
             }
-            const parsedSplitDefinition: ISplit = splitDefinition ? JSON.parse(splitDefinition) : {};
             const parsedOldSplitDefinition: ISplit = oldSplitDefinition ? JSON.parse(oldSplitDefinition) : {};
             // If the Split exists and needs to be updated.
-            if (parsedOldSplitDefinition.changeNumber !== parsedSplitDefinition.changeNumber) {
-              splitsToStore.push([ name, splitDefinition ]);
+            if (parsedOldSplitDefinition.changeNumber !== changeNumber) {
+              splitsToStore.push([name, split]);
               continue;
             }
           }

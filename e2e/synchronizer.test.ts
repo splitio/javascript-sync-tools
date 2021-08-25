@@ -253,7 +253,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     });
   });
 
-  describe('Synchronizer runs a second time', () => {
+  describe('Synchronizer runs a second time, and', () => {
     beforeAll(async () => {
       await _synchronizer.execute();
     });
