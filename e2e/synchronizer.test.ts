@@ -51,12 +51,21 @@ const createSynchronizer = () => {
 
 const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
 
+/**
+ * Function to flush REDIS db from all keys related to e2e tests.
+ */
+const flushRedis = async () => {
+  const keys = await _redisServer.getKeysByPrefix(PREFIX);
+  for (let i = 0; i < keys.length; i++) {
+    await _redisServer.del(keys[i]);
+  }
+};
+
 describe('Synchronizer e2e tests', () => {
   beforeAll(async (done) => {
-    // @TODO: Flush db prior to any tests
-    // @ts-ignore
     _redisServer = _redisStorage;
     await _redisServer.connect();
+    await flushRedis();
 
     done();
   });
@@ -76,18 +85,30 @@ describe('Synchronizer e2e tests', () => {
       done();
     });
 
-    it('saves [17] Splits as keys in Redis', async () => {
-      const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split*`);
+    it('saves [4] Splits as keys in Redis', async () => {
+      const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
 
-      expect(splits).toHaveLength(18);
+      expect(splits).toHaveLength(4);
     });
 
     it('saves [2] Segments as keys in Redis', async () => {
       const segments = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segment.*`);
       const segmentsRegistered = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segments.*`);
 
-      expect(segments).toHaveLength(6);
+      expect(segments.filter(x => !x.match(/.till$/))).toHaveLength(2);
       expect(segmentsRegistered).toHaveLength(1);
+    });
+
+    it('saves [2] Traffic Types keys', async () => {
+      const trafficTypes = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.trafficType.*`);
+      const ttAccount = await _redisServer.get(`${REDIS_PREFIX}.trafficType.account`);
+      const ttTest = await _redisServer.get(`${REDIS_PREFIX}.trafficType.testTT`);
+      const ttUser = await _redisServer.get(`${REDIS_PREFIX}.trafficType.user`);
+
+      expect(trafficTypes).toHaveLength(2);
+      expect(Number(ttAccount)).toBe(0);
+      expect(Number(ttTest)).toBe(1);
+      expect(Number(ttUser)).toBe(3);
     });
   });
 
@@ -96,10 +117,10 @@ describe('Synchronizer e2e tests', () => {
       await runSDKConsumer();
     });
 
-    it('checks that [17] Impressions saved in Redis', async () => {
+    it('checks that [4] Impressions saved in Redis', async () => {
       const impressions = await _redisServer.popItems(`${REDIS_PREFIX}.impressions`, 100);
 
-      expect(impressions).toHaveLength(17);
+      expect(impressions).toHaveLength(4);
     });
 
     it('checks that [2] Events are saved in Redis', async () => {
@@ -109,7 +130,7 @@ describe('Synchronizer e2e tests', () => {
     });
   });
 
-  describe('Runs Synchronizer a [SECOND] time', () => {
+  describe('Runs Synchronizer a [SECOND] time and', () => {
     beforeAll(async () => {
       const _synchronizer = await createSynchronizer();
       await _synchronizer.initializeStorages();
@@ -117,6 +138,24 @@ describe('Synchronizer e2e tests', () => {
 
       const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);
+    });
+
+    it('saves [4] Splits as keys in Redis', async () => {
+      const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
+
+      expect(splits).toHaveLength(4);
+    });
+
+    it('saves [3] Traffic Types keys', async () => {
+      const trafficTypes = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.trafficType.*`);
+      const ttAccount = await _redisServer.get(`${REDIS_PREFIX}.trafficType.account`);
+      const ttTest = await _redisServer.get(`${REDIS_PREFIX}.trafficType.testTT`);
+      const ttUser = await _redisServer.get(`${REDIS_PREFIX}.trafficType.user`);
+
+      expect(trafficTypes).toHaveLength(3);
+      expect(Number(ttAccount)).toBe(2);
+      expect(Number(ttTest)).toBe(0);
+      expect(Number(ttUser)).toBe(2);
     });
 
     it('checks that [0] Impressions are saved in Redis', async () => {
@@ -161,36 +200,90 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     synchronizerConfigs,
     logger: 'NONE',
     streamingEnabled: false,
-    debug: true,
   };
 
+  const _synchronizer = new Synchronizer(settings);
+
   beforeAll(async () => {
-    const _synchronizer = new Synchronizer(settings);
     // @ts-ignore
     _redisServer = _redisStorage;
     await _redisServer.connect();
+    await flushRedis();
 
-    await _synchronizer.set;
     await _synchronizer.initializeStorages();
     await _synchronizer.initializeSynchronizers();
-    await _synchronizer.execute();
-
-    // done();
   });
 
-  it('saves [17] Splits as keys in Redis', async () => {
-    const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split*`);
+  describe('Synchronizer runs the first time', () => {
+    beforeAll(async () => {
+      await _synchronizer.execute();
+    });
 
-    expect(splits).toHaveLength(18);
+    it('saves [4] Splits as keys in Redis', async () => {
+      const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
+
+      // Check changeNumber(...71)
+      expect(splits).toHaveLength(4);
+    });
+
+    it('saves new changeNumber value', async () => {
+      const till = await _redisServer.getByPrefix(`${REDIS_PREFIX}.splits.till`);
+
+      expect(Number(till[0])).toBe(1619720346271);
+    });
+
+    it('saves [2] Segments as keys in Redis', async () => {
+      const segments = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segment.*`);
+      const segmentsRegistered = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segments.*`);
+
+      expect(segments.filter(x => !x.match(/.till$/))).toHaveLength(2);
+      expect(segmentsRegistered).toHaveLength(1);
+    });
+
+    it('saves [2] Traffic Types keys', async () => {
+      const trafficTypes = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.trafficType.*`);
+      const ttAccount = await _redisServer.get(`${REDIS_PREFIX}.trafficType.account`);
+      const ttTest = await _redisServer.get(`${REDIS_PREFIX}.trafficType.testTT`);
+      const ttUser = await _redisServer.get(`${REDIS_PREFIX}.trafficType.user`);
+
+      expect(trafficTypes).toHaveLength(2);
+      expect(Number(ttAccount)).toBe(0);
+      expect(Number(ttTest)).toBe(1);
+      expect(Number(ttUser)).toBe(3);
+    });
   });
 
-  it('saves [2] Segments as keys in Redis', async () => {
-    const segments = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segment.*`);
-    const segmentsRegistered = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.segments.*`);
+  describe('Synchronizer runs a second time, and', () => {
+    beforeAll(async () => {
+      await _synchronizer.execute();
+    });
 
-    expect(segments).toHaveLength(6);
-    expect(segmentsRegistered).toHaveLength(1);
+    it('runs again and saves [17] Splits as keys in Redis', async () => {
+      const splits = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
+
+      expect(splits).toHaveLength(4);
+    });
+
+    it('saves new changeNumber value', async () => {
+      const till = await _redisServer.getByPrefix(`${REDIS_PREFIX}.splits.till`);
+
+      expect(Number(till[0])).toBe(1619720346272);
+    });
+
+    it('updates [4] Traffic Types keys\' values', async () => {
+      const trafficTypes = await _redisServer.getKeysByPrefix(`${REDIS_PREFIX}.trafficType.*`);
+      const ttAccount = await _redisServer.get(`${REDIS_PREFIX}.trafficType.account`);
+      const ttTest = await _redisServer.get(`${REDIS_PREFIX}.trafficType.testTT`);
+      const ttUser = await _redisServer.get(`${REDIS_PREFIX}.trafficType.user`);
+
+      expect(trafficTypes).toHaveLength(3);
+      expect(Number(ttAccount)).toBe(2);
+      expect(Number(ttTest)).toBe(0);
+      expect(Number(ttUser)).toBe(2);
+    });
   });
+
+  // @todo test remove split by fetching `archive` sstatus
 });
 
 describe('Synchronizer - only Splits & Segments mode', () => {
