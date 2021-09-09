@@ -15,10 +15,11 @@ jobs:
       - name: Set up nodejs
         uses: actions/setup-node@v2
         with:
+          node-version: '14.17.6'
           cache: 'npm'
       
-      - name: Update npm
-        run: npm install
+      - name: npm CI
+        run: npm ci
 
       - name: npm Check
         run: npm run check
