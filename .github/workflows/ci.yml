@@ -1,0 +1,30 @@
+name: ci
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up nodejs
+        uses: actions/setup-node@v2
+        with:
+          cache: 'npm'
+      
+      - name: Update npm
+        run: npm install
+
+      - name: npm Check
+        run: npm run check
+
+      - name: npm CI
+        run: npm test:ci
+
+      - name: npm test
+        run: npm run test:ci
