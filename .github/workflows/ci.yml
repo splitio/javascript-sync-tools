@@ -29,8 +29,8 @@ jobs:
       - name: npm Check
         run: npm run check
 
-      - name: npm CI
+      - name: npm Test
         run: npm run test:ci
 
-      - name: npm test
+      - name: npm Build
         run: npm run build
