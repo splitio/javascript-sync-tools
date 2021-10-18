@@ -21,14 +21,14 @@ Below is a simple example that describes the execution or instantiation of Split
 ### Install package as a project dependency to run programmatically
 1. Install npm package via `npm install @splitsoftware/splitio-node-slim-synchronizer`
 2. Inside your app, import the `Synchronizer`
-```
+``` javascript
 const { Synchronizer } = require('@splitsoftware/splitio-node-slim-synchronizer')
 // or if your project supports modules and ESM
 import { Synchronizer } from '@splitsoftware/splitio-node-slim-synchronizer';
 ```
 
 3. Set the configurations:
-```
+``` javascript
 // Example:
 const settings = {
   core: {
@@ -55,11 +55,32 @@ const _sync = new Synchronizer(settings);
 ```
 
 4. Run the Synchronizer
-```
+``` javascript
 _sync.execute().then(() => console.log('ready'));
 ```
 
-Please refer to [our official docs (@TODO)](https://help.split.io/hc/en-us/articles/360020037072-Split-Evaluator) to learn about all the functionality provided by Split NodeJS Synchronizer and the configuration options available.
+Please refer to [this section](CONFIGURATIONS.md) or [our official docs (@TODO)](https://help.split.io/hc/en-us/articles/360020037072-Split-Evaluator) to learn about all the functionality provided by Split NodeJS Synchronizer and the configuration options available.
+
+### Storage wrapper
+In order to be connected with any Data Storage, the Synchronizer requires a Javascript file (using CJS modules) which should export a Storage Wrapper class/object instance that must follow a [specific Interface](STORAGE.md) to allow the corresponding data operations using Split’s entities (Splits, Segments, Impressions and Events).
+
+Check the [Storage section](STORAGE.md) for more in deep information.
+
+#### Synchronizer execution via CLI
+In case you are using the Synchronizer via CLI, you need to provide the path to this file which has to `export default` the corresponding JS object/class instance.
+
+#### Synchronizer execution when using Synchronizer programatically
+Inside the Synchronizer's configuration, there is an object to set the Storage's related properties:
+``` javascript
+  // ...
+  storage: {
+    type: 'CUSTOM',           // Type for internal use.
+    prefix: 'storagePrefix',  // A prefix for identifiying the Storage.
+    wrapper: myStorage,       // The Object/Class instance that implements the Custom Wrapper interface.
+  },
+  // ...
+```
+
 
 ## Submitting issues
 The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-slim-synchronizer/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.
