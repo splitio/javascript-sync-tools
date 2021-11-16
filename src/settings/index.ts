@@ -2,7 +2,7 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { isNaNNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
-import { SynchronizerConfigs } from '../types';
+import { ISynchronizerSettings } from '../../types';
 import { defaults } from './defaults';
 
 // @TODO refactor settingsValidator as in JS SDKs
@@ -23,9 +23,8 @@ const params = {
  * @returns {ISettings}
  */
 export default function synchronizerSettingsValidator(
-  config: ISettings &
-  { synchronizerConfigs: SynchronizerConfigs }
-): ISettings & { synchronizerConfigs: SynchronizerConfigs } {
+  config: ISynchronizerSettings
+): ISettings & ISynchronizerSettings {
   const synchronizerDefaults = {
     synchronizerMode: 'MODE_RUN_ALL',
     eventsPerPost: 1000,
@@ -59,5 +58,5 @@ export default function synchronizerSettingsValidator(
     Object.assign(config, { synchronizerConfigs: synchronizerDefaults });
   }
 
-  return settingsValidation(config, params) as ISettings & { synchronizerConfigs: SynchronizerConfigs };
+  return settingsValidation(config, params) as ISettings & ISynchronizerSettings;
 }

@@ -16,7 +16,7 @@ import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impr
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
 import synchronizerSettingsValidator from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
-import { SynchronizerConfigs } from './types';
+import { ISynchronizerSettings } from '../types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
@@ -55,14 +55,14 @@ export class Synchronizer {
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
-  _settings: ISettings & { synchronizerConfigs: SynchronizerConfigs };
+  settings: ISettings & ISynchronizerSettings;
   /**
    * The local reference for the Impression Observer.
    */
   _observer: ImpressionObserver<string>;
 
   /**
-   * @param  {ISettings} config  Configuration object used to instantiates the Synchronizer.
+   * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
    */
   constructor(config: any) {
     this._observer = impressionObserverSSFactory();
@@ -72,12 +72,12 @@ export class Synchronizer {
       throw new Error('Unable to initialize Synchronizer task: invalid APIKEY.');
     }
 
-    this._settings = settings;
+    this.settings = settings;
     /**
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
-      this._settings,
+      this.settings,
       { getFetch: Synchronizer._getFetch },
     );
   }
@@ -100,12 +100,12 @@ export class Synchronizer {
     return new Promise<boolean>((res, rej) => {
       // @ts-ignore
       this._storage = SynchronizerStorageFactory(
-        this._settings,
+        this.settings,
         (error) => error ? rej() : res(true)
       );
       return true;
     }).catch((error) => {
-      this._settings.log.error(`Error when initializing Storages: ${error}`);
+      this.settings.log.error(`Error when initializing Storages: ${error}`);
       return false;
     });
   }
@@ -116,19 +116,19 @@ export class Synchronizer {
    */
   initializeSynchronizers(): Promise<boolean> {
     // @todo: Add Cli paramater to define impressionsMode.
-    const countsCache = this._settings.sync.impressionsMode === 'OPTIMIZED' ?
+    const countsCache = this.settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
       undefined;
 
     try {
       this._segmentsSynchronizer = new SegmentsSynchronizer(
         this._splitApi.fetchSegmentChanges,
-        this._settings,
+        this.settings,
         this._storage.segments,
       );
       this._splitsSynchronizer = new SplitsSynchronizer(
         this._splitApi.fetchSplitChanges,
-        this._settings,
+        this.settings,
         this._storage.splits,
         this._storage.segments,
         // @ts-ignore
@@ -139,28 +139,28 @@ export class Synchronizer {
       this._eventsSynchronizer = new EventsSynchronizer(
         this._splitApi.postEventsBulk,
         this._storage.events as IEventsCacheAsync,
-        this._settings.log,
-        this._settings.synchronizerConfigs.eventsPerPost,
-        this._settings.synchronizerConfigs.maxRetries,
+        this.settings.log,
+        this.settings.synchronizerConfigs.eventsPerPost,
+        this.settings.synchronizerConfigs.maxRetries,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,
         this._storage.impressions as IImpressionsCacheAsync,
         this._observer,
-        this._settings.log,
-        this._settings.synchronizerConfigs.impressionsPerPost,
-        this._settings.synchronizerConfigs.maxRetries,
+        this.settings.log,
+        this.settings.synchronizerConfigs.impressionsPerPost,
+        this.settings.synchronizerConfigs.maxRetries,
         countsCache,
       );
       if (countsCache) {
         this._impressionsCountSynchronizer = new ImpressionsCountSynchronizer(
           this._splitApi.postTestImpressionsCount,
           countsCache,
-          this._settings.log,
+          this.settings.log,
         );
       }
     } catch (error) {
-      this._settings.log.error(`Error when initializing Synchronizer: ${error}`);
+      this.settings.log.error(`Error when initializing Synchronizer: ${error}`);
       return Promise.resolve(false);
     }
     return Promise.resolve(true);
@@ -209,12 +209,14 @@ export class Synchronizer {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-    const mode = this._settings.synchronizerConfigs?.synchronizerMode || 'MODE_RUN_ALL';
+    const mode = this.settings.synchronizerConfigs.synchronizerMode || 'MODE_RUN_ALL';
     const hasPreExecutionSucceded = await this.preExecute();
     if (!hasPreExecutionSucceded) return false;
 
     console.log('# Syncronization tasks');
-    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') await this.executeSplitsAndSegments(false);
+    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
+      await this.executeSplitsAndSegments(false);
+    }
     if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
       await this.executeImpressionsAndEvents(false);
     }
@@ -224,6 +226,7 @@ export class Synchronizer {
     console.log('# Synchronizer: Execution ended');
     return true;
   }
+  // @TODO remove standalone param
   /**
    * Function to wrap the execution of the Split and Segment's synchronizers.
    *
@@ -232,9 +235,9 @@ export class Synchronizer {
   async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    const isSplitsSyncReady = this._settings.synchronizerConfigs.inMemoryOperation ?
-      await this._splitsSynchronizer.getSplitChangesInMemory() :
-      await this._splitsSynchronizer.getSplitChanges();
+    // @TODO fix getSplitChangesInMemory and make it the only and default behaviour
+    const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
+
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
     console.log(` > Segments Synchronizer task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);

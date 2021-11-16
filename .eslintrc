@@ -25,6 +25,13 @@
         "ecmaVersion": 2015,
         "sourceType": "module"
       }
+    },
+    {
+      "files": ["types/**"],
+      "rules": {
+        "no-use-before-define": "off",
+        "no-undef": "off" // turned off to avoid issue with triple-slash path directive
+      }
     }
   ],
   "rules": {
@@ -34,7 +41,6 @@
     "semi": ["error", "always"],
     "no-underscore-dangle": "off",
     "eqeqeq": ["error", "smart"],
-    "max-len": ["error", { "code": 120 }],
     "no-unused-expressions": "off",
     "new-cap" : "off",
     "no-mixed-requires": "off",

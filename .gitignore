@@ -106,7 +106,6 @@ dist
 ## transpiled code
 /cjs
 /esm
-/types
 
 ## stats info
 /stats

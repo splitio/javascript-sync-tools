@@ -5,7 +5,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
 import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
-import { SynchronizerConfigs } from './types';
+import { ISynchronizerSettings } from '../types';
 
 type CustomModeOption = 'splitsAndSegments' | 'eventsAndImpressions' | undefined;
 
@@ -48,7 +48,7 @@ let customStorage: ICustomStorageWrapper;
 /**
  * Object that contains Synchronizer's specific configs.
  */
-const synchronizerConfigs: SynchronizerConfigs = {
+const synchronizerConfigs: ISynchronizerSettings['synchronizerConfigs'] = {
   synchronizerMode: 'MODE_RUN_ALL',
 };
 
@@ -161,8 +161,6 @@ const {
   EVENTS_API_URL,
   debug,
   DEBUG,
-  inMemoryOperation,
-  IN_MEMORY_OPERATION,
   prefix,
   STORAGE_PREFIX,
   customRun,
@@ -208,7 +206,6 @@ switch (mode) {
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
     synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
     synchronizerConfigs.maxRetries= MAX_RETRIES as number;
-    synchronizerConfigs.inMemoryOperation = IN_MEMORY_OPERATION as boolean;
     setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
   case 'env':
@@ -222,7 +219,6 @@ switch (mode) {
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
     synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
     synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
-    synchronizerConfigs.inMemoryOperation = env.IN_MEMORY_OPERATION as unknown as boolean;
     setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
   default:
@@ -236,7 +232,6 @@ switch (mode) {
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
     synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
     synchronizerConfigs.maxRetries = maxRetries as number;
-    synchronizerConfigs.inMemoryOperation = inMemoryOperation as boolean;
     setCustomRun(customRun as CustomModeOption);
     break;
 }
