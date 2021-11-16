@@ -1,6 +1,6 @@
-# Contributing to the Split NodeJS Synchronizer
+# Contributing to the Split Javascript Synchronizer
 
-Split NodeJS Synchronizer is an open source project and we welcome feedback and contribution. The information below describes how to build the project with your changes, run the tests, and send the Pull Request(PR).
+Split Javascript Synchronizer is an open source project and we welcome feedback and contribution. The information below describes how to build the project with your changes, run the tests, and send the Pull Request(PR).
 
 ## Development
 

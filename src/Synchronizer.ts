@@ -1,7 +1,7 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
 import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
 import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
@@ -18,10 +18,12 @@ import synchronizerSettingsValidator from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { SynchronizerConfigs } from './types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
+import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 /**
  * Main class to handle the Synchronizer execution.
  */
-export default class Synchronizer {
+export class Synchronizer {
   /**
    * The local reference to the Synchronizer's Storage.
    */
@@ -53,25 +55,24 @@ export default class Synchronizer {
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
-  _settings: ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs };
+  _settings: ISettings & { synchronizerConfigs: SynchronizerConfigs };
   /**
    * The local reference for the Impression Observer.
    */
-  _observer: ImpressionObserver;
+  _observer: ImpressionObserver<string>;
 
   /**
-   * @param  {ISettingsInternal} settings  Object containing the minimum settings required
-   *                                       to instantiate the Manager.
+   * @param  {ISettings} config  Configuration object used to instantiates the Synchronizer.
    */
-  constructor(settings: any) {
+  constructor(config: any) {
     this._observer = impressionObserverSSFactory();
-    const validatedSettings = synchronizerSettingsValidator(settings);
+    const settings = synchronizerSettingsValidator(config);
 
     if (!validateApiKey(settings.log, settings.core.authorizationKey)) {
       throw new Error('Unable to initialize Synchronizer task: invalid APIKEY.');
     }
 
-    this._settings = validatedSettings;
+    this._settings = settings;
     /**
      * The Split's HTTPclient, required to make the requests to the API.
      */
@@ -97,6 +98,7 @@ export default class Synchronizer {
    */
   initializeStorages(): Promise<boolean> {
     return new Promise<boolean>((res, rej) => {
+      // @ts-ignore
       this._storage = SynchronizerStorageFactory(
         this._settings,
         (error) => error ? rej() : res(true)
@@ -136,14 +138,14 @@ export default class Synchronizer {
       );
       this._eventsSynchronizer = new EventsSynchronizer(
         this._splitApi.postEventsBulk,
-        this._storage.events,
+        this._storage.events as IEventsCacheAsync,
         this._settings.log,
         this._settings.synchronizerConfigs.eventsPerPost,
         this._settings.synchronizerConfigs.maxRetries,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,
-        this._storage.impressions,
+        this._storage.impressions as IImpressionsCacheAsync,
         this._observer,
         this._settings.log,
         this._settings.synchronizerConfigs.impressionsPerPost,
@@ -151,7 +153,7 @@ export default class Synchronizer {
         countsCache,
       );
       if (countsCache) {
-        this._impressionsCountSynchronizer =  new ImpressionsCountSynchronizer(
+        this._impressionsCountSynchronizer = new ImpressionsCountSynchronizer(
           this._splitApi.postTestImpressionsCount,
           countsCache,
           this._settings.log,
@@ -182,6 +184,7 @@ export default class Synchronizer {
 
     const isStorageReady = await this.initializeStorages();
     if (!isStorageReady) {
+      // @TODO fix message for programmatic API
       console.log('Custom Storage not ready. Run the cli with -d option for debugging information.');
       return false;
     }

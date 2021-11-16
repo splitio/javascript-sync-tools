@@ -16,7 +16,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
   };
   const _fakeLogger = { error: () => {} };
 
-  let observer: ImpressionObserver;
+  let observer: ImpressionObserver<string>;
   let countsCache: ImpressionCountsCacheInMemory;
   let _impressionsSubmiter: { (): any; (): Promise<string | boolean>; };
 

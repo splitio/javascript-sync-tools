@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { exit, env, argv } from 'process';
-import { Synchronizer } from './';
+import { Synchronizer } from './Synchronizer';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';

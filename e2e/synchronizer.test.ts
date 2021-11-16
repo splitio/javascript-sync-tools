@@ -1,8 +1,7 @@
 /* eslint-disable no-magic-numbers */
 // @ts-nocheck
 import { Synchronizer } from '../src/index';
-import { ICustomStorageWrapper }
-  from '@splitsoftware/splitio-commons/src/storages/types';
+import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
 import redisAdapterWrapper from './utils/inRedisService';
@@ -152,7 +151,7 @@ describe('Synchronizer e2e tests', () => {
       const ttTest = await _redisServer.get(`${REDIS_PREFIX}.trafficType.testTT`);
       const ttUser = await _redisServer.get(`${REDIS_PREFIX}.trafficType.user`);
 
-      expect(trafficTypes).toHaveLength(3);
+      expect(trafficTypes).toHaveLength(2);
       expect(Number(ttAccount)).toBe(2);
       expect(Number(ttTest)).toBe(0);
       expect(Number(ttUser)).toBe(2);
@@ -276,7 +275,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       const ttTest = await _redisServer.get(`${REDIS_PREFIX}.trafficType.testTT`);
       const ttUser = await _redisServer.get(`${REDIS_PREFIX}.trafficType.user`);
 
-      expect(trafficTypes).toHaveLength(3);
+      expect(trafficTypes).toHaveLength(2);
       expect(Number(ttAccount)).toBe(2);
       expect(Number(ttTest)).toBe(0);
       expect(Number(ttUser)).toBe(2);

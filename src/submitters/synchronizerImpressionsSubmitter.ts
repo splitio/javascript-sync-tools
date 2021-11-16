@@ -64,7 +64,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
 export function impressionsSubmitterFactory(
   postImpressionsBulk: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheAsync,
-  observer: ImpressionObserver,
+  observer: ImpressionObserver<string>,
   logger: ILogger,
   impressionsPerPost?: number,
   maxRetries?: number,

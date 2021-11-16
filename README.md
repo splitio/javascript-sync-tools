@@ -1,4 +1,4 @@
-# Split NodeJS Synchronizer
+# Split Javascript Synchronizer
 [![Build Status](https://api.travis-ci.com/splitio/javascript-slim-synchronizer.svg?branch=main)](https://api.travis-ci.com/splitio/javascript-slim-synchronizer)
 
 ## Overview
@@ -12,7 +12,7 @@ Split Synchronizer supports:
 - Node version 8 or higher to import the package as dependency.
 
 ## Getting started
-Below is a simple example that describes the execution or instantiation of Split NodeJS Synchronizer:
+Below is a simple example that describes the execution or instantiation of Split Javascript Synchronizer:
 
 ### Install package as global dependency and run CLI
 1. Install npm package via `npm install -g @splitsoftware/splitio-node-slim-synchronizer`
@@ -59,7 +59,7 @@ const _sync = new Synchronizer(settings);
 _sync.execute().then(() => console.log('ready'));
 ```
 
-Please refer to [our official docs (@TODO)](https://help.split.io/hc/en-us/articles/360020037072-Split-Evaluator) to learn about all the functionality provided by Split NodeJS Synchronizer and the configuration options available.
+Please refer to [our official docs (@TODO)](https://help.split.io/hc/en-us/articles/360020037072-Split-Evaluator) to learn about all the functionality provided by Split Javascript Synchronizer and the configuration options available.
 
 ## Submitting issues
 The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-slim-synchronizer/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.

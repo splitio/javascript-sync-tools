@@ -1,15 +1,11 @@
 {
-  "name": "@splitsoftware/splitio-node-slim-synchronizer",
+  "name": "@splitsoftware/splitio-synchronizer",
   "version": "0.0.1",
-  "description": "Split NodeJS Synchronizer",
+  "description": "Split Javascript Synchronizer",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
-  "exports": {
-    ".": "./lib/cjs/index.js",
-    "./esm": "./lib/esm/Synchronizer.js"
-  },
   "bin": {
-    "splitio-node-synchronizer": "bin/splitio-node-synchronizer.js"
+    "splitio-synchronizer": "bin/splitio-synchronizer.js"
   },
   "files": [
     "lib",
@@ -24,21 +20,17 @@
     "check": "npm run check:lint && npm run check:types",
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
-    "clean": "rimraf dist/**",
-    "build": "npm run build:esm && npm run build:cjs",
-    "build:esm": "rimraf lib/esm && tsc -m es2015 --outDir lib/esm -d true --declarationDir lib/esm/types --importHelpers && scripts/build_esm_replace_imports.sh && replace @VERSION@ $npm_package_version lib/esm/settings/index.js",
-    "build:cjs": "rimraf lib/cjs && tsc -m CommonJS --outDir lib/cjs --importHelpers && scripts/build_cjs_replace_imports.sh && replace @VERSION@ $npm_package_version lib/cjs/settings/index.js",
-    "bundle": "npm run build && rollup -c",
-    "make:cli": "npm run bundle && scripts/make_cli.sh",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:cli",
+    "build:esm": "rimraf lib/esm && tsc -m es2015 --outDir lib/esm -d true --declarationDir lib/esm/types --importHelpers && scripts/build_esm_replace_imports.sh && replace @VERSION@ $npm_package_version lib/esm/settings/defaults.js",
+    "build:cjs": "rimraf lib/cjs && tsc -m CommonJS --outDir lib/cjs --importHelpers && scripts/build_cjs_replace_imports.sh && replace @VERSION@ $npm_package_version lib/cjs/settings/defaults.js",
+    "build:cli": "rimraf bin && rollup -c && scripts/make_cli.sh",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
-    "test:e2e": "./scripts/check_redis.sh && jest e2e/ --runInBand --forceExit",
-    "test:e2e:ci": "start-server-and-test 'json-server' 3000 'npm run test:e2e'",
-    "test:ci": "npm run test:unit && npm run test:e2e:ci",
+    "test:e2e": "start-server-and-test 'json-server' 3000 './scripts/check_redis.sh && jest e2e/ --runInBand --forceExit'",
     "test": "npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "0.1.1-canary.9",
+    "@splitsoftware/splitio-commons": "1.0.1-rc.1",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.1",
     "yargs": "^17.0.1"
