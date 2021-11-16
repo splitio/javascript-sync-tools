@@ -59,7 +59,7 @@ export class Synchronizer {
   /**
    * The local reference for the Impression Observer.
    */
-  _observer: ImpressionObserver;
+  _observer: ImpressionObserver<string>;
 
   /**
    * @param  {ISettings} config  Configuration object used to instantiates the Synchronizer.
