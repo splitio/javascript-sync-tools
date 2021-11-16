@@ -1,3 +1,3 @@
 #!/bin/bash
-echo "$(echo '#!/usr/bin/env node' | cat - bin/splitio-node-synchronizer.js)" > bin/splitio-node-synchronizer.js
-chmod u+x bin/splitio-node-synchronizer.js
+echo "$(echo '#!/usr/bin/env node' | cat - bin/splitio-synchronizer.js)" > bin/splitio-synchronizer.js
+chmod u+x bin/splitio-synchronizer.js

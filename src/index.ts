@@ -1,1 +1,1 @@
-export { default as Synchronizer } from './Synchronizer';
+export { Synchronizer } from './Synchronizer';

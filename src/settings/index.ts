@@ -2,34 +2,30 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { isNaNNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
-import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
 import { SynchronizerConfigs } from '../types';
 import { defaults } from './defaults';
 
-/**
- * Reference to the package version that is going to be overwritten when building the app
- * for the corresponding value.
- */
-const version = '@VERSION@';
+// @TODO refactor settingsValidator as in JS SDKs
+
 /**
  * Object with some default values to instantiate the application and fullfil internal
  * requirements.
  */
 const params = {
   logger: validateLogger,
-  defaults: Object.assign(defaults, { version: `synchronizer-${version}`, streamingEnabled: false }),
+  defaults,
 };
 
 /**
  * Function to validate SDK settings and Synchronizer configs.
  *
  * @param {any} config  Object with the keys and values for instatiating a SettingsInternal object.
- * @returns {ISettingsInternal}
+ * @returns {ISettings}
  */
 export default function synchronizerSettingsValidator(
   config: ISettings &
   { synchronizerConfigs: SynchronizerConfigs }
-): ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs } {
+): ISettings & { synchronizerConfigs: SynchronizerConfigs } {
   const synchronizerDefaults = {
     synchronizerMode: 'MODE_RUN_ALL',
     eventsPerPost: 1000,
@@ -60,8 +56,8 @@ export default function synchronizerSettingsValidator(
       console.log('MAX_RETRIES parameter must be a positive integer number. Using default values instead.');
     }
   } else {
-    Object.assign(config, { ...config }, { synchronizerConfigs: synchronizerDefaults });
+    Object.assign(config, { synchronizerConfigs: synchronizerDefaults });
   }
 
-  return settingsValidation(config, params) as ISettingsInternal & { synchronizerConfigs: SynchronizerConfigs };
+  return settingsValidation(config, params) as ISettings & { synchronizerConfigs: SynchronizerConfigs };
 }

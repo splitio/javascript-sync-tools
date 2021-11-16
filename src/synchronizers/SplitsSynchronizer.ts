@@ -2,7 +2,7 @@ import { IFetchSplitChanges } from '@splitsoftware/splitio-commons/src/services/
 import splitChangesFetcherFactory from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
 import { splitChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
-import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { ISplit } from '@splitsoftware/splitio-commons/types/dtos/types';
 import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync }
   from '@splitsoftware/splitio-commons/types/storages/types';
@@ -57,7 +57,7 @@ export class SplitsSynchronizer {
    */
   constructor(
     splitFetcher: IFetchSplitChanges,
-    settings: ISettingsInternal,
+    settings: ISettings,
     splitsStorage: ISplitsCacheAsync,
     segmentsStorage: ISegmentsCacheAsync,
     inMemoryStorage: IStorageSync,

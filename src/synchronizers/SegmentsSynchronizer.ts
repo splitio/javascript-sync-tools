@@ -3,7 +3,7 @@ import segmentChangesFetcherFactory
   from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/segmentChangesFetcher';
 import { segmentChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/segmentChangesUpdater';
-import { ISettingsInternal } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/types';
+import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { ISegmentsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
 
 /**
@@ -35,7 +35,7 @@ export class SegmentsSynchronizer {
    */
   constructor(
     segmentsFetcher: IFetchSegmentChanges,
-    settings: ISettingsInternal,
+    settings: ISettings,
     segmentsStorage: ISegmentsCacheAsync
   ) {
     this._segmentsStorage = segmentsStorage;

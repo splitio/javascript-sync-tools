@@ -1,4 +1,10 @@
 /**
+ * Reference to the package version that is going to be overwritten when building the app
+ * for the corresponding value.
+ */
+const version = '@VERSION@';
+
+/**
  * Default values to create settings for the Synchronizer script.
  */
 export const defaults = {
@@ -12,4 +18,6 @@ export const defaults = {
     // Amount of time we will wait before the first push of events.
     eventsFirstPushWindow: 10,
   },
+  version: `synchronizer-${version}`,
+  streamingEnabled: false,
 };
