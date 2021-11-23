@@ -232,7 +232,7 @@ export class Synchronizer {
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
-  async executeSplitsAndSegments(standalone = true) {
+  private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
     // @TODO optimize SplitChangesUpdater to reduce wrapper operations (inMemoryOperation)
@@ -249,7 +249,7 @@ export class Synchronizer {
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
-  async executeImpressionsAndEvents(standalone = true) {
+  private async executeImpressionsAndEvents(standalone = true) {
     if (standalone) await this.preExecute();
 
     const isEventsSyncReady = await this._eventsSynchronizer.synchroniseEvents();

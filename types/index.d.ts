@@ -14,9 +14,7 @@ declare module JsSynchronizer {
     // @TODO document each method
     constructor(config: ISynchronizerSettings);
     execute(): Promise<boolean>;
-    executeSplitsAndSegments(): Promise<boolean>;
-    executeImpressionsAndEvents(): Promise<boolean>;
-    // @TODO decide to expose settings or not in the beta
+    // @TODO expose settings in the beta?
     // settings: ISettings
   }
 
@@ -108,7 +106,7 @@ declare module JsSynchronizer {
      */
     storage: {
       /**
-       * Custom storage wrapper.
+       * Storage wrapper.
        *
        * @property {Object} wrapper
        */
