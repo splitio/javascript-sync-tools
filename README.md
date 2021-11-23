@@ -40,9 +40,9 @@ const settings = {
   },
   // Mandatory: provide a valid Storage wrapper.
   storage: {
-    type: 'CUSTOM',
+    type: 'PLUGGABLE',
     prefix: 'storagePrefix',
-    wrapper: customStorage,
+    wrapper: storageWrapper,
   },
   synchronizerConfigs: {
     synchronizerMode: 'MODE_RUN_ALL',

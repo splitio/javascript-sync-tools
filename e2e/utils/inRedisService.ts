@@ -8,7 +8,7 @@ import { InRedisStorageOptions } from '@splitsoftware/splitio-commons/src/storag
  * Wrapper for our RedisAdapter.
  *
  * @param {Object} redisOptions  Redis options with the format expected at `settings.storage.options`.
- * @returns {import("@splitsoftware/splitio-commons/types/storages/types").ICustomStorageWrapper} Wrapper for IORedis client.
+ * @returns {import("@splitsoftware/splitio-commons/types/storages/types").IPluggableStorageWrapper} Wrapper for IORedis client.
  */
 function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
 
@@ -92,7 +92,7 @@ function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
         });
       });
     },
-    close() {
+    disconnect() {
       return Promise.resolve(redis && redis.disconnect()); // close the connection
     },
   };

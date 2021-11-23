@@ -35,7 +35,7 @@ export class ImpressionsSynchronizer {
   constructor(
     postImpressionsBulk: IPostTestImpressionsBulk,
     impressionsStorage: IImpressionsCacheAsync,
-    observer: ImpressionObserver<string>,
+    observer: ImpressionObserver,
     logger: ILogger,
     impressionsPerPost?: number,
     maxRetries?: number,
