@@ -136,12 +136,6 @@ const yargv = yargs(hideBin(argv))
       choices: ['optimized', 'debug'],
       nargs: 1,
     },
-    g: {
-      alias: 'inMemoryOperation',
-      type: 'boolean',
-      description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
-      nargs: 0,
-    },
   })
   .config('config', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .help('h')

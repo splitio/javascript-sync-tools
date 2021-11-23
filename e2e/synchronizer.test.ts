@@ -174,7 +174,6 @@ describe('Synchronizer e2e tests', () => {
 describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mode', () => {
   const synchronizerConfigs: SynchronizerConfigs = {
     synchronizerMode: 'MODE_RUN_SPLIT_SEGMENTS',
-    inMemoryOperation: true,
   };
   /**
    * Settings creation.
