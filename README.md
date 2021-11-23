@@ -1,42 +1,38 @@
-# Split Javascript Synchronizer
-[![Build Status](https://api.travis-ci.com/splitio/javascript-slim-synchronizer.svg?branch=main)](https://api.travis-ci.com/splitio/javascript-slim-synchronizer)
+# Split Javascript Sync Tools
+[![Build Status](https://api.travis-ci.com/splitio/javascript-sync-tools.svg?branch=main)](https://api.travis-ci.com/splitio/javascript-sync-tools)
 
 ## Overview
-Thin version of Split Synchronizer supporting the core of the synchronization mechanisms used by Split SDK producer libraries.
+This package includes a Javascript synchronizer tool that can be used to synchronize storages used by SDKs in consumer mode.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
 ## Compatibility
-Split Synchronizer supports:
+Split sync tools supports:
 - Node version 12 or higher to execute the CLI.
-- Node version 8 or higher to import the package as dependency.
+- Node version 8 or higher to import the package and use programmatically.
 
 ## Getting started
-Below is a simple example that describes the execution or instantiation of Split Javascript Synchronizer:
+Below is a simple example that describes the execution of the Javascript Synchronizer:
 
 ### Install package as global dependency and run CLI
-1. Install npm package via `npm install -g @splitsoftware/splitio-node-slim-synchronizer`
-2. Then, execute the CLI `split-node-synchronizer [...args]`
+1. Install npm package via `npm install -g @splitsoftware/splitio-sync-tools`
+2. Then, execute the CLI `split-sync-tools [...args]`
 
 ### Install package as a project dependency to run programmatically
-1. Install npm package via `npm install @splitsoftware/splitio-node-slim-synchronizer`
+1. Install npm package via `npm install @splitsoftware/splitio-sync-tools`
 2. Inside your app, import the `Synchronizer`
 ```
-const { Synchronizer } = require('@splitsoftware/splitio-node-slim-synchronizer')
-// or if your project supports modules and ESM
-import { Synchronizer } from '@splitsoftware/splitio-node-slim-synchronizer';
+const { Synchronizer } = require('@splitsoftware/splitio-sync-tools')
+// or if your project supports EcmaScript modules
+import { Synchronizer } from '@splitsoftware/splitio-sync-tools';
 ```
 
-3. Set the configurations:
+3. Instantiate the Synchronizer:
 ```
 // Example:
-const settings = {
+const synchronizer = new Synchronizer({
   core: {
     authorizationKey: '<A_VALID_STAGING_APIKEY>',
-  },
-  urls: {
-    sdk: 'https://sdk.split.io/api',       // already a default value
-    events: 'https://events.split.io/api', // already a default value
   },
   // Mandatory: provide a valid Storage wrapper.
   storage: {
@@ -44,25 +40,25 @@ const settings = {
     prefix: 'storagePrefix',
     wrapper: storageWrapper,
   },
+  // @TODO review config params
   synchronizerConfigs: {
     synchronizerMode: 'MODE_RUN_ALL',
     eventsPerPost: 2000,
     impressionsPerPost: 4000,
     maxRetries: 3,
   },
-};
-const _sync = new Synchronizer(settings);
+});
 ```
 
 4. Run the Synchronizer
 ```
-_sync.execute().then(() => console.log('ready'));
+synchronizer.execute().then(() => console.log('ready'));
 ```
 
-Please refer to [our official docs (@TODO)](https://help.split.io/hc/en-us/articles/360020037072-Split-Evaluator) to learn about all the functionality provided by Split Javascript Synchronizer and the configuration options available.
+Please refer to [Javascript Sync Tools](https://help.split.io/hc/en-us/articles/@TODO) to learn about all the functionality provided by the package.
 
 ## Submitting issues
-The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-slim-synchronizer/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.
+The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-sync-tools/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.
 
 ## Contributing
 Please see [Contributors Guide](CONTRIBUTORS-GUIDE.md) to find all you need to submit a Pull Request (PR).
@@ -84,12 +80,12 @@ Split has built and maintains SDKs for:
 * iOS [Github](https://github.com/splitio/ios-client) [Docs](https://help.split.io/hc/en-us/articles/360020401491-iOS-SDK)
 * Java [Github](https://github.com/splitio/java-client) [Docs](https://help.split.io/hc/en-us/articles/360020405151-Java-SDK)
 * Javascript [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK)
+* Javascript for Browser [Github](https://github.com/splitio/javascript-browser-client) [Docs](https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK)
 * Node [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK)
-* Javascript for Browser [Github](https://github.com/splitio/javascript-browser-client) [Docs](https://help.split.io/hc/en-us/articles/360058730852)
 * PHP [Github](https://github.com/splitio/php-client) [Docs](https://help.split.io/hc/en-us/articles/360020350372-PHP-SDK)
 * Python [Github](https://github.com/splitio/python-client) [Docs](https://help.split.io/hc/en-us/articles/360020359652-Python-SDK)
 * React [Github](https://github.com/splitio/react-client) [Docs](https://help.split.io/hc/en-us/articles/360038825091-React-SDK)
-* React Native [Github](https://github.com/splitio/react-native-client) [Docs](https://help.split.io/hc/en-us/articles/4406066357901)
+* React Native [Github](https://github.com/splitio/react-native-client) [Docs](https://help.split.io/hc/en-us/articles/4406066357901-React-Native-SDK)
 * Redux [Github](https://github.com/splitio/redux-client) [Docs](https://help.split.io/hc/en-us/articles/360038851551-Redux-SDK)
 * Ruby [Github](https://github.com/splitio/ruby-client) [Docs](https://help.split.io/hc/en-us/articles/360020673251-Ruby-SDK)
 

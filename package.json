@@ -1,11 +1,11 @@
 {
-  "name": "@splitsoftware/splitio-synchronizer",
-  "version": "0.0.1",
-  "description": "Split Javascript Synchronizer",
+  "name": "@splitsoftware/splitio-sync-tools",
+  "version": "0.0.1-rc.0",
+  "description": "Split Javascript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "bin": {
-    "splitio-synchronizer": "bin/splitio-synchronizer.js"
+    "splitio-sync-tools": "bin/splitio-sync-tools.js"
   },
   "files": [
     "lib",

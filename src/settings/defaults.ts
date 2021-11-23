@@ -5,7 +5,7 @@
 const version = '@VERSION@';
 
 /**
- * Default values to create settings for the Synchronizer script.
+ * Default values to create settings for the Javascrip Synchronizer.
  */
 export const defaults = {
   startup: {
@@ -18,6 +18,6 @@ export const defaults = {
     // Amount of time we will wait before the first push of events.
     eventsFirstPushWindow: 10,
   },
-  version: `synchronizer-${version}`,
+  version: `synctoolsjs-${version}`,
   streamingEnabled: false,
 };

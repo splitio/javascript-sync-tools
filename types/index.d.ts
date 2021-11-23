@@ -1,12 +1,12 @@
-// Type definitions for Split Javascript Synchronizer
+// Type definitions for Split Javascript Sync Tools
 // Project: http://www.split.io/
 // Definitions by: Emiliano Sanchez <https://github.com/EmilianoSanchez/>
 
-export = JsSynchronizer;
+export = JsSyncTools;
 
-declare module JsSynchronizer {
+declare module JsSyncTools {
   /**
-   * Javascript synchronizer.
+   * Javascript synchronizer tool.
    *
    * @see {@link @TODO}.
    */
@@ -171,14 +171,14 @@ declare module JsSynchronizer {
       impressionsMode?: ImpressionsMode
     }
     /**
-     * Type for specific Synchronizer's configs.
+     * Type for specific Synchronizer configs.
      */
     synchronizerConfigs: {
-      // @TODO document
-      synchronizerMode?: SynchronizerMode
-      eventsPerPost?: number
-      impressionsPerPost?: number
-      maxRetries?: number
+      // @TODO review
+      synchronizerMode?: SynchronizerMode // sync.mode ?
+      eventsPerPost?: number // sync.eventsPerPost ?
+      impressionsPerPost?: number // sync.impressionsPerPost ?
+      maxRetries?: number // sync.maxRetries ?
     }
   }
 }
