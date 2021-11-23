@@ -7,7 +7,7 @@ import { IStorageFactoryParams } from '@splitsoftware/splitio-commons/src/storag
  * Function to create an InMemory Storage instance.
  *
  * @param {ISettings} settings   The Synchronizer's settings.
- * @param {() => void}        onReadyCb  The callback to execute when instantiating the custom Storage.
+ * @param {() => void}        onReadyCb  The callback to execute when instantiating the pluggable storage.
  * @returns {IStorageAsync}
  */
 export function SynchronizerStorageFactory(settings: ISettings, onReadyCb: IStorageFactoryParams['onReadyCb']) {

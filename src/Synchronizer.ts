@@ -59,7 +59,7 @@ export class Synchronizer {
   /**
    * The local reference for the Impression Observer.
    */
-  _observer: ImpressionObserver<string>;
+  _observer: ImpressionObserver;
 
   /**
    * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
@@ -132,9 +132,9 @@ export class Synchronizer {
         this._storage.splits,
         this._storage.segments,
         // @ts-ignore
-        InMemoryStorageFactory({ log: this._settings.log }),
+        InMemoryStorageFactory({ log: this.settings.log }),
         // @ts-ignore
-        InMemoryStorageFactory({ log: this._settings.log })
+        InMemoryStorageFactory({ log: this.settings.log })
       );
       this._eventsSynchronizer = new EventsSynchronizer(
         this._splitApi.postEventsBulk,
@@ -185,7 +185,7 @@ export class Synchronizer {
     const isStorageReady = await this.initializeStorages();
     if (!isStorageReady) {
       // @TODO fix message for programmatic API
-      console.log('Custom Storage not ready. Run the cli with -d option for debugging information.');
+      console.log('Pluggable Storage not ready. Run the cli with -d option for debugging information.');
       return false;
     }
     console.log(' > Storage setup:                  Ready');
@@ -235,7 +235,7 @@ export class Synchronizer {
   async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    // @TODO fix getSplitChangesInMemory and make it the only and default behaviour
+    // @TODO optimize SplitChangesUpdater to reduce wrapper operations (inMemoryOperation)
     const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
 
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
