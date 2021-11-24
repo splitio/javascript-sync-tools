@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers, max-len, jsdoc/require-jsdoc*/
 import ImpressionCountsCacheInMemory from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import { impressionsSubmitterFactory, impressionWithMetadataToImpressionDTO } from '../synchronizerImpressionsSubmitter';
+import { impressionsSubmitterFactory } from '../synchronizerImpressionsSubmitter';
 import { getImpressionsListWithSameMetadata } from './impressionsMockUtils';
 import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
 import { impressionsCountSubmitterFactory } from '../synchronizerImpressionsCountSubmitter';
@@ -36,7 +36,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         _postImpressionsMock,
         _impressionsCacheMock,
         observer,
-        undefined,
+        _fakeLogger,
         undefined,
         undefined,
         countsCache,
@@ -69,7 +69,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       then make [1] Impressions POST with [1] Impressions,
       then make an Impressions Count POST with [1] Impression, with its count value at [2]`, async () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
-      const _mockImpressionToDTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]);
+      // const _mockImpressionToDTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
       const res = await _impressionsSubmiter();
@@ -77,10 +77,10 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledWith(
         JSON.stringify([{
-          f: impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]).impression.feature,
-          i: [impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]).impression],
+          f: _mockImpressionsListWMetadata[0].i.f,
+          i: [_mockImpressionsListWMetadata[0].i],
         }]),
-        { ...metadataToHeaders(_mockImpressionToDTO.metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
+        { ...metadataToHeaders(_mockImpressionsListWMetadata[0].m), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(res).toBe(true);
 
@@ -96,7 +96,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         1,
         JSON.stringify({
           pf: [
-            { f: _mockImpressionToDTO.impression.feature, m: truncateTimeFrame(Date.now()), rc: 2 },
+            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 2 },
           ],
         }),
       );
@@ -109,8 +109,8 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         ...getImpressionsListWithSameMetadata(1, true, true),
         ...getImpressionsListWithSameMetadata(1, true, true),
       ];
-      const impression1DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]);
-      const impression2DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[1]);
+      const impression1DTO = _mockImpressionsListWMetadata[0];
+      const impression2DTO = _mockImpressionsListWMetadata[1];
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
@@ -120,22 +120,22 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify([{
-          f: impression1DTO.impression.feature,
+          f: impression1DTO.i.f,
           i: [
-            impression1DTO.impression,
+            impression1DTO.i,
           ],
         }]),
-        { ...metadataToHeaders(impression1DTO.metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
+        { ...metadataToHeaders(impression1DTO.m), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         2,
         JSON.stringify([{
-          f: impression2DTO.impression.feature,
+          f: impression2DTO.i.f,
           i: [
-            impression2DTO.impression,
+            impression2DTO.i,
           ],
         }]),
-        { ...metadataToHeaders(impression2DTO.metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
+        { ...metadataToHeaders(impression2DTO.m), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(_postImpressionsMock).toBeCalledTimes(2);
 
@@ -147,16 +147,16 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
 
       await _impressionsCountSubmitter();
-      const impression1Data = impression1DTO.impression;
-      const impression2Data = impression2DTO.impression;
+      const impression1Data = impression1DTO.i;
+      const impression2Data = impression2DTO.i;
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           pf: [
-            { f: impression1Data.feature, m: truncateTimeFrame(Date.now()), rc: 1 },
-            { f: impression2Data.feature, m: truncateTimeFrame(Date.now()), rc: 1 },
+            { f: impression1Data.f, m: truncateTimeFrame(Date.now()), rc: 1 },
+            { f: impression2Data.f, m: truncateTimeFrame(Date.now()), rc: 1 },
           ],
         }),
       );
@@ -169,8 +169,8 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         ...getImpressionsListWithSameMetadata(10, true, true),
         ...getImpressionsListWithSameMetadata(10, true, true),
       ];
-      const impressionList1DTO = _mockImpressionsListWMetadata.slice(0, 9).map(i => impressionWithMetadataToImpressionDTO(i));
-      const impressionList2DTO = _mockImpressionsListWMetadata.slice(10, 19).map(i => impressionWithMetadataToImpressionDTO(i));
+      const impressionList1DTO = _mockImpressionsListWMetadata.slice(0, 9);
+      const impressionList2DTO = _mockImpressionsListWMetadata.slice(10, 19);
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
@@ -181,18 +181,18 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify([{
-          f: impressionList1DTO[0].impression.feature,
-          i: [impressionList1DTO[0].impression],
+          f: impressionList1DTO[0].i.f,
+          i: [impressionList1DTO[0].i],
         }]),
-        { ...metadataToHeaders(impressionList1DTO[0].metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
+        { ...metadataToHeaders(impressionList1DTO[0].m), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         2,
         JSON.stringify([{
-          f: impressionList2DTO[0].impression.feature,
-          i: [impressionList2DTO[0].impression],
+          f: impressionList2DTO[0].i.f,
+          i: [impressionList2DTO[0].i],
         }]),
-        { ...metadataToHeaders(impressionList2DTO[0].metadata), SplitSDKImpressionsMode: 'OPTIMIZED' }
+        { ...metadataToHeaders(impressionList2DTO[0].m), SplitSDKImpressionsMode: 'OPTIMIZED' }
       );
       // @ts-ignore
       expect(JSON.parse(_postImpressionsMock.mock.calls[0][0]).length).toEqual(1);
@@ -206,16 +206,16 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
 
       await _impressionsCountSubmitter();
-      const impression1Data = impressionList1DTO[0].impression;
-      const impression2Data = impressionList2DTO[0].impression;
+      const impression1Data = impressionList1DTO[0].i;
+      const impression2Data = impressionList2DTO[0].i;
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           pf: [
-            { f: impression1Data.feature, m: truncateTimeFrame(Date.now()), rc: 10 },
-            { f: impression2Data.feature, m: truncateTimeFrame(Date.now()), rc: 10 },
+            { f: impression1Data.f, m: truncateTimeFrame(Date.now()), rc: 10 },
+            { f: impression2Data.f, m: truncateTimeFrame(Date.now()), rc: 10 },
           ],
         }),
       );
@@ -239,7 +239,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     test(`Pop [2] Impressions with [SAME] metadata from Storage,
           then make [1] Impressions POST with [2] impressions each`, async () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
-      const _mockImpressionsListToDTO = _mockImpressionsListWMetadata.map(i => impressionWithMetadataToImpressionDTO(i));
+      // const _mockImpressionsListToDTO = _mockImpressionsListWMetadata.map(i => i);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
       const res = await _impressionsSubmiter();
@@ -260,19 +260,19 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       expect(call[0].i.pop()).toEqual(
         expect.objectContaining({
-          keyName: expect.any(String),
-          bucketingKey: expect.any(String),
-          feature: expect.any(String),
-          treatment: expect.any(String),
-          label: expect.any(String),
-          changeNumber: expect.any(Number),
-          time: expect.any(Number),
-          pt: expect.any(Number),
+          k: expect.any(String),
+          b: expect.any(String),
+          f: expect.any(String),
+          t: expect.any(String),
+          r: expect.any(String),
+          c: expect.any(Number),
+          m: expect.any(Number),
+          // pt: expect.any(Number),
         })
       );
       // @ts-ignore
       expect(_postImpressionsMock.mock.calls[0][1]).toStrictEqual(
-        { ...metadataToHeaders(_mockImpressionsListToDTO[0].metadata), SplitSDKImpressionsMode: 'DEBUG' }
+        { ...metadataToHeaders(_mockImpressionsListWMetadata[0].m), SplitSDKImpressionsMode: 'DEBUG' }
       );
       expect(res).toBe(true);
     });
@@ -283,8 +283,8 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         ...getImpressionsListWithSameMetadata(1, true, true),
         ...getImpressionsListWithSameMetadata(1, true, true),
       ];
-      const impression1DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[0]);
-      const impression2DTO = impressionWithMetadataToImpressionDTO(_mockImpressionsListWMetadata[1]);
+      const impression1DTO = _mockImpressionsListWMetadata[0];
+      const impression2DTO = _mockImpressionsListWMetadata[1];
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
@@ -294,18 +294,18 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify([{
-          f: impression1DTO.impression.feature,
-          i: [impression1DTO.impression],
+          f: impression1DTO.i.f,
+          i: [impression1DTO.i],
         }]),
-        { ...metadataToHeaders(impression1DTO.metadata), SplitSDKImpressionsMode: 'DEBUG' }
+        { ...metadataToHeaders(impression1DTO.m), SplitSDKImpressionsMode: 'DEBUG' }
       );
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
         2,
         JSON.stringify([{
-          f: impression2DTO.impression.feature,
-          i: [impression2DTO.impression],
+          f: impression2DTO.i.f,
+          i: [impression2DTO.i],
         }]),
-        { ...metadataToHeaders(impression2DTO.metadata), SplitSDKImpressionsMode: 'DEBUG' }
+        { ...metadataToHeaders(impression2DTO.m), SplitSDKImpressionsMode: 'DEBUG' }
       );
       expect(res).toBe(true);
     });
