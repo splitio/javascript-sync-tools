@@ -18,6 +18,16 @@ export const defaults = {
     // Amount of time we will wait before the first push of events.
     eventsFirstPushWindow: 10,
   },
+  scheduler: {
+    // @TODO check synchronizerMode
+    // synchronizerMode: 'MODE_RUN_ALL',
+    // Number of impressions to send in a POST request.
+    impressionsPerPost: 1000,
+    // Number of events to send in a POST request.
+    eventsPerPost: 1000,
+    // Number of retry attempts for posting impressions and events.
+    maxRetries: 3,
+  },
   version: `synctoolsjs-${version}`,
   streamingEnabled: false,
 };

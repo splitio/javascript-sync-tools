@@ -70,7 +70,7 @@ function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
     getItems(key) {
       return redis.smembers(key);
     },
-    connect() {
+    connect(): Promise<void> {
       const log = new Logger({ logLevel: 'INFO' });
       redis = new RedisAdapter(log, redisOptions);
       let retriesCount = 0;
@@ -92,7 +92,7 @@ function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
         });
       });
     },
-    disconnect() {
+    disconnect(): Promise<void> {
       return Promise.resolve(redis && redis.disconnect()); // close the connection
     },
   };

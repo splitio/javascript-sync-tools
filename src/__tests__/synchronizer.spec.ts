@@ -1,11 +1,11 @@
-/* eslint-disable max-len */
+import { ISynchronizerSettings } from '../../types';
 
 import { Synchronizer } from '../Synchronizer';
 import InMemoryStorage from './pluggableStorage/InMemoryStorage';
 
 describe('Synchronizer creation and execution', () => {
 
-  const config = {
+  const config: ISynchronizerSettings = {
     core: {
       authorizationKey: 'th1s_1sF4keAp1k31',
     },
@@ -48,7 +48,7 @@ describe('Synchronizer creation and execution', () => {
       expect(await synchronizer.initializeStorages()).toBe(true);
     });
 
-    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage', async () => {
+    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage', async () => { // @ts-ignore
       const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } });
       expect(await synchronizer.initializeStorages()).toBe(false);
     });
@@ -74,7 +74,8 @@ describe('Synchronizer creation and execution', () => {
     });
 
     it('runs [ALL] Synchronizer tasks.', async () => {
-      synchronizer.settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
+      // @ts-ignore
+      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_ALL';
 
       await synchronizer.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
@@ -82,7 +83,8 @@ describe('Synchronizer creation and execution', () => {
     });
 
     it('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
-      synchronizer.settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      // @ts-ignore
+      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
 
       await synchronizer.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
@@ -90,7 +92,8 @@ describe('Synchronizer creation and execution', () => {
     });
 
     it('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
-      synchronizer.settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      // @ts-ignore
+      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
 
       await synchronizer.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(0);

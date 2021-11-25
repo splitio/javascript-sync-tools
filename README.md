@@ -32,20 +32,12 @@ import { Synchronizer } from '@splitsoftware/splitio-sync-tools';
 // Example:
 const synchronizer = new Synchronizer({
   core: {
-    authorizationKey: '<A_VALID_STAGING_APIKEY>',
+    authorizationKey: 'YOUR_SDK_SERVER_SIDE_API_KEY',
   },
   // Mandatory: provide a valid Storage wrapper.
   storage: {
-    type: 'PLUGGABLE',
     prefix: 'storagePrefix',
     wrapper: storageWrapper,
-  },
-  // @TODO review config params
-  synchronizerConfigs: {
-    synchronizerMode: 'MODE_RUN_ALL',
-    eventsPerPost: 2000,
-    impressionsPerPost: 4000,
-    maxRetries: 3,
   },
 });
 ```

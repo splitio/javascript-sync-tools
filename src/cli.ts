@@ -48,7 +48,8 @@ let _storageWrapper: IPluggableStorageWrapper;
 /**
  * Object that contains Synchronizer specific configs.
  */
-const synchronizerConfigs: ISynchronizerSettings['synchronizerConfigs'] = {
+const _scheduler: NonNullable<ISynchronizerSettings['scheduler']> = {
+  // @ts-ignore
   synchronizerMode: 'MODE_RUN_ALL',
 };
 
@@ -178,13 +179,16 @@ console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
 const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {
     case 'splitsAndSegments':
-      synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      // @ts-ignore
+      _scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
       break;
     case 'eventsAndImpressions':
-      synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      // @ts-ignore
+      _scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
       break;
     default:
-      synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
+      // @ts-ignore
+      _scheduler.synchronizerMode = 'MODE_RUN_ALL';
   }
 };
 
@@ -197,9 +201,9 @@ switch (mode) {
     _pluggableStoragePath = STORAGE_PATH as string;
     _impressionsMode = IMPRESSIONS_MODE as string;
     _debug = DEBUG as unknown as boolean;
-    synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
-    synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
-    synchronizerConfigs.maxRetries= MAX_RETRIES as number;
+    _scheduler.eventsPerPost = EVENTS_PER_POST as number;
+    _scheduler.impressionsPerPost = IMPRESSIONS_PER_POST as number;
+    _scheduler.maxRetries = MAX_RETRIES as number;
     setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
   case 'env':
@@ -210,9 +214,9 @@ switch (mode) {
     _pluggableStoragePath = env.STORAGE_PATH as string;
     _impressionsMode = env.IMPRESSIONS_MODE as string;
     _debug = env.DEBUG as unknown as boolean;
-    synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
-    synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
-    synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
+    _scheduler.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
+    _scheduler.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
+    _scheduler.maxRetries = env.MAX_RETRIES as unknown as number;
     setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
   default:
@@ -223,9 +227,9 @@ switch (mode) {
     _pluggableStoragePath = storage as string;
     _impressionsMode = impressionsMode as string;
     _debug = debug as boolean;
-    synchronizerConfigs.eventsPerPost = eventsPerPost as number;
-    synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
-    synchronizerConfigs.maxRetries = maxRetries as number;
+    _scheduler.eventsPerPost = eventsPerPost as number;
+    _scheduler.impressionsPerPost = impressionsPerPost as number;
+    _scheduler.maxRetries = maxRetries as number;
     setCustomRun(customRun as CustomModeOption);
     break;
 }
@@ -233,20 +237,19 @@ switch (mode) {
 try {
   _storageWrapper = require(`${process.cwd()}/${_pluggableStoragePath}` as string).default;
 } catch (error) {
-  // @ts-ignore
   console.log('Error importing Storage: ', error.message);
-  exit(0);
+  exit(1);
 }
 
 if (!_apikey) {
   console.log('Unable to initialize Synchronizer task: missing APIKEY.');
-  exit(0);
+  exit(1);
 }
 
 /**
- * Settings creation.
+ * Synchronizer creation.
  */
-const settings = {
+const synchronizer = new Synchronizer({
   core: {
     authorizationKey: _apikey,
   },
@@ -263,15 +266,13 @@ const settings = {
     // @ts-ignore
     impressionsMode: _impressionsMode?.toUpperCase() || 'OPTIMIZED',
   },
-  synchronizerConfigs,
-  debug: _debug || DEBUG,
-};
-
-const synchronizer = new Synchronizer(settings);
+  scheduler: _scheduler,
+  debug: _debug,
+});
 
 synchronizer.execute().then((res) => {
   if (!res) {
     console.log('# Synchronizer execution terminated.');
-    exit(1);
+    exit(0);
   }
 });

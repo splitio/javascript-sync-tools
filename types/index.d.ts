@@ -11,10 +11,18 @@ declare module JsSyncTools {
    * @see {@link @TODO}.
    */
   export class Synchronizer {
-    // @TODO document each method
+    /**
+     * Creates a new Synchronizer instance
+     * @param config The synchronizer config object
+     */
     constructor(config: ISynchronizerSettings);
+    /**
+     * Execute synchronization
+     * @return {Promise<boolean>} A promise that resolves when the operation ends,
+     * with a boolean indicating if operation succeeded or not. The promise never rejects.
+     */
     execute(): Promise<boolean>;
-    // @TODO expose settings in the beta?
+    // @TODO expose settings eventually
     // settings: ISettings
   }
 
@@ -74,12 +82,6 @@ declare module JsSyncTools {
    */
   type ImpressionsMode = 'OPTIMIZED' | 'DEBUG';
   /**
-   * SynchronizerMode type.
-   *
-   * @typedef {string} SynchronizerMode
-   */
-  type SynchronizerMode = 'MODE_RUN_ALL' | 'MODE_RUN_EVENTS_IMPRESSIONS' | 'MODE_RUN_SPLIT_SEGMENTS';
-  /**
    * Settings interface for Synchronizer instances.
    *
    * @interface ISynchronizerSettings
@@ -105,6 +107,11 @@ declare module JsSyncTools {
      * @property {Object} storage
      */
     storage: {
+      /**
+       * Storage type. The only possible value is "PLUGGABLE", which is the default.
+       * @property {'PLUGGABLE'} type
+       */
+      type?: 'PLUGGABLE',
       /**
        * Storage wrapper.
        *
@@ -171,14 +178,28 @@ declare module JsSyncTools {
       impressionsMode?: ImpressionsMode
     }
     /**
-     * Type for specific Synchronizer configs.
+     * Scheduler settings.
+     * @property {Object} scheduler
      */
-    synchronizerConfigs: {
-      // @TODO review
-      synchronizerMode?: SynchronizerMode // sync.mode ?
-      eventsPerPost?: number // sync.eventsPerPost ?
-      impressionsPerPost?: number // sync.impressionsPerPost ?
-      maxRetries?: number // sync.maxRetries ?
+    scheduler?: {
+      /**
+       * Number of impressions to send in a POST request.
+       * @property {number} impressionsPerPost
+       * @default 1000
+       */
+      impressionsPerPost?: number
+      /**
+       * Number of events to send in a POST request.
+       * @property {number} eventsPerPost
+       * @default 1000
+       */
+      eventsPerPost?: number
+      /**
+       * Number of retry attempts for posting impressions and events.
+       * @property {number} maxRetries
+       * @default 3
+       */
+      maxRetries?: number
     }
   }
 }

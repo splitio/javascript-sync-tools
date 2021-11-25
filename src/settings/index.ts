@@ -5,8 +5,6 @@ import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/setting
 import { ISynchronizerSettings } from '../../types';
 import { defaults } from './defaults';
 
-// @TODO refactor settingsValidator as in JS SDKs
-
 /**
  * Object with some default values to instantiate the application and fullfil internal
  * requirements.
@@ -17,45 +15,34 @@ const params = {
 };
 
 /**
- * Function to validate SDK settings and Synchronizer configs.
+ * Function to validate Synchronizer config.
  *
- * @param {any} config  Object with the keys and values for instatiating a SettingsInternal object.
+ * @param {any} config  Synchronizer config object provided by the user.
  * @returns {ISettings}
  */
 export default function synchronizerSettingsValidator(
   config: ISynchronizerSettings
 ): ISettings & ISynchronizerSettings {
-  const synchronizerDefaults = {
-    synchronizerMode: 'MODE_RUN_ALL',
-    eventsPerPost: 1000,
-    impressionsPerPost: 1000,
-    maxRetries: 3,
-  };
 
-  if (config.synchronizerConfigs) {
-    let {
-      eventsPerPost = undefined,
-      impressionsPerPost = undefined,
-      maxRetries = undefined,
-    } = config.synchronizerConfigs;
+  // @ts-ignore
+  const settings = settingsValidation(config, params) as ISettings & ISynchronizerSettings;
 
-    /**
-     * TODO: validate if we need to set a something like MINIMUM_EVENTS/IMPRESSIONS_PER_POST.
-     */
-    if (eventsPerPost && (isNaNNumber(eventsPerPost) || eventsPerPost <= 0)) {
-      console.log('EVENTS_PER_POST parameter must be a positive integer number. Using default value instead.');
-    }
+  const { eventsPerPost, impressionsPerPost, maxRetries } = settings.scheduler;
 
-    if (impressionsPerPost && (isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0)) {
-      console.log('IMPRESSIONS_PER_POST parameter must be a positive integer number. Using default value instead.');
-    }
+  // @TODO validate synchronizerMode eventually
 
-    if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0)) {
-      console.log('MAX_RETRIES parameter must be a positive integer number. Using default values instead.');
-    }
-  } else {
-    Object.assign(config, { synchronizerConfigs: synchronizerDefaults });
+  // @TODO: validate minimum and maximum value for config params.
+  if (eventsPerPost && (isNaNNumber(eventsPerPost) || eventsPerPost <= 0)) {
+    console.log('`eventsPerPost` parameter must be a positive integer number. Using default value instead.');
   }
 
-  return settingsValidation(config, params) as ISettings & ISynchronizerSettings;
+  if (impressionsPerPost && (isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0)) {
+    console.log('`impressionsPerPost` parameter must be a positive integer number. Using default value instead.');
+  }
+
+  if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0)) {
+    console.log('`maxRetries` parameter must be a positive integer number. Using default values instead.');
+  }
+
+  return settings;
 }

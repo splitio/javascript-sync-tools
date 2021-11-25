@@ -64,7 +64,7 @@ export class Synchronizer {
   /**
    * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
    */
-  constructor(config: any) {
+  constructor(config: ISynchronizerSettings) {
     this._observer = impressionObserverSSFactory();
     const settings = synchronizerSettingsValidator(config);
 
@@ -140,16 +140,16 @@ export class Synchronizer {
         this._splitApi.postEventsBulk,
         this._storage.events as IEventsCacheAsync,
         this.settings.log,
-        this.settings.synchronizerConfigs.eventsPerPost,
-        this.settings.synchronizerConfigs.maxRetries,
+        this.settings.scheduler.eventsPerPost,
+        this.settings.scheduler.maxRetries,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,
         this._storage.impressions as IImpressionsCacheAsync,
         this._observer,
         this.settings.log,
-        this.settings.synchronizerConfigs.impressionsPerPost,
-        this.settings.synchronizerConfigs.maxRetries,
+        this.settings.scheduler.impressionsPerPost,
+        this.settings.scheduler.maxRetries,
         countsCache,
       );
       if (countsCache) {
@@ -209,7 +209,8 @@ export class Synchronizer {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-    const mode = this.settings.synchronizerConfigs.synchronizerMode || 'MODE_RUN_ALL';
+    // @ts-ignore @TODO define synchronizerMode config param
+    const mode = this.settings.scheduler.synchronizerMode || 'MODE_RUN_ALL';
     const hasPreExecutionSucceded = await this.preExecute();
     if (!hasPreExecutionSucceded) return false;
 
