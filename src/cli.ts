@@ -137,6 +137,12 @@ const yargv = yargs(hideBin(argv))
       choices: ['optimized', 'debug'],
       nargs: 1,
     },
+    // g: {
+    //   alias: 'inMemoryOperation',
+    //   type: 'boolean',
+    //   description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
+    //   nargs: 0,
+    // },
   })
   .config('config', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .help('h')
@@ -156,6 +162,8 @@ const {
   EVENTS_API_URL,
   debug,
   DEBUG,
+  // inMemoryOperation,
+  // IN_MEMORY_OPERATION,
   prefix,
   STORAGE_PREFIX,
   customRun,
@@ -204,6 +212,7 @@ switch (mode) {
     _scheduler.eventsPerPost = EVENTS_PER_POST as number;
     _scheduler.impressionsPerPost = IMPRESSIONS_PER_POST as number;
     _scheduler.maxRetries = MAX_RETRIES as number;
+    // synchronizerConfigs.inMemoryOperation = IN_MEMORY_OPERATION as boolean;
     setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
   case 'env':
@@ -217,6 +226,7 @@ switch (mode) {
     _scheduler.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
     _scheduler.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
     _scheduler.maxRetries = env.MAX_RETRIES as unknown as number;
+    // synchronizerConfigs.inMemoryOperation = env.IN_MEMORY_OPERATION as unknown as boolean;
     setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
   default:
@@ -230,6 +240,7 @@ switch (mode) {
     _scheduler.eventsPerPost = eventsPerPost as number;
     _scheduler.impressionsPerPost = impressionsPerPost as number;
     _scheduler.maxRetries = maxRetries as number;
+    // synchronizerConfigs.inMemoryOperation = inMemoryOperation as boolean;
     setCustomRun(customRun as CustomModeOption);
     break;
 }
