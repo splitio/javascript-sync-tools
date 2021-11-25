@@ -57,7 +57,7 @@ declare module JsSyncTools {
    *
    * @typedef {string} SplitFilterType
    */
-  type SplitFilterType = 'byName' | 'byPrefix';
+  type SplitFilterType = 'byName';
   /**
    * Defines a split filter, described by a type and list of values.
    */
@@ -119,7 +119,7 @@ declare module JsSyncTools {
        */
       wrapper: Object
       /**
-       * Optional prefix to prevent any kind of data collision between multiple instances.
+       * Optional prefix added to the storage keys to prevent any kind of data collision between SDK versions.
        *
        * @property {string} prefix
        * @default SPLITIO
@@ -155,12 +155,11 @@ declare module JsSyncTools {
       /**
        * List of Split filters. These filters are used to fetch a subset of the Splits definitions in your environment.
        *
-       * At the moment, two types of split filters are supported: by name and by prefix.
+       * At the moment, only one type of split filter is supported: by name.
        *
        * Example:
        *  `splitFilter: [
        *    { type: 'byName', values: ['my_split_1', 'my_split_2'] }, // will fetch splits named 'my_split_1' and 'my_split_2'
-       *    { type: 'byPrefix', values: ['testing'] } // will fetch splits whose names start with 'testing__' prefix
        *  ]`
        * @property {SplitFilter[]} splitFilters
        */
@@ -183,19 +182,19 @@ declare module JsSyncTools {
      */
     scheduler?: {
       /**
-       * Number of impressions to send in a POST request.
+       * Maximum number of impressions to send per POST request.
        * @property {number} impressionsPerPost
        * @default 1000
        */
       impressionsPerPost?: number
       /**
-       * Number of events to send in a POST request.
+       * Maximum number of events to send per POST request.
        * @property {number} eventsPerPost
        * @default 1000
        */
       eventsPerPost?: number
       /**
-       * Number of retry attempts for posting impressions and events.
+       * Maximum number of retry attempts for posting impressions and events.
        * @property {number} maxRetries
        * @default 3
        */

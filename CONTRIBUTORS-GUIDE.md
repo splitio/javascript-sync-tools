@@ -35,7 +35,7 @@ _Note:_ the CLI capabilities rely on [yargs](https://www.npmjs.com/package/yargs
 
 ### Running tests
 
-The project includes unit as well as integration tests for browser environments.
+The project includes unit as well as integration tests.
 
 - To execute unit tests, run `npm run test:unit`
 - To execute e2e tests, you need a Redis service up and running with the default configurations, and run `npm run test:e2e`.

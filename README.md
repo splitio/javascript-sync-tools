@@ -2,7 +2,7 @@
 [![Build Status](https://api.travis-ci.com/splitio/javascript-sync-tools.svg?branch=main)](https://api.travis-ci.com/splitio/javascript-sync-tools)
 
 ## Overview
-This package includes a Javascript synchronizer tool that can be used to synchronize storages used by SDKs in consumer mode.
+This package includes a set of Javascript synchronization tools built based on the core implementation used by SDKs, allowing users to rely on this tool to synchronize the rollout plan data cache snapshot, as well as send the tracked events and impressions data to the Split cloud when running SDKs in consumer mode.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 

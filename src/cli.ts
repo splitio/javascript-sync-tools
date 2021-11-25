@@ -66,12 +66,12 @@ const yargv = yargs(hideBin(argv))
   .example('$0 -m env [...] -d', '| Set Debug Logging enabled')
   .example('$0 -m env [...] -i', '| Set Impressions Mode Debug mode')
   .options({
-    c: {
-      alias: 'customRun',
-      type: 'string',
-      description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
-      choices: ['splitsAndSegments', 'eventsAndImpressions'],
-    },
+    // c: {
+    //   alias: 'customRun',
+    //   type: 'string',
+    //   description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
+    //   choices: ['splitsAndSegments', 'eventsAndImpressions'],
+    // },
     s: {
       alias: 'storage',
       describe: 'Path to the JS file exposing the Storage API',
@@ -281,9 +281,18 @@ const synchronizer = new Synchronizer({
   debug: _debug,
 });
 
-synchronizer.execute().then((res) => {
-  if (!res) {
+/**
+ * Function to exit node with error.
+ */
+function informFailedExecute() {
+  console.log('# Split Synchronizer tool execution terminated with issues');
+  process.exit(1);
+}
+
+synchronizer.execute().then((success) => {
+  if (!success) {
     console.log('# Synchronizer execution terminated.');
-    exit(0);
+    informFailedExecute();
   }
-});
+  exit(0);
+}, informFailedExecute);
