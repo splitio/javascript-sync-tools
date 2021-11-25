@@ -21,14 +21,16 @@ Below is a simple example that describes the execution of the Javascript Synchro
 ### Install package as a project dependency to run programmatically
 1. Install npm package via `npm install @splitsoftware/splitio-sync-tools`
 2. Inside your app, import the `Synchronizer`
-```
+
+```javascript
 const { Synchronizer } = require('@splitsoftware/splitio-sync-tools')
 // or if your project supports EcmaScript modules
 import { Synchronizer } from '@splitsoftware/splitio-sync-tools';
 ```
 
 3. Instantiate the Synchronizer:
-```
+
+```javascript
 // Example:
 const synchronizer = new Synchronizer({
   core: {
@@ -43,7 +45,8 @@ const synchronizer = new Synchronizer({
 ```
 
 4. Run the Synchronizer
-```
+
+```javascript
 synchronizer.execute().then(() => console.log('ready'));
 ```
 
