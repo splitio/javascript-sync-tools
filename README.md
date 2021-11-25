@@ -31,12 +31,11 @@ import { Synchronizer } from '@splitsoftware/splitio-sync-tools';
 3. Instantiate the Synchronizer:
 
 ```javascript
-// Example:
 const synchronizer = new Synchronizer({
   core: {
     authorizationKey: 'YOUR_SDK_SERVER_SIDE_API_KEY',
   },
-  // Mandatory: provide a valid Storage wrapper.
+  // Mandatory: provide a valid storage wrapper.
   storage: {
     prefix: 'storagePrefix',
     wrapper: storageWrapper,
