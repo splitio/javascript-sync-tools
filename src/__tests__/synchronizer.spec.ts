@@ -64,9 +64,11 @@ describe('Synchronizer creation and execution', () => {
       jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve(true));
       jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve());
       // @ts-ignore
-      executeSplitsAndSegmentsCallSpy = jest.spyOn(synchronizer, 'executeSplitsAndSegments').mockImplementation(() => Promise.resolve());
+      executeSplitsAndSegmentsCallSpy = jest.spyOn(synchronizer, 'executeSplitsAndSegments') // @ts-ignore
+        .mockImplementation(() => Promise.resolve());
       // @ts-ignore
-      executeImpressionsAndEventsCallSpy = jest.spyOn(synchronizer, 'executeImpressionsAndEvents').mockImplementation(() => Promise.resolve());
+      executeImpressionsAndEventsCallSpy = jest.spyOn(synchronizer, 'executeImpressionsAndEvents') // @ts-ignore
+        .mockImplementation(() => Promise.resolve());
     });
 
     afterEach(() => {
