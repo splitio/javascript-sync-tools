@@ -28,7 +28,7 @@ const synchronizer = new Synchronizer({
   core: {
     authorizationKey: 'YOUR_SDK_SERVER_SIDE_API_KEY',
   },
-  // Mandatory: provide a valid storage wrapper.
+  // Mandatory: provide a valid storage instance.
   storage: {
     prefix: 'storagePrefix',
     wrapper: storageWrapper,

@@ -227,7 +227,7 @@ export class Synchronizer {
     console.log('# Synchronizer: Execution ended');
     return true;
   }
-  // @TODO remove standalone param
+  // @TODO remove standalone param for cleaner code
   /**
    * Function to wrap the execution of the Split and Segment's synchronizers.
    *
@@ -236,7 +236,7 @@ export class Synchronizer {
   private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    // @TODO optimize SplitChangesUpdater to reduce wrapper operations (inMemoryOperation)
+    // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
     const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
 
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);

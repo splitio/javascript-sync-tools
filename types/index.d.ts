@@ -113,7 +113,7 @@ declare module JsSyncTools {
        */
       type?: 'PLUGGABLE',
       /**
-       * Storage wrapper.
+       * A valid storage instance.
        *
        * @property {Object} wrapper
        */

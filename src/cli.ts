@@ -246,7 +246,9 @@ switch (mode) {
 }
 
 try {
-  _storageWrapper = require(`${process.cwd()}/${_pluggableStoragePath}` as string).default;
+  // If `default` property is defined, use as storage wrapper
+  const module = require(`${process.cwd()}/${_pluggableStoragePath}`);
+  _storageWrapper = typeof module.default === 'object' ? module.default : module;
 } catch (error) {
   console.log('Error importing Storage: ', error.message);
   exit(1);

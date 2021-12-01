@@ -1,20 +1,19 @@
-/* eslint-disable */
-// @ts-nocheck
 import RedisAdapter from '@splitsoftware/splitio-commons/src/storages/inRedis/RedisAdapter';
 import { Logger } from '@splitsoftware/splitio-commons/src/logger/index';
 import { InRedisStorageOptions } from '@splitsoftware/splitio-commons/src/storages/inRedis/';
+import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 
+// @TODO refactor: move to JS-commons, rename to `ioredisWrapper`, and reuse in JS SDK for Node
 /**
- * Wrapper for our RedisAdapter.
+ * Creates a storage wrapper that uses our RedisAdapter.
+ * Operations fail until `connect` is resolved once the Redis 'ready' event is emitted.
  *
  * @param {Object} redisOptions  Redis options with the format expected at `settings.storage.options`.
- * @returns {import("@splitsoftware/splitio-commons/types/storages/types").IPluggableStorageWrapper} Wrapper for IORedis client.
+ * @returns {IPluggableStorageWrapper} Storage wrapper instance.
  */
-function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
+export default function redisAdapterWrapper(redisOptions: InRedisStorageOptions): IPluggableStorageWrapper {
 
-  let redis;
-  // eslint-disable-next-line no-unused-vars
-  let redisError = false;
+  let redis: RedisAdapter;
 
   return {
     get(key) {
@@ -26,15 +25,12 @@ function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
     getAndSet(key, value) {
       const getResult = redis.get(key);
       return redis.set(key, value).then(() => getResult);
-    },
+    }, // @ts-ignore
     del(key) {
       return redis.del(key);
     },
     getKeysByPrefix(prefix) {
       return redis.keys(`${prefix}*`);
-    },
-    getByPrefix(prefix) {
-      return this.getKeysByPrefix(prefix).then(keys => redis.mget(...keys));
     },
     getMany(keys) {
       return redis.mget(...keys);
@@ -44,59 +40,49 @@ function redisAdapterWrapper(redisOptions: InRedisStorageOptions) {
     },
     decr(key) {
       return redis.decr(key);
-    },
+    }, // @ts-ignore
     pushItems(key, items) {
       return redis.rpush(key, items);
     },
     popItems(key, count) {
+      // @TODO wrap rpop method in RedisAdapter
+      // return redis.rpop(key, count);
       return redis.lrange(key, 0, count - 1).then(result => {
         return redis.ltrim(key, result.length, -1).then(() => result);
       });
     },
     getItemsCount(key) {
-      // if (redisError) return Promise.reject(redisError);
       return redis.llen(key);
     },
     itemContains(key, item) {
-      // if (redisError) return Promise.reject(redisError);
       return redis.sismember(key, item).then(matches => matches !== 0);
-    },
+    }, // @ts-ignore
     addItems(key, items) {
       return redis.sadd(key, items);
-    },
+    }, // @ts-ignore
     removeItems(key, items) {
       return redis.srem(key, items);
     },
     getItems(key) {
       return redis.smembers(key);
     },
-    connect(): Promise<void> {
-      const log = new Logger({ logLevel: 'INFO' });
-      redis = new RedisAdapter(log, redisOptions);
-      let retriesCount = 0;
 
-      return new Promise((res, rej) => {
-        redis.on('error', (e) => {
-          console.log('Connecting to redis, attempt #', retriesCount);
-          retriesCount++;
-          if (retriesCount === 10) {
-            this.close();
-            rej(new Error('Connection timeout retries'));
-          }
-          redisError = e;
-        });
+    // @TODO check if connect should be idempotent or not
+    connect() {
+      return new Promise((res) => {
+        const log = new Logger({ logLevel: 'INFO' });
+        redis = new RedisAdapter(log, redisOptions);
 
-        redis.on('connect', () => {
-          redisError = false;
-          res();
-        });
+        redis.on('ready', res);
+        // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected.
+        // It is done to avoid getting the message `Unhandled error event: Error: connect ECONNREFUSED`.
+        // Also, we cannot reject the connect promise on an error, because the SDK will not get ready
+        // if the connection is established after the error.
+        redis.on('error', () => { });
       });
     },
-    disconnect(): Promise<void> {
-      return Promise.resolve(redis && redis.disconnect()); // close the connection
+    disconnect() {
+      return Promise.resolve(redis && redis.disconnect());
     },
   };
 }
-
-export default redisAdapterWrapper;
-

@@ -1,13 +1,11 @@
 /* eslint-disable no-magic-numbers */
 import { Synchronizer } from '../src/index';
-import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
-import redisAdapterWrapper from './utils/inRedisService';
+import redisAdapterWrapper from './utils/redisAdapterWrapper';
 import { ISynchronizerSettings } from '../types';
 
-// @ts-ignore
-let _redisWrapper: IPluggableStorageWrapper;
+let _redisWrapper = redisAdapterWrapper({ options: { url: REDIS_URL } });
 
 /**
  * Function to create a Synchronizer instance/task.
@@ -40,8 +38,6 @@ const createSynchronizer = () => {
   return new Synchronizer(settings);
 };
 
-const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
-
 /**
  * Function to flush REDIS db from all keys related to e2e tests.
  */
@@ -54,7 +50,6 @@ const flushRedis = async () => {
 
 describe('Synchronizer e2e tests', () => {
   beforeAll(async () => {
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
     await flushRedis();
   });
@@ -173,7 +168,6 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     storage: {
       type: 'PLUGGABLE',
       prefix: PREFIX,
-      // @ts-ignore
       wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
     },
     sync: {
@@ -190,8 +184,6 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
   const _synchronizer = new Synchronizer(settings);
 
   beforeAll(async () => {
-    // @ts-ignore
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
     await flushRedis();
 
@@ -285,8 +277,6 @@ describe('Synchronizer - only Splits & Segments mode', () => {
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
 
-    // @ts-ignore
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
   });
 
@@ -317,8 +307,6 @@ describe('Synchronizer - only Events & Impressions', () => {
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
 
-    // @ts-ignore
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
   });
 
