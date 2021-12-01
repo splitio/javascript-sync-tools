@@ -4,7 +4,7 @@ import { Synchronizer } from './Synchronizer';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
-import { ICustomStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { SynchronizerConfigs } from './types';
 
 type CustomModeOption = 'splitsAndSegments' | 'eventsAndImpressions' | undefined;
@@ -26,13 +26,13 @@ let _eventsApiUrl: string | undefined;
  */
 let _apikey: string | undefined;
 /**
- * The Custom Storage's prefix.
+ * The Pluggable Storage prefix.
  */
 let _storagePrefix: string | undefined;
 /**
- * The reference to the provided Storage's path file.
+ * The reference to the provided Storage path file.
  */
-let _customStoragePath: string;
+let _pluggableStoragePath: string;
 /**
  * The reference for the Impressions Mode configuration.
  */
@@ -44,9 +44,9 @@ let _debug: boolean;
 /**
  * The reference to the provided Storage.
  */
-let customStorage: ICustomStorageWrapper;
+let _storageWrapper: IPluggableStorageWrapper;
 /**
- * Object that contains Synchronizer's specific configs.
+ * Object that contains Synchronizer specific configs.
  */
 const synchronizerConfigs: SynchronizerConfigs = {
   synchronizerMode: 'MODE_RUN_ALL',
@@ -110,7 +110,7 @@ const yargv = yargs(hideBin(argv))
     },
     p: {
       alias: 'prefix',
-      describe: 'Set the Storage\'s prefix',
+      describe: 'Set the Storage prefix',
       type: 'string',
       nargs: 1,
     },
@@ -177,7 +177,7 @@ const {
   IMPRESSIONS_PER_POST,
 } = yargv;
 
-console.log(` > Synchronizer's configs from: ${mode || 'CLI params'}`);
+console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
 /**
  * Function to set the Synchronizer Execution Mode.
  *
@@ -202,7 +202,7 @@ switch (mode) {
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
-    _customStoragePath = STORAGE_PATH as string;
+    _pluggableStoragePath = STORAGE_PATH as string;
     _impressionsMode = IMPRESSIONS_MODE as string;
     _debug = DEBUG as unknown as boolean;
     synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
@@ -216,7 +216,7 @@ switch (mode) {
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
-    _customStoragePath = env.STORAGE_PATH as string;
+    _pluggableStoragePath = env.STORAGE_PATH as string;
     _impressionsMode = env.IMPRESSIONS_MODE as string;
     _debug = env.DEBUG as unknown as boolean;
     synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
@@ -230,7 +230,7 @@ switch (mode) {
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
     _storagePrefix = prefix as string;
-    _customStoragePath = storage as string;
+    _pluggableStoragePath = storage as string;
     _impressionsMode = impressionsMode as string;
     _debug = debug as boolean;
     synchronizerConfigs.eventsPerPost = eventsPerPost as number;
@@ -242,7 +242,7 @@ switch (mode) {
 }
 
 try {
-  customStorage = require(`${process.cwd()}/${_customStoragePath}` as string).default;
+  _storageWrapper = require(`${process.cwd()}/${_pluggableStoragePath}` as string).default;
 } catch (error) {
   // @ts-ignore
   console.log('Error importing Storage: ', error.message);
@@ -266,9 +266,9 @@ const settings = {
     events: _eventsApiUrl,
   },
   storage: {
-    type: 'CUSTOM',
+    type: 'PLUGGABLE',
     prefix: _storagePrefix,
-    wrapper: customStorage,
+    wrapper: _storageWrapper,
   },
   sync: {
     // @ts-ignore

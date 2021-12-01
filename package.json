@@ -30,7 +30,7 @@
     "test": "npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.0.1-rc.1",
+    "@splitsoftware/splitio-commons": "1.0.1-rc.2",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.1",
     "yargs": "^17.0.1"
