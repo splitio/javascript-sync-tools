@@ -10,8 +10,29 @@
     "src"
   ],
   "types": "types/index.d.ts",
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "splitio",
+    "slim synchronizer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/splitio/javascript-sync-tools.git"
+  },
+  "homepage": "https://github.com/splitio/javascript-sync-tools#readme",
+  "bugs": "https://github.com/splitio/javascript-sync-tools/issues",
+  "author": "Split Software",
+  "contributors": [
+    {
+      "name": "Emiliano Sanchez",
+      "email": "emiliano.sanchez@split.io",
+      "url": "https://github.com/EmilianoSanchez"
+    },
+    {
+      "name": "Nico Zelaya",
+      "email": "nicolas.zelaya@split.io",
+      "url": "https://github.com/NicoZelaya"
+    }
+  ],
   "license": "Apache-2.0",
   "scripts": {
     "check": "npm run check:lint && npm run check:types",
@@ -23,7 +44,10 @@
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
     "test:e2e": "start-server-and-test 'json-server' 3000 './scripts/check_redis.sh && jest e2e/ --runInBand --forceExit'",
-    "test": "npm run test:unit && npm run test:e2e"
+    "test": "npm run test:unit && npm run test:e2e",
+    "publish:rc": "npm publish --tag rc",
+    "publish:stable": "npm publish",
+    "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
     "@splitsoftware/splitio-commons": "1.0.1-rc.2",
