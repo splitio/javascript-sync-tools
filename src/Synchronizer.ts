@@ -5,7 +5,6 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
 import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
-import fetch from 'node-fetch';
 import { EventsSynchronizer } from './synchronizers/EventsSynchronizer';
 import { ImpressionsSynchronizer } from './synchronizers/ImpressionsSynchronizer';
 import { impressionObserverSSFactory }
@@ -279,6 +278,8 @@ export class Synchronizer {
       // Handle node-fetch issue https://github.com/node-fetch/node-fetch/issues/1037
       if (typeof _fetch !== 'function') _fetch = _fetch.default;
     } catch (e) {
+      // Try to access global fetch if `node-fetch` package couldn't be imported (e.g., not in a Node environment)
+      // eslint-disable-next-line no-undef
       _fetch = typeof fetch === 'function' ? fetch : undefined;
     }
     return _fetch;
