@@ -7,7 +7,7 @@ const config = [
   {
     input: 'lib/cjs/cli.js',
     output: {
-      file: 'bin/splitio-synchronizer.js',
+      file: 'bin/splitio-sync-tools.js',
       format: 'cjs',
       // exports: 'auto', // https://rollupjs.org/guide/en/#outputexports
     },

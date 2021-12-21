@@ -1,14 +1,11 @@
 /* eslint-disable no-magic-numbers */
-// @ts-nocheck
 import { Synchronizer } from '../src/index';
-import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
-import redisAdapterWrapper from './utils/inRedisService';
-import { SynchronizerConfigs } from '../src/types';
+import redisAdapterWrapper from './utils/redisAdapterWrapper';
+import { ISynchronizerSettings } from '../types';
 
-// @ts-ignore
-let _redisWrapper: IPluggableStorageWrapper;
+let _redisWrapper = redisAdapterWrapper({ options: { url: REDIS_URL } });
 
 /**
  * Function to create a Synchronizer instance/task.
@@ -16,13 +13,10 @@ let _redisWrapper: IPluggableStorageWrapper;
  * @returns {Synchronizer}
  */
 const createSynchronizer = () => {
-  const synchronizerConfigs: SynchronizerConfigs = {
-    synchronizerMode: 'MODE_RUN_ALL',
-  };
   /**
    * Settings creation.
    */
-  const settings = {
+  const settings: ISynchronizerSettings = {
     core: {
       authorizationKey: 'fakeapikeyfortesting',
     },
@@ -31,24 +25,18 @@ const createSynchronizer = () => {
       events: SERVER_MOCK_URL,
     },
     storage: {
-      type: 'PLUGGABLE_TEST',
+      type: 'PLUGGABLE',
       prefix: PREFIX,
-      // @ts-ignore
       wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
     },
-    synchronizerConfigs,
-    logger: 'NONE',
-    streamingEnabled: false,
     debug: true,
   };
 
   return new Synchronizer(settings);
 };
-
-const _redisStorage = redisAdapterWrapper({ options: { url: REDIS_URL } });
 
 /**
  * Function to flush REDIS db from all keys related to e2e tests.
@@ -61,27 +49,21 @@ const flushRedis = async () => {
 };
 
 describe('Synchronizer e2e tests', () => {
-  beforeAll(async (done) => {
-    _redisWrapper = _redisStorage;
+  beforeAll(async () => {
     await _redisWrapper.connect();
     await flushRedis();
-
-    done();
   });
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await _redisWrapper.disconnect();
-    done();
   });
 
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
-    beforeAll(async (done) => {
+    beforeAll(async () => {
       const _synchronizer = await createSynchronizer();
       await _synchronizer.initializeStorages();
       await _synchronizer.initializeSynchronizers();
       await _synchronizer.execute();
-
-      done();
     });
 
     it('saves [4] Splits as keys in Redis', async () => {
@@ -172,14 +154,10 @@ describe('Synchronizer e2e tests', () => {
 });
 
 describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mode', () => {
-  const synchronizerConfigs: SynchronizerConfigs = {
-    synchronizerMode: 'MODE_RUN_SPLIT_SEGMENTS',
-    inMemoryOperation: true,
-  };
   /**
    * Settings creation.
    */
-  const settings = {
+  const settings: ISynchronizerSettings = {
     core: {
       authorizationKey: 'fakeapikeyfortesting',
     },
@@ -188,15 +166,17 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       events: SERVER_MOCK_URL,
     },
     storage: {
-      type: 'PLUGGABLE_TEST',
+      type: 'PLUGGABLE',
       prefix: PREFIX,
-      // @ts-ignore
       wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
     },
-    synchronizerConfigs,
+    scheduler: {
+      // @ts-ignore
+      synchronizerMode: 'MODE_RUN_SPLIT_SEGMENTS',
+    },
     logger: 'NONE',
     streamingEnabled: false,
   };
@@ -204,8 +184,6 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
   const _synchronizer = new Synchronizer(settings);
 
   beforeAll(async () => {
-    // @ts-ignore
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
     await flushRedis();
 
@@ -226,9 +204,9 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     });
 
     it('saves new changeNumber value', async () => {
-      const till = await _redisWrapper.getByPrefix(`${REDIS_PREFIX}.splits.till`);
+      const till = await _redisWrapper.get(`${REDIS_PREFIX}.splits.till`);
 
-      expect(Number(till[0])).toBe(1619720346271);
+      expect(till).toBe('1619720346271');
     });
 
     it('saves [2] Segments as keys in Redis', async () => {
@@ -264,9 +242,9 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     });
 
     it('saves new changeNumber value', async () => {
-      const till = await _redisWrapper.getByPrefix(`${REDIS_PREFIX}.splits.till`);
+      const till = await _redisWrapper.get(`${REDIS_PREFIX}.splits.till`);
 
-      expect(Number(till[0])).toBe(1619720346272);
+      expect(till).toBe('1619720346272');
     });
 
     it('updates [4] Traffic Types keys\' values', async () => {
@@ -287,24 +265,19 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
 
 describe('Synchronizer - only Splits & Segments mode', () => {
   let _synchronizer: Synchronizer;
-  let executeSplitsAndSegmentsCallSpy;
-  let executeImpressionsAndEventsCallSpy;
+  let executeSplitsAndSegmentsCallSpy: jest.SpyInstance;
+  let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
-  beforeAll(async (done) => {
-    _synchronizer = await createSynchronizer();
-    // @ts-ignore
-    _synchronizer.settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+  beforeAll(async () => {
+    _synchronizer = await createSynchronizer(); // @ts-ignore
+    _synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
     await _synchronizer.initializeStorages();
-    await _synchronizer.initializeSynchronizers();
-    executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments');
+    await _synchronizer.initializeSynchronizers(); // @ts-ignore
+    executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
 
-    // @ts-ignore
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
-
-    done();
   });
 
   it('executes Splits & Segments Producer Sync tasks', () => {
@@ -315,32 +288,26 @@ describe('Synchronizer - only Splits & Segments mode', () => {
     expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(0);
   });
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await _redisWrapper.disconnect();
-    done();
   });
 });
 
 describe('Synchronizer - only Events & Impressions', () => {
   let _synchronizer: Synchronizer;
-  let executeSplitsAndSegmentsCallSpy;
-  let executeImpressionsAndEventsCallSpy;
+  let executeSplitsAndSegmentsCallSpy: jest.SpyInstance;
+  let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
-  beforeAll(async (done) => {
-    _synchronizer = await createSynchronizer();
-    // @ts-ignore
-    _synchronizer.settings.synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+  beforeAll(async () => {
+    _synchronizer = await createSynchronizer(); // @ts-ignore
+    _synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
     await _synchronizer.initializeStorages();
-    await _synchronizer.initializeSynchronizers();
-    executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments');
+    await _synchronizer.initializeSynchronizers(); // @ts-ignore
+    executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
 
-    // @ts-ignore
-    _redisWrapper = _redisStorage;
     await _redisWrapper.connect();
-
-    done();
   });
 
   it('executes Splits & Segments Producer Sync tasks', () => {
@@ -351,8 +318,7 @@ describe('Synchronizer - only Events & Impressions', () => {
     expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
   });
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await _redisWrapper.disconnect();
-    done();
   });
 });

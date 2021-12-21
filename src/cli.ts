@@ -5,7 +5,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import dotenv from 'dotenv';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
-import { SynchronizerConfigs } from './types';
+import { ISynchronizerSettings } from '../types';
 
 type CustomModeOption = 'splitsAndSegments' | 'eventsAndImpressions' | undefined;
 
@@ -48,7 +48,8 @@ let _storageWrapper: IPluggableStorageWrapper;
 /**
  * Object that contains Synchronizer specific configs.
  */
-const synchronizerConfigs: SynchronizerConfigs = {
+const _scheduler: NonNullable<ISynchronizerSettings['scheduler']> = {
+  // @ts-ignore
   synchronizerMode: 'MODE_RUN_ALL',
 };
 
@@ -65,12 +66,12 @@ const yargv = yargs(hideBin(argv))
   .example('$0 -m env [...] -d', '| Set Debug Logging enabled')
   .example('$0 -m env [...] -i', '| Set Impressions Mode Debug mode')
   .options({
-    c: {
-      alias: 'customRun',
-      type: 'string',
-      description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
-      choices: ['splitsAndSegments', 'eventsAndImpressions'],
-    },
+    // c: {
+    //   alias: 'customRun',
+    //   type: 'string',
+    //   description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
+    //   choices: ['splitsAndSegments', 'eventsAndImpressions'],
+    // },
     s: {
       alias: 'storage',
       describe: 'Path to the JS file exposing the Storage API',
@@ -136,12 +137,12 @@ const yargv = yargs(hideBin(argv))
       choices: ['optimized', 'debug'],
       nargs: 1,
     },
-    g: {
-      alias: 'inMemoryOperation',
-      type: 'boolean',
-      description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
-      nargs: 0,
-    },
+    // g: {
+    //   alias: 'inMemoryOperation',
+    //   type: 'boolean',
+    //   description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
+    //   nargs: 0,
+    // },
   })
   .config('config', (configPath) => JSON.parse(fs.readFileSync(configPath, 'utf-8')))
   .help('h')
@@ -161,8 +162,8 @@ const {
   EVENTS_API_URL,
   debug,
   DEBUG,
-  inMemoryOperation,
-  IN_MEMORY_OPERATION,
+  // inMemoryOperation,
+  // IN_MEMORY_OPERATION,
   prefix,
   STORAGE_PREFIX,
   customRun,
@@ -186,13 +187,16 @@ console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
 const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {
     case 'splitsAndSegments':
-      synchronizerConfigs.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      // @ts-ignore
+      _scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
       break;
     case 'eventsAndImpressions':
-      synchronizerConfigs.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      // @ts-ignore
+      _scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
       break;
     default:
-      synchronizerConfigs.synchronizerMode = 'MODE_RUN_ALL';
+      // @ts-ignore
+      _scheduler.synchronizerMode = 'MODE_RUN_ALL';
   }
 };
 
@@ -205,10 +209,10 @@ switch (mode) {
     _pluggableStoragePath = STORAGE_PATH as string;
     _impressionsMode = IMPRESSIONS_MODE as string;
     _debug = DEBUG as unknown as boolean;
-    synchronizerConfigs.eventsPerPost = EVENTS_PER_POST as number;
-    synchronizerConfigs.impressionsPerPost = IMPRESSIONS_PER_POST as number;
-    synchronizerConfigs.maxRetries= MAX_RETRIES as number;
-    synchronizerConfigs.inMemoryOperation = IN_MEMORY_OPERATION as boolean;
+    _scheduler.eventsPerPost = EVENTS_PER_POST as number;
+    _scheduler.impressionsPerPost = IMPRESSIONS_PER_POST as number;
+    _scheduler.maxRetries = MAX_RETRIES as number;
+    // synchronizerConfigs.inMemoryOperation = IN_MEMORY_OPERATION as boolean;
     setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
   case 'env':
@@ -219,10 +223,10 @@ switch (mode) {
     _pluggableStoragePath = env.STORAGE_PATH as string;
     _impressionsMode = env.IMPRESSIONS_MODE as string;
     _debug = env.DEBUG as unknown as boolean;
-    synchronizerConfigs.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
-    synchronizerConfigs.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
-    synchronizerConfigs.maxRetries = env.MAX_RETRIES as unknown as number;
-    synchronizerConfigs.inMemoryOperation = env.IN_MEMORY_OPERATION as unknown as boolean;
+    _scheduler.eventsPerPost = env.EVENTS_PER_POST as unknown as number;
+    _scheduler.impressionsPerPost = env.IMPRESSIONS_PER_POST as unknown as number;
+    _scheduler.maxRetries = env.MAX_RETRIES as unknown as number;
+    // synchronizerConfigs.inMemoryOperation = env.IN_MEMORY_OPERATION as unknown as boolean;
     setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
   default:
@@ -233,31 +237,32 @@ switch (mode) {
     _pluggableStoragePath = storage as string;
     _impressionsMode = impressionsMode as string;
     _debug = debug as boolean;
-    synchronizerConfigs.eventsPerPost = eventsPerPost as number;
-    synchronizerConfigs.impressionsPerPost = impressionsPerPost as number;
-    synchronizerConfigs.maxRetries = maxRetries as number;
-    synchronizerConfigs.inMemoryOperation = inMemoryOperation as boolean;
+    _scheduler.eventsPerPost = eventsPerPost as number;
+    _scheduler.impressionsPerPost = impressionsPerPost as number;
+    _scheduler.maxRetries = maxRetries as number;
+    // synchronizerConfigs.inMemoryOperation = inMemoryOperation as boolean;
     setCustomRun(customRun as CustomModeOption);
     break;
 }
 
 try {
-  _storageWrapper = require(`${process.cwd()}/${_pluggableStoragePath}` as string).default;
+  // If `default` property is defined, use as storage wrapper
+  const module = require(`${process.cwd()}/${_pluggableStoragePath}`);
+  _storageWrapper = typeof module.default === 'object' ? module.default : module;
 } catch (error) {
-  // @ts-ignore
   console.log('Error importing Storage: ', error.message);
-  exit(0);
+  exit(1);
 }
 
 if (!_apikey) {
   console.log('Unable to initialize Synchronizer task: missing APIKEY.');
-  exit(0);
+  exit(1);
 }
 
 /**
- * Settings creation.
+ * Synchronizer creation.
  */
-const settings = {
+const synchronizer = new Synchronizer({
   core: {
     authorizationKey: _apikey,
   },
@@ -274,15 +279,22 @@ const settings = {
     // @ts-ignore
     impressionsMode: _impressionsMode?.toUpperCase() || 'OPTIMIZED',
   },
-  synchronizerConfigs,
-  debug: _debug || DEBUG,
-};
-
-const synchronizer = new Synchronizer(settings);
-
-synchronizer.execute().then((res) => {
-  if (!res) {
-    console.log('# Synchronizer execution terminated.');
-    exit(1);
-  }
+  scheduler: _scheduler,
+  debug: _debug,
 });
+
+/**
+ * Function to exit node with error.
+ */
+function informFailedExecute() {
+  console.log('# Split Synchronizer tool execution terminated with issues');
+  process.exit(1);
+}
+
+synchronizer.execute().then((success) => {
+  if (!success) {
+    console.log('# Synchronizer execution terminated.');
+    informFailedExecute();
+  }
+  exit(0);
+}, informFailedExecute);

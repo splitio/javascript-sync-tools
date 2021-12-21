@@ -1,6 +1,6 @@
-# Contributing to the Split Javascript Synchronizer
+# Contributing to the Split Javascript Sync Tools
 
-Split Javascript Synchronizer is an open source project and we welcome feedback and contribution. The information below describes how to build the project with your changes, run the tests, and send the Pull Request(PR).
+Split Javascript Sync Tools is an open source project and we welcome feedback and contribution. The information below describes how to build the project with your changes, run the tests, and send the Pull Request(PR).
 
 ## Development
 
@@ -18,9 +18,9 @@ Split Javascript Synchronizer is an open source project and we welcome feedback 
 10. Check for conflicts once the pull request is created to make sure your PR can be merged cleanly into `development`.
 11. Keep an eye out for any feedback or comments from Split's SDK team.
 
-### Building the Synchronizer
+### Building the tools
 
-For widespread use of the Synchronizer with different environments and module formats, we have two different builds:
+For widespread use of the tools with different environments and module formats, we have two different builds:
 * A **ES2015** modules compatible build.
 * A **CommonJS** modules compatible build.
 
@@ -28,15 +28,12 @@ The different builds can be generated all at once with the command `npm run buil
 
 _Note:_ In order to run build/tests commands, Node 10 or higher is required.
 
-### Building the Synchronizer's CLI
-
-To create the CLI that will be set as `bin` in the package, run the command `npm run make:cli`. Refer to [package.json](package.json) for more insight on the build scripts.
-_Note:_ the CLI capabilities rely on [yargs](https://www.npmjs.com/package/yargs), which requires Node 12 or higher.
-
 ### Running tests
 
+The project includes unit as well as integration tests.
+
 - To execute unit tests, run `npm run test:unit`
-- To execute e2e tests, you need a Redis service up and running with the default configurations, and run `npm run test:e2e:ci`.
+- To execute e2e tests, you need a Redis service up and running with the default configurations, and run `npm run test:e2e`.
 
 All tests can be run at once with the command `npm run test`.
 

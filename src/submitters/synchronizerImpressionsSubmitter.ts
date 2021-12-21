@@ -1,16 +1,19 @@
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
-import { StoredImpressionWithMetadata }
-  from '@splitsoftware/splitio-commons/types/sync/submitters/types';
-import { ImpressionDTO } from '@splitsoftware/splitio-commons/types/types';
-import { ImpressionsDTOWithMetadata } from '../types';
+import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/types/sync/submitters/types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
-import ImpressionCountsCacheInMemory
-  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import ImpressionCountsCache from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { groupByMetadata, metadataToHeaders, retry } from './utils';
 import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
+import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
+import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
+
+export type ImpressionsDTOWithMetadata = {
+  metadata: IMetadata;
+  impression: ImpressionDTO;
+}
 
 /**
  * Constant to define the amount of Events to pop from Storage.
@@ -68,7 +71,7 @@ export function impressionsSubmitterFactory(
   logger: ILogger,
   impressionsPerPost?: number,
   maxRetries?: number,
-  countsCache?: ImpressionCountsCacheInMemory,
+  countsCache?: ImpressionCountsCache,
 ): () => Promise<boolean> {
   /**
    * Function to wrap the POST requests and retries attempt.

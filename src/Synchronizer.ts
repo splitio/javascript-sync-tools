@@ -5,7 +5,6 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
 import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
-import fetch from 'node-fetch';
 import { EventsSynchronizer } from './synchronizers/EventsSynchronizer';
 import { ImpressionsSynchronizer } from './synchronizers/ImpressionsSynchronizer';
 import { impressionObserverSSFactory }
@@ -16,7 +15,7 @@ import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impr
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
 import synchronizerSettingsValidator from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
-import { SynchronizerConfigs } from './types';
+import { ISynchronizerSettings } from '../types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
@@ -55,16 +54,16 @@ export class Synchronizer {
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
-  settings: ISettings & { synchronizerConfigs: SynchronizerConfigs };
+  settings: ISettings & ISynchronizerSettings;
   /**
    * The local reference for the Impression Observer.
    */
   _observer: ImpressionObserver;
 
   /**
-   * @param  {ISettings} config  Configuration object used to instantiates the Synchronizer.
+   * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
    */
-  constructor(config: any) {
+  constructor(config: ISynchronizerSettings) {
     this._observer = impressionObserverSSFactory();
     const settings = synchronizerSettingsValidator(config);
 
@@ -140,16 +139,16 @@ export class Synchronizer {
         this._splitApi.postEventsBulk,
         this._storage.events as IEventsCacheAsync,
         this.settings.log,
-        this.settings.synchronizerConfigs.eventsPerPost,
-        this.settings.synchronizerConfigs.maxRetries,
+        this.settings.scheduler.eventsPerPost,
+        this.settings.scheduler.maxRetries,
       );
       this._impressionsSynchronizer = new ImpressionsSynchronizer(
         this._splitApi.postTestImpressionsBulk,
         this._storage.impressions as IImpressionsCacheAsync,
         this._observer,
         this.settings.log,
-        this.settings.synchronizerConfigs.impressionsPerPost,
-        this.settings.synchronizerConfigs.maxRetries,
+        this.settings.scheduler.impressionsPerPost,
+        this.settings.scheduler.maxRetries,
         countsCache,
       );
       if (countsCache) {
@@ -209,7 +208,8 @@ export class Synchronizer {
    * @returns {boolean}
    */
   async execute(): Promise<boolean> {
-    const mode = this.settings.synchronizerConfigs.synchronizerMode || 'MODE_RUN_ALL';
+    // @ts-ignore @TODO define synchronizerMode config param
+    const mode = this.settings.scheduler.synchronizerMode || 'MODE_RUN_ALL';
     const hasPreExecutionSucceded = await this.preExecute();
     if (!hasPreExecutionSucceded) return false;
 
@@ -226,17 +226,18 @@ export class Synchronizer {
     console.log('# Synchronizer: Execution ended');
     return true;
   }
+  // @TODO remove standalone param for cleaner code
   /**
    * Function to wrap the execution of the Split and Segment's synchronizers.
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
-  async executeSplitsAndSegments(standalone = true) {
+  private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    const isSplitsSyncReady = this.settings.synchronizerConfigs.inMemoryOperation ?
-      await this._splitsSynchronizer.getSplitChangesInMemory() :
-      await this._splitsSynchronizer.getSplitChanges();
+    // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
+    const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
+
     console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
     console.log(` > Segments Synchronizer task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
@@ -248,7 +249,7 @@ export class Synchronizer {
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
-  async executeImpressionsAndEvents(standalone = true) {
+  private async executeImpressionsAndEvents(standalone = true) {
     if (standalone) await this.preExecute();
 
     const isEventsSyncReady = await this._eventsSynchronizer.synchroniseEvents();
@@ -277,6 +278,8 @@ export class Synchronizer {
       // Handle node-fetch issue https://github.com/node-fetch/node-fetch/issues/1037
       if (typeof _fetch !== 'function') _fetch = _fetch.default;
     } catch (e) {
+      // Try to access global fetch if `node-fetch` package couldn't be imported (e.g., not in a Node environment)
+      // eslint-disable-next-line no-undef
       _fetch = typeof fetch === 'function' ? fetch : undefined;
     }
     return _fetch;
