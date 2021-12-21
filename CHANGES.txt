@@ -1,0 +1,2 @@
+0.0.1 (December 22, 2021)
+ - Initial public release. Check the official documentation for details: @TODO
