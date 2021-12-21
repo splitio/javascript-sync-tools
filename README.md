@@ -1,5 +1,6 @@
 # Split Javascript Sync Tools
-[![Build Status](https://api.travis-ci.com/splitio/javascript-sync-tools.svg?branch=main)](https://api.travis-ci.com/splitio/javascript-sync-tools)
+
+[![npm version](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-sync-tools.svg)](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-sync-tools) [![Build Status](https://github.com/splitio/javascript-sync-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/splitio/javascript-sync-tools/actions/workflows/ci.yml)
 
 ## Overview
 This package includes a set of Javascript synchronization tools built based on the core implementation used by SDKs, allowing users to rely on this tool to synchronize the rollout plan data cache snapshot, as well as send the tracked events and impressions data to the Split cloud when running SDKs in consumer mode.
