@@ -4,8 +4,12 @@
   "description": "Split Javascript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
+  "bin": {
+    "splitio-sync-tools": "bin/splitio-sync-tools.js"
+  },
   "files": [
     "lib",
+    "bin",
     "types",
     "src"
   ],
@@ -38,9 +42,10 @@
     "check": "npm run check:lint && npm run check:types",
     "check:lint": "eslint src --ext .js,.ts",
     "check:types": "tsc --noEmit",
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:cli",
     "build:esm": "rimraf lib/esm && tsc -m es2015 --outDir lib/esm --importHelpers && scripts/build_esm_replace_imports.sh && replace @VERSION@ $npm_package_version lib/esm/settings/defaults.js",
     "build:cjs": "rimraf lib/cjs && tsc -m CommonJS --outDir lib/cjs --importHelpers && scripts/build_cjs_replace_imports.sh && replace @VERSION@ $npm_package_version lib/cjs/settings/defaults.js",
+    "build:cli": "rimraf bin && rollup -c && scripts/make_cli.sh",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
     "test:e2e": "start-server-and-test 'json-server' 3000 './scripts/check_redis.sh && jest e2e/ --runInBand --forceExit'",
