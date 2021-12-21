@@ -22,7 +22,7 @@ const config = {
  *
  * @returns {Promise}
  */
-const runSDKConsumer = () => {
+export default function runSDKConsumer() {
   // @ts-ignore
   const factory = SplitFactory(config);
   const client = factory.client();
@@ -45,6 +45,4 @@ const runSDKConsumer = () => {
     });
   });
 
-};
-
-export default runSDKConsumer;
+}
