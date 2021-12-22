@@ -8,7 +8,7 @@ This package includes a set of Javascript synchronization tools built based on t
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
 ## Compatibility
-Split sync tools supports Node version 8 or higher.
+Split sync tools supports Node.js version 8 or higher. To run the tools in other Javascript environments, the target environment must support ES6 (ECMAScript 2015) syntax, and provide built-in support or a global polyfill for Promises and Web Fetch API.
 
 ## Getting started
 Below is a simple example that describes the execution of the Javascript Synchronizer:
