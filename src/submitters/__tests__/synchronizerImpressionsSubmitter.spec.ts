@@ -1,12 +1,12 @@
 /* eslint-disable no-magic-numbers, max-len, jsdoc/require-jsdoc*/
-import ImpressionCountsCacheInMemory from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionsSubmitterFactory, impressionWithMetadataToImpressionDTO } from '../synchronizerImpressionsSubmitter';
 import { getImpressionsListWithSameMetadata } from './impressionsMockUtils';
 import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
 import { impressionsCountSubmitterFactory } from '../synchronizerImpressionsCountSubmitter';
 import { metadataToHeaders } from '../utils';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
-import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 
 describe('Impressions Submitter for Lightweight Synchronizer', () => {
   const _postImpressionsMock = jest.fn(() => Promise.resolve());
@@ -14,7 +14,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     popNWithMetadata: jest.fn(),
     count: jest.fn().mockImplementation(() => 0),
   };
-  const _fakeLogger = { error: () => {} };
+  const _fakeLogger = { error: () => { } };
 
   let observer: ImpressionObserver;
   let countsCache: ImpressionCountsCacheInMemory;

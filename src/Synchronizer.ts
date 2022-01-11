@@ -9,11 +9,11 @@ import { EventsSynchronizer } from './synchronizers/EventsSynchronizer';
 import { ImpressionsSynchronizer } from './synchronizers/ImpressionsSynchronizer';
 import { impressionObserverSSFactory }
   from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import ImpressionCountsCacheInMemory
+import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
-import synchronizerSettingsValidator from './settings';
+import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { ISynchronizerSettings } from '../types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';

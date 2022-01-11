@@ -20,7 +20,7 @@ const params = {
  * @param {any} config  Synchronizer config object provided by the user.
  * @returns {ISettings}
  */
-export default function synchronizerSettingsValidator(
+export function synchronizerSettingsValidator(
   config: ISynchronizerSettings
 ): ISettings & ISynchronizerSettings {
 

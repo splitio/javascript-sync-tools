@@ -1,6 +1,6 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/services/types';
-import ImpressionCountsCacheInMemory
+import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionsCountSubmitterFactory } from '../submitters/synchronizerImpressionsCountSubmitter';
 
