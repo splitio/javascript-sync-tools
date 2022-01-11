@@ -1,5 +1,5 @@
 import { IFetchSegmentChanges } from '@splitsoftware/splitio-commons/src/services/types';
-import segmentChangesFetcherFactory
+import { segmentChangesFetcherFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/segmentChangesFetcher';
 import { segmentChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/segmentChangesUpdater';

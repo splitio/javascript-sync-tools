@@ -2,7 +2,7 @@
 import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/services/types';
 import { ImpressionCountsPayload }
   from '@splitsoftware/splitio-commons/types/sync/submitters/types';
-import ImpressionCountsCacheInMemory
+import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 

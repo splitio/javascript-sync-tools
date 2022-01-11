@@ -1,4 +1,4 @@
-import RedisAdapter from '@splitsoftware/splitio-commons/src/storages/inRedis/RedisAdapter';
+import { RedisAdapter } from '@splitsoftware/splitio-commons/src/storages/inRedis/RedisAdapter';
 import { Logger } from '@splitsoftware/splitio-commons/src/logger/index';
 import { InRedisStorageOptions } from '@splitsoftware/splitio-commons/src/storages/inRedis/';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';

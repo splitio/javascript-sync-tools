@@ -1,9 +1,9 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
-import ImpressionCountsCacheInMemory
+import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
-import ImpressionObserver from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { impressionsSubmitterFactory } from '../submitters/synchronizerImpressionsSubmitter';
 
 /**
@@ -41,7 +41,7 @@ export class ImpressionsSynchronizer {
     maxRetries?: number,
     countsCache?: ImpressionCountsCacheInMemory,
   ) {
-    this._postImpressionsBulk  = postImpressionsBulk;
+    this._postImpressionsBulk = postImpressionsBulk;
     this._impressionsStorage = impressionsStorage;
     this._impressionsSubmitter = impressionsSubmitterFactory(
       this._postImpressionsBulk,
