@@ -5,6 +5,7 @@
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
+    "import",
     "eslint-plugin-jsdoc"
   ],
   "env": {
@@ -19,7 +20,9 @@
       "excludedFiles": ["src/**/__tests__/**"],
       "rules": {
         "no-restricted-syntax": ["error", "ForOfStatement", "ForInStatement"],
-        "no-throw-literal": "error"
+        "no-throw-literal": "error",
+        "import/no-default-export": "error",
+        "import/no-self-import": "error"
       },
       "parserOptions": {
         "ecmaVersion": 2015,

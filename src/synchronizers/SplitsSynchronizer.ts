@@ -1,5 +1,6 @@
 import { IFetchSplitChanges } from '@splitsoftware/splitio-commons/src/services/types';
-import splitChangesFetcherFactory from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
+import { splitChangesFetcherFactory }
+  from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
 import { splitChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
