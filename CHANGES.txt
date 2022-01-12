@@ -1,2 +1,2 @@
-1.0.0 (January 12, 2022)
- - Initial public release.
+0.1.0 (January 11, 2022)
+ - Initial public release. Check the official documentation for details: @TODO
