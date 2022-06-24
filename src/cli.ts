@@ -250,6 +250,7 @@ try {
   const module = require(`${process.cwd()}/${_pluggableStoragePath}`);
   _storageWrapper = typeof module.default === 'object' ? module.default : module;
 } catch (error) {
+  // @ts-ignore
   console.log('Error importing Storage: ', error.message);
   exit(1);
 }
