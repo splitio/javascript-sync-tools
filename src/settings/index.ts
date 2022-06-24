@@ -12,6 +12,8 @@ import { defaults } from './defaults';
 const params = {
   logger: validateLogger,
   defaults,
+  consent: () => undefined,
+  runtime: () => {return { ip: false, hostname: false };},
 };
 
 /**
