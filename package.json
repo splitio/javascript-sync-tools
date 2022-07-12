@@ -50,7 +50,7 @@
     "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.4.1",
+    "@splitsoftware/splitio-commons": "1.5.0",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.1",
     "yargs": "^17.0.1"
@@ -58,7 +58,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-node-resolve": "^13.0.2",
-    "@splitsoftware/splitio": "10.19.1",
+    "@splitsoftware/splitio": "10.20.0",
     "@types/ioredis": "^4.28.0",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.0.1",
