@@ -55,7 +55,6 @@ export function impressionsCountSubmitterFactory(
     if (Object.keys(impressionsCountData).length > 0) {
       const payload = fromImpressionCountsCollector(impressionsCountData);
 
-      impressionsCountsCache.clear();
       try {
         await postClient(JSON.stringify(payload));
       } catch (e) {
