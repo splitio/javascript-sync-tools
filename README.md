@@ -43,7 +43,7 @@ const synchronizer = new Synchronizer({
 synchronizer.execute().then(() => console.log('ready'));
 ```
 
-Please refer to [Javascript Sync Tools](https://help.split.io/hc/en-us/articles/@TODO) to learn about all the functionality provided by the package.
+Please refer to [Javascript Sync Tools](https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools) to learn about all the functionality provided by the package.
 
 ## Submitting issues
 The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-sync-tools/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.
@@ -77,8 +77,8 @@ Split has built and maintains SDKs for:
 * Redux [Github](https://github.com/splitio/redux-client) [Docs](https://help.split.io/hc/en-us/articles/360038851551-Redux-SDK)
 * Ruby [Github](https://github.com/splitio/ruby-client) [Docs](https://help.split.io/hc/en-us/articles/360020673251-Ruby-SDK)
 
-For a comprehensive list of opensource projects visit our [Github page](https://github.com/splitio?utf8=%E2%9C%93&query=%20only%3Apublic%20).
+For a comprehensive list of open source projects visit our [Github page](https://github.com/splitio?utf8=%E2%9C%93&query=%20only%3Apublic%20).
 
 **Learn more about Split:**
 
-Visit [split.io/product](https://www.split.io/product) for an overview of Split, or visit our documentation at [docs.split.io](https://help.split.io/hc/en-us) for more detailed information.
+Visit [split.io/product](https://www.split.io/product) for an overview of Split, or visit our documentation at [help.split.io](http://help.split.io) for more detailed information.

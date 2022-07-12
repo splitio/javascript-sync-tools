@@ -12,6 +12,7 @@ import { impressionObserverSSFactory }
 import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import { telemetryTrackerFactory } from '@splitsoftware/splitio-commons/src/trackers/telemetryTracker';
 import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
 import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
@@ -78,6 +79,7 @@ export class Synchronizer {
     this._splitApi = splitApiFactory(
       this.settings,
       { getFetch: Synchronizer._getFetch },
+      telemetryTrackerFactory()
     );
   }
 
