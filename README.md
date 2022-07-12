@@ -43,7 +43,7 @@ const synchronizer = new Synchronizer({
 synchronizer.execute().then(() => console.log('ready'));
 ```
 
-Please refer to [Javascript Synchronizer Tools](https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools) to learn about all the functionality provided by the package.
+Please refer to [Javascript Sync Tools](https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools) to learn about all the functionality provided by the package.
 
 ## Submitting issues
 The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-sync-tools/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.

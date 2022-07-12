@@ -8,7 +8,7 @@ declare module JsSyncTools {
   /**
    * Javascript synchronizer tool.
    *
-   * @see {@link @TODO}.
+   * @see {@link https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools}.
    */
   export class Synchronizer {
     /**
@@ -85,7 +85,7 @@ declare module JsSyncTools {
    * Settings interface for Synchronizer instances.
    *
    * @interface ISynchronizerSettings
-   * @see {@link @TODO#configuration}
+   * @see {@link https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools#configuration}
    */
   interface ISynchronizerSettings {
     /**
@@ -135,8 +135,6 @@ declare module JsSyncTools {
     urls?: UrlSettings
     /**
      * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string.
-     *
-     * @see {@link @TODO#logging}
      *
      * Examples:
      * ```typescript
