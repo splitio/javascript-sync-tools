@@ -51,7 +51,7 @@ export function impressionsCountSubmitterFactory(
 ): () => Promise<boolean> {
   // eslint-disable-next-line no-async-promise-executor
   return async () => {
-    const impressionsCountData = impressionsCountsCache.state();
+    const impressionsCountData = impressionsCountsCache.pop();
     if (Object.keys(impressionsCountData).length > 0) {
       const payload = fromImpressionCountsCollector(impressionsCountData);
 

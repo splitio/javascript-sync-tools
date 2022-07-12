@@ -108,16 +108,6 @@
     }],
     "jsdoc/require-description-complete-sentence": "error",
     "jsdoc/require-hyphen-before-param-description": ["error", "never"],
-    "jsdoc/require-jsdoc": ["error", {
-      "require": {
-        "ArrowFunctionExpression": true,
-        "ClassDeclaration": true,
-        "ClassExpression": true,
-        "FunctionDeclaration": true,
-        "MethodDefinition": true
-      },
-      "exemptEmptyConstructors": true
-    }],
     "jsdoc/require-param": "error",
     "jsdoc/require-param-description": "error",
     "jsdoc/require-param-name": "error",
