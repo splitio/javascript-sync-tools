@@ -13,7 +13,7 @@ const params = {
   logger: validateLogger,
   defaults,
   consent: () => undefined,
-  runtime: () => {return { ip: false, hostname: false };},
+  runtime: () => { return { ip: false, hostname: false }; },
 };
 
 /**
