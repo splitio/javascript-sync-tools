@@ -24,7 +24,7 @@ export const metadataToHeaders = (metadata: IMetadata): {
  * @param {string}     objectKey       The Key name to define how to group the list of elements.
  * @returns {any}
  */
-export function groupByMetadata<T>(listOfElements: Array<any>, objectKey: string):
+export function groupBy<T>(listOfElements: Array<any>, objectKey: string):
   {[metadataAsKey: string]: Array<T>} {
   const _resultMap: any = {};
 

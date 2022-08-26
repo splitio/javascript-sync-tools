@@ -5,7 +5,7 @@ import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import { groupByMetadata, metadataToHeaders, retry } from './utils';
+import { groupBy, metadataToHeaders, retry } from './utils';
 import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
@@ -124,7 +124,7 @@ export function impressionsSubmitterFactory(
         });
 
         const impressionsWithMetadataProcessedToPost: { [metadataAsKey: string]: ImpressionsDTOWithMetadata[] } =
-          groupByMetadata(impressionsWithMetadataToPost, 'metadata');
+          groupBy(impressionsWithMetadataToPost, 'metadata');
 
         const impressionMode: SplitIO.ImpressionsMode = countsCache ? 'OPTIMIZED' : 'DEBUG';
 
@@ -136,7 +136,7 @@ export function impressionsSubmitterFactory(
           const metadata = impressionsWithMetadataProcessedToPost[key][0].metadata;
           const headers = Object.assign({}, metadataToHeaders(metadata), { SplitSDKImpressionsMode: impressionMode });
           // Group impressions by Feature key.
-          const impressionsByFeature = groupByMetadata(impressions, 'feature');
+          const impressionsByFeature = groupBy(impressions, 'feature');
 
           let impressionsListToPost: { f: string; i: ImpressionDTO[]; }[] = [];
           Object.keys(impressionsByFeature).forEach((key) => {

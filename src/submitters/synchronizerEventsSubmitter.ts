@@ -4,7 +4,7 @@ import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/typ
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
 import { SplitIO } from '@splitsoftware/splitio-commons/types/types';
-import { groupByMetadata, metadataToHeaders, retry } from './utils';
+import { groupBy, metadataToHeaders, retry } from './utils';
 
 /**
  * Constant to define the amount of Events to pop from Storage.
@@ -61,7 +61,7 @@ export function eventsSubmitterFactory(
   function processEventsBatch(batchSize: number = EVENTS_AMOUNT_DEFAULT) {
     return eventsCache.popNWithMetadata(batchSize)
       .then(async (events) => {
-        const processedEvents: ProcessedByMetadataEvents = groupByMetadata(events, 'm');
+        const processedEvents: ProcessedByMetadataEvents = groupBy(events, 'm');
         const _eMetadataKeys = Object.keys(processedEvents);
 
         for (let j = 0; j < _eMetadataKeys.length; j++) {
