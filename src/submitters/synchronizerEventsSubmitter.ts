@@ -2,8 +2,8 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
-import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
-import { SplitIO } from '@splitsoftware/splitio-commons/types/types';
+import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { groupBy, metadataToHeaders, retry } from './utils';
 
 /**

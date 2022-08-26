@@ -1,4 +1,4 @@
-import { IMetadata } from '@splitsoftware/splitio-commons/types/dtos/types';
+import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
 
 const DEFAULT_RETRIES_AMOUNT = 3;
 
@@ -24,11 +24,11 @@ export const metadataToHeaders = (metadata: IMetadata): {
  * @param {string}     objectKey       The Key name to define how to group the list of elements.
  * @returns {any}
  */
-export function groupBy<T>(listOfElements: Array<any>, objectKey: string):
+export function groupBy<T>(listOfElements: Array<T>, objectKey: string):
   {[metadataAsKey: string]: Array<T>} {
   const _resultMap: any = {};
 
-  listOfElements.forEach((e) => {
+  listOfElements.forEach((e) => { // @ts-ignore
     const metadataKey = JSON.stringify(e[objectKey]);
     if (!_resultMap[metadataKey]) _resultMap[metadataKey] = [];
     _resultMap[metadataKey].push(e);

@@ -1,6 +1,6 @@
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
-import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
-import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/types/sync/submitters/types';
+import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { ImpressionCountsCacheInMemory }

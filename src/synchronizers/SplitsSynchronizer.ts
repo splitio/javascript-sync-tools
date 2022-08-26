@@ -4,9 +4,9 @@ import { splitChangesFetcherFactory }
 import { splitChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { ISplit } from '@splitsoftware/splitio-commons/types/dtos/types';
+import { ISplit } from '@splitsoftware/splitio-commons/src/dtos/types';
 import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync }
-  from '@splitsoftware/splitio-commons/types/storages/types';
+  from '@splitsoftware/splitio-commons/src/storages/types';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
 
