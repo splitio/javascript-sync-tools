@@ -10,6 +10,7 @@ import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
 import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
+import { ImpressionsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 
 export type ImpressionsDTOWithMetadata = {
   metadata: IMetadata;
@@ -138,11 +139,22 @@ export function impressionsSubmitterFactory(
           // Group impressions by Feature key.
           const impressionsByFeature = groupBy(impressions, 'feature');
 
-          let impressionsListToPost: { f: string; i: ImpressionDTO[]; }[] = [];
+          let impressionsListToPost: ImpressionsPayload = [];
           Object.keys(impressionsByFeature).forEach((key) => {
             impressionsListToPost.push({
               f: JSON.parse(key),
-              i: impressionsByFeature[key] as ImpressionDTO[],
+              i: impressionsByFeature[key].map(entry => {
+                return {
+                  k: entry.keyName, // Key
+                  t: entry.treatment, // Treatment
+                  m: entry.time, // Timestamp
+                  b: entry.bucketingKey, // Bucketing Key
+                  // @TODO `labelsEnabled` config parameter
+                  r: entry.label, // Rule label
+                  c: entry.changeNumber, // ChangeNumber
+                  pt: entry.pt, // Previous time
+                };
+              }),
             });
           });
           await tryPostImpressionsBulk(JSON.stringify(impressionsListToPost), headers);
