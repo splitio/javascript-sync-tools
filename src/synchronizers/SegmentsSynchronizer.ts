@@ -4,7 +4,7 @@ import { segmentChangesFetcherFactory }
 import { segmentChangesUpdaterFactory }
   from '@splitsoftware/splitio-commons/src/sync/polling/updaters/segmentChangesUpdater';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { ISegmentsCacheAsync } from '@splitsoftware/splitio-commons/types/storages/types';
+import { ISegmentsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 
 /**
  * Class that manages all the Segments entities related actions.
