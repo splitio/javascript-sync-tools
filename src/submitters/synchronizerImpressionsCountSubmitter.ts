@@ -1,39 +1,10 @@
 
 import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/services/types';
-import { ImpressionCountsPayload }
-  from '@splitsoftware/splitio-commons/src/sync/submitters/types';
+import { fromImpressionCountsCollector }
+  from '@splitsoftware/splitio-commons/src/sync/submitters/impressionCountsSubmitter';
 import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
-
-/**
- * Function to process Impressions Count data and transform it into request payload.
- *
- * @param {Record<string, number>} impressionsCount  The Impressions Count's data set.
- * @returns {ImpressionCountsPayload}
- */
-const fromImpressionCountsCollector = (impressionsCount: Record<string, number>): ImpressionCountsPayload => {
-  const pf = [];
-  const keys = Object.keys(impressionsCount);
-
-  for (let i = 0; i < keys.length; i++) {
-    const splitted = keys[i].split('::');
-    // eslint-disable-next-line no-magic-numbers
-    if (splitted.length !== 2) continue;
-    const featureName = splitted[0];
-    const timeFrame = splitted[1];
-
-    const impressionsInTimeframe = {
-      f: featureName, // Test Name
-      m: Number(timeFrame), // Time Frame
-      rc: impressionsCount[keys[i]], // Count
-    };
-
-    pf.push(impressionsInTimeframe);
-  }
-
-  return { pf };
-};
 
 /**
  * Factory that returns an Impressions submitter, capable of fetching the Impressions from the storage,
