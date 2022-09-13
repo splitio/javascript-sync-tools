@@ -50,7 +50,7 @@
     "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.6.1",
+    "@splitsoftware/splitio-commons": "1.6.2-rc.6",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.7",
     "yargs": "^17.0.1"
