@@ -1,6 +1,6 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
 import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IStorageAsync, ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
@@ -20,6 +20,7 @@ import { ISynchronizerSettings } from '../types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { telemetrySubmitterFactory } from './submitters/synchronizerTelemetrySubmitter';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -51,7 +52,12 @@ export class Synchronizer {
   /**
    * The local reference to the ImpressionsCountSynchronizer class.
    */
-  _impressionsCountSynchronizer!: ImpressionsCountSynchronizer;
+  _impressionsCountSynchronizer?: ImpressionsCountSynchronizer;
+  /**
+   * The local reference to the telemetry submitter.
+   */
+  _telemetrySubmitter?: () => Promise<boolean>;
+
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
@@ -160,6 +166,11 @@ export class Synchronizer {
           this.settings.log,
         );
       }
+      if (this._storage.telemetry) this._telemetrySubmitter = telemetrySubmitterFactory(
+        this._splitApi,
+        this._storage.telemetry as ITelemetryCacheAsync,
+        this.settings.log,
+      );
     } catch (error) {
       this.settings.log.error(`Error when initializing Synchronizer: ${error}`);
       return Promise.resolve(false);
@@ -264,6 +275,11 @@ export class Synchronizer {
       console.log(
         ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
       );
+    }
+
+    if (this._telemetrySubmitter) {
+      const isTelemetrySyncReady = await this._telemetrySubmitter();
+      console.log(` > Telemetry Synchronizer task:    ${isTelemetrySyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     }
   }
   /**

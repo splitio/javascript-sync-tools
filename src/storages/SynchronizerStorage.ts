@@ -1,6 +1,7 @@
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pluggable';
 import { IStorageFactoryParams } from '@splitsoftware/splitio-commons/src/storages/types';
+import { UNKNOWN } from '@splitsoftware/splitio-commons/src/utils/constants';
 
 // @TODO refactor into an storageValidator like in Browser and RN SDKs
 /**
@@ -11,12 +12,13 @@ import { IStorageFactoryParams } from '@splitsoftware/splitio-commons/src/storag
  * @returns {IStorageAsync}
  */
 export function SynchronizerStorageFactory(settings: ISettings, onReadyCb: IStorageFactoryParams['onReadyCb']) {
-  const { log, storage } = settings;
-  // @ts-ignore We don't need metadata.
+  const { log, storage, version } = settings;
+  // @ts-ignore We don't need mode.
   const storageFactorParams: IStorageFactoryParams = {
     log,
     optimize: false,
     onReadyCb,
+    metadata: { s: version, i: UNKNOWN, n: UNKNOWN },
   };
 
   // @TODO support both storage param types?: config object (JS SDK) and storage function (Browser and RN SDK)

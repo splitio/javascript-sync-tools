@@ -5,14 +5,9 @@ import runSDKConsumer from './utils/SDKConsumerMode';
 import redisAdapterWrapper from './utils/redisAdapterWrapper';
 import { ISynchronizerSettings } from '../types';
 
-let _redisWrapper = redisAdapterWrapper({ options: { url: REDIS_URL } });
+let _redisWrapper = redisAdapterWrapper({ url: REDIS_URL });
 
-/**
- * Function to create a Synchronizer instance/task.
- *
- * @returns {Synchronizer}
- */
-const createSynchronizer = () => {
+const createSynchronizer = (synchronizerMode?: string) => {
   /**
    * Settings creation.
    */
@@ -27,12 +22,16 @@ const createSynchronizer = () => {
     storage: {
       type: 'PLUGGABLE',
       prefix: PREFIX,
-      wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
+      wrapper: redisAdapterWrapper({ url: REDIS_URL }),
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
     },
     debug: true,
+    scheduler: {
+      // @ts-ignore. Not part of public API
+      synchronizerMode,
+    },
   };
 
   return new Synchronizer(settings);
@@ -61,8 +60,6 @@ describe('Synchronizer e2e tests', () => {
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
     beforeAll(async () => {
       const _synchronizer = await createSynchronizer();
-      await _synchronizer.initializeStorages();
-      await _synchronizer.initializeSynchronizers();
       await _synchronizer.execute();
     });
 
@@ -109,13 +106,18 @@ describe('Synchronizer e2e tests', () => {
 
       expect(events).toHaveLength(2);
     });
+
+    it('checks that telemetry are saved in Redis', async () => {
+      const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+
+      console.log(JSON.stringify(telemetryKeys));
+      expect(telemetryKeys.length).toBeGreaterThan(0);
+    });
   });
 
   describe('Runs Synchronizer a [SECOND] time and', () => {
     beforeAll(async () => {
       const _synchronizer = await createSynchronizer();
-      await _synchronizer.initializeStorages();
-      await _synchronizer.initializeSynchronizers();
 
       const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);
@@ -150,6 +152,12 @@ describe('Synchronizer e2e tests', () => {
 
       expect(events).toHaveLength(0);
     });
+
+    it('checks that telemetry has been removed from Redis', async () => {
+      const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+
+      expect(telemetryKeys).toEqual([]);
+    });
   });
 });
 
@@ -168,13 +176,13 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     storage: {
       type: 'PLUGGABLE',
       prefix: PREFIX,
-      wrapper: redisAdapterWrapper({ options: { url: REDIS_URL } }),
+      wrapper: redisAdapterWrapper({ url: REDIS_URL }),
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
     },
     scheduler: {
-      // @ts-ignore
+      // @ts-ignore. Not part of public API
       synchronizerMode: 'MODE_RUN_SPLIT_SEGMENTS',
     },
     logger: 'NONE',
@@ -186,9 +194,6 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
   beforeAll(async () => {
     await _redisWrapper.connect();
     await flushRedis();
-
-    await _synchronizer.initializeStorages();
-    await _synchronizer.initializeSynchronizers();
   });
 
   describe('Synchronizer runs the first time', () => {
@@ -269,10 +274,7 @@ describe('Synchronizer - only Splits & Segments mode', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    _synchronizer = await createSynchronizer(); // @ts-ignore
-    _synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
-    await _synchronizer.initializeStorages();
-    await _synchronizer.initializeSynchronizers(); // @ts-ignore
+    _synchronizer = await createSynchronizer('MODE_RUN_SPLIT_SEGMENTS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
@@ -299,10 +301,7 @@ describe('Synchronizer - only Events & Impressions', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    _synchronizer = await createSynchronizer(); // @ts-ignore
-    _synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
-    await _synchronizer.initializeStorages();
-    await _synchronizer.initializeSynchronizers(); // @ts-ignore
+    _synchronizer = await createSynchronizer('MODE_RUN_EVENTS_IMPRESSIONS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();

@@ -1,6 +1,5 @@
 import { RedisAdapter } from '@splitsoftware/splitio-commons/src/storages/inRedis/RedisAdapter';
 import { Logger } from '@splitsoftware/splitio-commons/src/logger/index';
-import { InRedisStorageOptions } from '@splitsoftware/splitio-commons/src/storages/inRedis/';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 
 // @TODO refactor: move to JS-commons, rename to `ioredisWrapper`, and reuse in JS SDK for Node
@@ -11,7 +10,7 @@ import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/sto
  * @param {Object} redisOptions  Redis options with the format expected at `settings.storage.options`.
  * @returns {IPluggableStorageWrapper} Storage wrapper instance.
  */
-export default function redisAdapterWrapper(redisOptions: InRedisStorageOptions): IPluggableStorageWrapper {
+export default function redisAdapterWrapper(redisOptions: Record<string, any>): IPluggableStorageWrapper {
 
   let redis: RedisAdapter;
 
@@ -33,7 +32,7 @@ export default function redisAdapterWrapper(redisOptions: InRedisStorageOptions)
       return redis.keys(`${prefix}*`);
     },
     getMany(keys) {
-      return redis.mget(...keys);
+      return keys.length ? redis.mget(keys) : Promise.resolve([]);
     },
     incr(key) {
       return redis.incr(key);

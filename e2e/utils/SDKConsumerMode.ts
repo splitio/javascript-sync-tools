@@ -1,6 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import { SplitFactory } from '@splitsoftware/splitio';
+import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pluggable';
 import { PREFIX, REDIS_URL } from './constants';
+import redisAdapterWrapper from './redisAdapterWrapper';
 
 const config = {
   mode: 'consumer', // changing the mode to consuemer here
@@ -24,11 +26,18 @@ const config = {
  */
 export default function runSDKConsumer() {
   // @ts-ignore
-  const factory = SplitFactory(config);
+  const factory = SplitFactory(config, (modules) => {
+    // Using pluggable storage in NodeJS SDK
+    modules.storageFactory = PluggableStorage({
+      prefix: modules.settings.storage.prefix,
+      wrapper: redisAdapterWrapper(modules.settings.storage.options),
+    });
+  });
+
   const client = factory.client();
   var manager = factory.manager();
 
-  return new Promise((res) => {
+  return new Promise<void>((res) => {
     client.on(client.Event.SDK_READY, async function () {
       const splitNames = await manager.names();
 
@@ -41,7 +50,8 @@ export default function runSDKConsumer() {
       const properties = { package: 'premium', admin: true, discount: 50 };
       await client.track('john@doe.com', 'user', 'page_load_time', 83.334, properties);
 
-      return res(true);
+      await client.destroy();
+      res();
     });
   });
 
