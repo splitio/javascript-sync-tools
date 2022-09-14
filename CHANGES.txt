@@ -1,4 +1,5 @@
-0.1.2 (September XXX, 2022)
+0.2.0 (September XXX, 2022)
+ - Added support for synchronizing telemetry data in pluggable storage.
  - Updated impressions POST to Split cloud in order to send a minified payload.
  - Updated some dependencies for vulnerability fixes.
 
