@@ -18,6 +18,7 @@ const createSynchronizer = (synchronizerMode?: string) => {
     urls: {
       sdk: SERVER_MOCK_URL,
       events: SERVER_MOCK_URL,
+      telemetry: SERVER_MOCK_URL,
     },
     storage: {
       type: 'PLUGGABLE',
@@ -172,6 +173,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     urls: {
       sdk: SERVER_MOCK_URL,
       events: SERVER_MOCK_URL,
+      telemetry: SERVER_MOCK_URL,
     },
     storage: {
       type: 'PLUGGABLE',

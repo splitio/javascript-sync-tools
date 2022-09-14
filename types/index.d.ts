@@ -49,7 +49,14 @@ declare module JsSyncTools {
      * @property {string} events
      * @default 'https://events.split.io/api'
      */
-    events?: string
+    events?: string,
+    /**
+     * String property to override the base URL where the synchronizer will post telemetry data.
+     *
+     * @property {string} telemetry
+     * @default 'https://telemetry.split.io/api'
+     */
+    telemetry?: string
   };
 
   /**
