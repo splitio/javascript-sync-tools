@@ -3,7 +3,6 @@ import { TelemetryUsageStats } from '@splitsoftware/splitio-commons/src/sync/sub
 import { ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { metadataToHeaders } from './utils';
 import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
 import { _Map, IMap } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
 
@@ -23,11 +22,11 @@ export function telemetrySubmitterFactory(
   logger: ILogger,
 ): () => Promise<boolean> {
 
-  async function buildUsageStats(): Promise<IMap<IMetadata, TelemetryUsageStats>> {
+  async function buildUsageStats(): Promise<IMap<string, TelemetryUsageStats>> {
     const latencies = await telemetryCache.popLatencies();
     const exceptions = await telemetryCache.popExceptions();
 
-    const result = new _Map<IMetadata, TelemetryUsageStats>();
+    const result = new _Map<string, TelemetryUsageStats>();
 
     latencies.forEach((latencie, metadata) => {
       result.set(metadata, { mL: latencie });
@@ -58,7 +57,7 @@ export function telemetrySubmitterFactory(
       // Submit usage stats
       usageStats.forEach(async (usage, metadata) => {
         // No retries for telemetry
-        await splitApi.postMetricsUsage(JSON.stringify(usage), metadataToHeaders(metadata));
+        await splitApi.postMetricsUsage(JSON.stringify(usage), metadataToHeaders(JSON.parse(metadata)));
       });
       return true;
     } catch (e) {
@@ -80,7 +79,7 @@ export function telemetrySubmitterFactory(
       // Submit configs
       configs.forEach(async (config, metadata) => {
         // No retries for telemetry
-        await splitApi.postMetricsConfig(JSON.stringify(config), metadataToHeaders(metadata));
+        await splitApi.postMetricsConfig(JSON.stringify(config), metadataToHeaders(JSON.parse(metadata)));
       });
       return true;
     } catch (e) {

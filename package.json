@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-sync-tools",
-  "version": "0.1.1",
+  "version": "0.1.2-rc.0",
   "description": "Split Javascript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -45,12 +45,13 @@
     "test:unit": "jest src/",
     "test:e2e": "start-server-and-test 'json-server' 3000 './scripts/check_redis.sh && jest e2e/ --runInBand --forceExit'",
     "test": "npm run test:unit && npm run test:e2e",
+    "all": "npm run check && npm run build && npm run test",
     "publish:rc": "npm publish --tag rc",
     "publish:stable": "npm publish",
     "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.6.2-rc.6",
+    "@splitsoftware/splitio-commons": "1.6.2-rc.9",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.7",
     "yargs": "^17.0.1"
