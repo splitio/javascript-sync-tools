@@ -5,22 +5,22 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
 import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
-import { EventsSynchronizer } from './synchronizers/EventsSynchronizer';
-import { ImpressionsSynchronizer } from './synchronizers/ImpressionsSynchronizer';
+import { eventsSubmitterFactory } from './submitters/eventsSubmitter';
+import { impressionsSubmitterFactory } from './submitters/impressionsSubmitter';
 import { impressionObserverSSFactory }
   from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
 import { ImpressionCountsCacheInMemory }
   from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { telemetryTrackerFactory } from '@splitsoftware/splitio-commons/src/trackers/telemetryTracker';
-import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
+import { impressionCountsSubmitterFactory } from './submitters/impressionCountsSubmitter';
 import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { ISynchronizerSettings } from '../types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
-import { telemetrySubmitterFactory } from './submitters/synchronizerTelemetrySubmitter';
+import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -44,15 +44,15 @@ export class Synchronizer {
   /**
    * The local reference to the EventsSynchronizer class.
    */
-  _eventsSynchronizer!: EventsSynchronizer;
+  _eventsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsSynchronizer class.
    */
-  _impressionsSynchronizer!: ImpressionsSynchronizer;
+  _impressionsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsCountSynchronizer class.
    */
-  _impressionsCountSynchronizer?: ImpressionsCountSynchronizer;
+  _impressionCountsSubmitter?: () => Promise<boolean>;
   /**
    * The local reference to the telemetry submitter.
    */
@@ -143,14 +143,14 @@ export class Synchronizer {
         // @ts-ignore
         InMemoryStorageFactory({ log: this.settings.log })
       );
-      this._eventsSynchronizer = new EventsSynchronizer(
+      this._eventsSubmitter = eventsSubmitterFactory(
         this._splitApi.postEventsBulk,
         this._storage.events as IEventsCacheAsync,
         this.settings.log,
         this.settings.scheduler.eventsPerPost,
         this.settings.scheduler.maxRetries,
       );
-      this._impressionsSynchronizer = new ImpressionsSynchronizer(
+      this._impressionsSubmitter = impressionsSubmitterFactory(
         this._splitApi.postTestImpressionsBulk,
         this._storage.impressions as IImpressionsCacheAsync,
         this._observer,
@@ -160,7 +160,7 @@ export class Synchronizer {
         countsCache,
       );
       if (countsCache) {
-        this._impressionsCountSynchronizer = new ImpressionsCountSynchronizer(
+        this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
           this._splitApi.postTestImpressionsCount,
           countsCache,
           this.settings.log,
@@ -265,13 +265,13 @@ export class Synchronizer {
   private async executeImpressionsAndEvents(standalone = true) {
     if (standalone) await this.preExecute();
 
-    const isEventsSyncReady = await this._eventsSynchronizer.synchroniseEvents();
+    const isEventsSyncReady = await this._eventsSubmitter();
     console.log(` > Events Synchronizer task:       ${isEventsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
-    const isImpressionsSyncReady = await this._impressionsSynchronizer.synchroniseImpressions();
+    const isImpressionsSyncReady = await this._impressionsSubmitter();
     console.log(` > Impressions Synchronizer task:  ${isImpressionsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
 
-    if (this._impressionsCountSynchronizer) {
-      const isImpressionsCountSyncReady = await this._impressionsCountSynchronizer.synchroniseImpressionsCount();
+    if (this._impressionCountsSubmitter) {
+      const isImpressionsCountSyncReady = await this._impressionCountsSubmitter();
       console.log(
         ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
       );

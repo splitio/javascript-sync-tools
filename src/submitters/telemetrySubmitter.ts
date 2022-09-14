@@ -8,7 +8,7 @@ import { _Map, IMap } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
 /**
  * Function factory that returns a Telemetry Submitter, a function that retrieves configs and usage stats
- * (latencies and exceptions) from the telemetry storage, and submits them to the Split BE.
+ * (latencies and exceptions) from the telemetry storage, and submits them to the Split cloud.
  * The function returns a promise that never rejects, and resolves to true or false if the operation success or not.
  *
  * @param {ISplitApi}            splitApi        The Split's HTTPClient API to perform the POST request.

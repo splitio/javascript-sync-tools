@@ -1,9 +1,9 @@
 /* eslint-disable no-magic-numbers, max-len, jsdoc/require-jsdoc*/
 import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import { impressionsSubmitterFactory } from '../synchronizerImpressionsSubmitter';
+import { impressionsSubmitterFactory } from '../impressionsSubmitter';
 import { getImpressionsListWithSameMetadata } from './impressionsMockUtils';
 import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import { impressionsCountSubmitterFactory } from '../synchronizerImpressionsCountSubmitter';
+import { impressionCountsSubmitterFactory } from '../impressionCountsSubmitter';
 import { metadataToHeaders } from '../utils';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
@@ -57,9 +57,9 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(_postImpressionsCountMock, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toBeCalledTimes(0);
@@ -86,9 +86,9 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(_postImpressionsCountMock, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
@@ -137,9 +137,9 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(_postImpressionsCountMock, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
@@ -192,9 +192,9 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(_postImpressionsCountMock, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(

@@ -7,24 +7,24 @@ import { ImpressionCountsCacheInMemory }
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 
 /**
- * Factory that returns an Impressions submitter, capable of fetching the Impressions from the storage,
- * process them and sent to the Split's Services.
+ * Factory that returns an impression counts submitter, capable of fetching the impressions counts from the storage,
+ * process and send them to the Split cloud.
  *
  * @param {IPostTestImpressionsBulk}      postClient              HTTPClient API to perform the POST request.
- * @param {ImpressionCountsCacheInMemory} impressionsCountsCache  Impressions Cache Storage reference.
+ * @param {ImpressionCountsCacheInMemory} impressionCountsCache  Impressions Cache Storage reference.
  * @param {ILogger}                       logger                  The Synchronizer's Logger reference.
  * @returns {() => Promise<boolean>}
  */
-export function impressionsCountSubmitterFactory(
+export function impressionCountsSubmitterFactory(
   postClient: IPostTestImpressionsCount,
-  impressionsCountsCache: ImpressionCountsCacheInMemory,
+  impressionCountsCache: ImpressionCountsCacheInMemory,
   logger: ILogger,
 ): () => Promise<boolean> {
   // eslint-disable-next-line no-async-promise-executor
   return async () => {
-    const impressionsCountData = impressionsCountsCache.pop();
-    if (Object.keys(impressionsCountData).length > 0) {
-      const payload = fromImpressionCountsCollector(impressionsCountData);
+    const impressionCountsData = impressionCountsCache.pop();
+    if (Object.keys(impressionCountsData).length > 0) {
+      const payload = fromImpressionCountsCollector(impressionCountsData);
 
       try {
         await postClient(JSON.stringify(payload));

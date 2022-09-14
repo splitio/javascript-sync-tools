@@ -54,8 +54,8 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
 };
 
 /**
- * Factory that returns an Impressions submitter, capable of fetching the Impressions from the storage,
- * process them and sent to the Split's Services.
+ * Factory that returns an Impressions submitter, capable of fetching the impressions from the storage,
+ * process and send them to the Split cloud.
  *
  * @param {IPostTestImpressionsBulk}      postImpressionsBulk  HTTPClient API to perform the POST request.
  * @param {IImpressionsCacheAsync}        impressionsCache     Impressions Cache Storage reference.
@@ -149,7 +149,7 @@ export function impressionsSubmitterFactory(
                   t: entry.treatment, // Treatment
                   m: entry.time, // Timestamp
                   b: entry.bucketingKey, // Bucketing Key
-                  // @TODO `labelsEnabled` config parameter
+                  // `labelsEnabled` config parameter doesn't apply to synchronizer
                   r: entry.label, // Rule label
                   c: entry.changeNumber, // ChangeNumber
                   pt: entry.pt, // Previous time

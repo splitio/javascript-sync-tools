@@ -1,6 +1,6 @@
 /* eslint-disable max-len, no-magic-numbers, jsdoc/require-jsdoc */
 import { metadataToHeaders } from '../utils';
-import { eventsSubmitterFactory } from '../synchronizerEventsSubmitter';
+import { eventsSubmitterFactory } from '../eventsSubmitter';
 import { getMultipleEventsSameMetadata } from './eventsMockUtils';
 
 describe('Events Submitter for Lightweight Synchronizer', () => {
