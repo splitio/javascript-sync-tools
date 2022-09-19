@@ -55,10 +55,12 @@ export function telemetrySubmitterFactory(
 
     try {
       // Submit usage stats
-      usageStats.forEach(async (usage, metadata) => {
+      const requests: Promise<any>[] = [];
+      usageStats.forEach((usage, metadata) => {
         // No retries for telemetry
-        await splitApi.postMetricsUsage(JSON.stringify(usage), metadataToHeaders(JSON.parse(metadata)));
+        requests.push(splitApi.postMetricsUsage(JSON.stringify(usage), metadataToHeaders(JSON.parse(metadata))));
       });
+      await Promise.all(requests);
       return true;
     } catch (e) {
       logger.error(`An error occurred when submitting telemetry usage stats: ${e}`);
@@ -77,10 +79,12 @@ export function telemetrySubmitterFactory(
 
     try {
       // Submit configs
-      configs.forEach(async (config, metadata) => {
+      const requests: Promise<any>[] = [];
+      configs.forEach((config, metadata) => {
         // No retries for telemetry
-        await splitApi.postMetricsConfig(JSON.stringify(config), metadataToHeaders(JSON.parse(metadata)));
+        requests.push(splitApi.postMetricsConfig(JSON.stringify(config), metadataToHeaders(JSON.parse(metadata))));
       });
+      await Promise.all(requests);
       return true;
     } catch (e) {
       logger.error(`An error occurred when submitting telemetry configs: ${e}`);
@@ -88,7 +92,11 @@ export function telemetrySubmitterFactory(
     }
   }
 
-  return async function () {
-    return await synchronizeUsageStats() && await synchronizeConfigs();
+  return function () {
+    return synchronizeUsageStats().then((usageStatsSuccess) => {
+      return synchronizeConfigs().then((configsSuccess) => {
+        return usageStatsSuccess && configsSuccess;
+      });
+    });
   };
 }
