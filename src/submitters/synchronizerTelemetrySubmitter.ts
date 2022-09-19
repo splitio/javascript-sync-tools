@@ -8,7 +8,7 @@ import { _Map, IMap } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
 /**
  * Function factory that returns a Telemetry Submitter, a function that retrieves configs and usage stats
- * (latencies and exceptions) from the telemetry storage, and submits them to the Split BE.
+ * (latencies and exceptions) from the telemetry storage, and submits them to the Split cloud.
  * The function returns a promise that never rejects, and resolves to true or false if the operation success or not.
  *
  * @param {ISplitApi}            splitApi        The Split's HTTPClient API to perform the POST request.
@@ -55,10 +55,12 @@ export function telemetrySubmitterFactory(
 
     try {
       // Submit usage stats
-      usageStats.forEach(async (usage, metadata) => {
+      const requests: Promise<any>[] = [];
+      usageStats.forEach((usage, metadata) => {
         // No retries for telemetry
-        await splitApi.postMetricsUsage(JSON.stringify(usage), metadataToHeaders(JSON.parse(metadata)));
+        requests.push(splitApi.postMetricsUsage(JSON.stringify(usage), metadataToHeaders(JSON.parse(metadata))));
       });
+      await Promise.all(requests);
       return true;
     } catch (e) {
       logger.error(`An error occurred when submitting telemetry usage stats: ${e}`);
@@ -77,10 +79,12 @@ export function telemetrySubmitterFactory(
 
     try {
       // Submit configs
-      configs.forEach(async (config, metadata) => {
+      const requests: Promise<any>[] = [];
+      configs.forEach((config, metadata) => {
         // No retries for telemetry
-        await splitApi.postMetricsConfig(JSON.stringify(config), metadataToHeaders(JSON.parse(metadata)));
+        requests.push(splitApi.postMetricsConfig(JSON.stringify(config), metadataToHeaders(JSON.parse(metadata))));
       });
+      await Promise.all(requests);
       return true;
     } catch (e) {
       logger.error(`An error occurred when submitting telemetry configs: ${e}`);
@@ -88,7 +92,11 @@ export function telemetrySubmitterFactory(
     }
   }
 
-  return async function () {
-    return await synchronizeUsageStats() && await synchronizeConfigs();
+  return function () {
+    return synchronizeUsageStats().then((usageStatsSuccess) => {
+      return synchronizeConfigs().then((configsSuccess) => {
+        return usageStatsSuccess && configsSuccess;
+      });
+    });
   };
 }
