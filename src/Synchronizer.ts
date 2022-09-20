@@ -85,7 +85,7 @@ export class Synchronizer {
     this._splitApi = splitApiFactory(
       this.settings,
       { getFetch: Synchronizer._getFetch },
-      telemetryTrackerFactory()
+      telemetryTrackerFactory() // no-op telemetry tracker
     );
   }
 
