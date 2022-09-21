@@ -1,6 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import { SplitFactory } from '@splitsoftware/splitio';
 import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pluggable';
+import { OPTIMIZED } from '@splitsoftware/splitio-commons/src/utils/constants';
+import { ImpressionsMode } from '@splitsoftware/splitio/types/splitio';
 import { PREFIX, REDIS_URL } from './constants';
 import redisAdapterWrapper from './redisAdapterWrapper';
 
@@ -22,11 +24,16 @@ const config = {
  * Function to run an example SDK in Consumer mode, in order to generate Events and Impressions
  * to be then processed by the Synchronizer.
  *
+ * @param {ImpressionsMode} impressionsMode Impressions mode.
  * @returns {Promise}
  */
-export default function runSDKConsumer() {
-  // @ts-ignore
-  const factory = SplitFactory(config, (modules) => {
+export default function runSDKConsumer(impressionsMode: ImpressionsMode) {
+  const factory = SplitFactory({
+    ...config,
+    sync: {
+      impressionsMode,
+    }, // @ts-ignore
+  }, (modules) => {
     // Using pluggable storage in NodeJS SDK
     modules.storageFactory = PluggableStorage({
       prefix: modules.settings.storage.prefix,
@@ -43,6 +50,8 @@ export default function runSDKConsumer() {
 
       for (let i = 0; i < splitNames.length; i++) {
         await client.getTreatment(`redo${i}`, splitNames[i]);
+        // Use impressions counts cache if mode is OPTIMIZED
+        if (impressionsMode === OPTIMIZED) await client.getTreatment(`redo${i}`, splitNames[i]);
       }
 
       await client.track('john@doe.com', 'user', 'page_load_time', 83.334);

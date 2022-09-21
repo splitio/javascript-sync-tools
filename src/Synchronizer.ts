@@ -159,10 +159,11 @@ export class Synchronizer {
         this.settings.scheduler.maxRetries,
         countsCache,
       );
-      if (countsCache) {
+      if (countsCache || this._storage.impressionCounts) {
         this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
           this._splitApi.postTestImpressionsCount,
-          countsCache,
+          // @ts-expect-error
+          countsCache || this._storage.impressionCounts,
           this.settings.log,
         );
       }

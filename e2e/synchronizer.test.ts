@@ -25,9 +25,9 @@ const createSynchronizer = (synchronizerMode?: string) => {
       prefix: PREFIX,
       wrapper: redisAdapterWrapper({ url: REDIS_URL }),
     },
-    sync: {
-      impressionsMode: 'OPTIMIZED',
-    },
+    // sync: {
+    //   impressionsMode,
+    // },
     debug: true,
     scheduler: {
       // @ts-ignore. Not part of public API
@@ -48,7 +48,7 @@ const flushRedis = async () => {
   }
 };
 
-describe('Synchronizer e2e tests', () => {
+describe('Synchronizer e2e tests - Synchronizer with DEBUG impression mode', () => {
   beforeAll(async () => {
     await _redisWrapper.connect();
     await flushRedis();
@@ -91,27 +91,26 @@ describe('Synchronizer e2e tests', () => {
     });
   });
 
-  describe('Runs SDK Consumer, and', () => {
+  describe('Runs SDK Consumer with DEBUG impressions mode, and', () => {
     beforeAll(async () => {
-      await runSDKConsumer();
+      await runSDKConsumer('DEBUG');
     });
 
-    it('checks that [4] Impressions saved in Redis', async () => {
-      const impressions = await _redisWrapper.popItems(`${REDIS_PREFIX}.impressions`, 100);
+    it('checks that [4] impressions are saved in Redis', async () => {
+      const impressions = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.impressions`);
 
-      expect(impressions).toHaveLength(4);
+      expect(impressions).toBe(4);
     });
 
-    it('checks that [2] Events are saved in Redis', async () => {
-      const events = await _redisWrapper.popItems(`${REDIS_PREFIX}.events`, 100);
+    it('checks that [2] events are saved in Redis', async () => {
+      const events = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.events`);
 
-      expect(events).toHaveLength(2);
+      expect(events).toBe(2);
     });
 
     it('checks that telemetry are saved in Redis', async () => {
       const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
 
-      console.log(JSON.stringify(telemetryKeys));
       expect(telemetryKeys.length).toBeGreaterThan(0);
     });
   });
@@ -142,24 +141,71 @@ describe('Synchronizer e2e tests', () => {
       expect(Number(ttUser)).toBe(2);
     });
 
-    it('checks that [0] Impressions are saved in Redis', async () => {
-      const impressions = await _redisWrapper.popItems(`${REDIS_PREFIX}.impressions`, 100);
+    it('checks that [0] impressions are saved in Redis', async () => {
+      const impressions = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.impressions`);
+      expect(impressions).toBe(0);
 
-      expect(impressions).toHaveLength(0);
+      // SDK running in DEBUG mode should not save impression counts in Redis
+      const impressionCountKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
+      expect(impressionCountKeys).toHaveLength(0);
     });
 
     it('checks that [0] Events are saved in Redis', async () => {
-      const events = await _redisWrapper.popItems(`${REDIS_PREFIX}.events`, 100);
+      const events = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.events`);
 
-      expect(events).toHaveLength(0);
+      expect(events).toBe(0);
     });
 
     it('checks that telemetry has been removed from Redis', async () => {
       const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
 
-      expect(telemetryKeys).toEqual([]);
+      expect(telemetryKeys).toHaveLength(0);
     });
   });
+
+  describe('Runs SDK Consumer with OPTIMIZED impression mode, and', () => {
+
+    it('checks that impressions, impression counts, events and telemetry are saved in Redis', async () => {
+      await runSDKConsumer('OPTIMIZED');
+
+      const impressions = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.impressions`);
+      expect(impressions).toBe(4);
+
+      const impressionCountsKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
+      expect(impressionCountsKeys).toHaveLength(4);
+
+      const events = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.events`);
+      expect(events).toBe(2);
+
+      const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+      expect(telemetryKeys.length).toBeGreaterThan(0);
+    });
+
+  });
+
+  it('Run Synchronizer a [THIRD] time and check that data was popped from Redis and sent to Split BE', async () => {
+    const _synchronizer = await createSynchronizer();
+
+    const hasExecute = await _synchronizer.execute();
+    expect(hasExecute).toBe(true);
+
+    // Impressions were popped
+    const impressions = await _redisWrapper.getItems(`${REDIS_PREFIX}.impressions`);
+    expect(impressions).toHaveLength(0);
+
+    // Impression counts were popped
+    const impressionCountKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
+    expect(impressionCountKeys).toHaveLength(0);
+
+    // Events were popped
+    const events = await _redisWrapper.getItems(`${REDIS_PREFIX}.events`);
+    expect(events).toHaveLength(0);
+
+    // Telemetry was popped
+    const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+    expect(telemetryKeys).toHaveLength(0);
+  });
+
 });
 
 describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mode', () => {

@@ -59,7 +59,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-node-resolve": "^13.0.2",
-    "@splitsoftware/splitio": "10.21.1",
+    "@splitsoftware/splitio": "10.21.2-rc.4",
     "@types/ioredis": "^4.28.0",
     "@types/jest": "^27.0.0",
     "@types/node": "^15.0.1",
