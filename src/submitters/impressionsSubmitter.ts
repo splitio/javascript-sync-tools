@@ -93,7 +93,6 @@ export function impressionsSubmitterFactory(
   /**
    * Function to wrap a batch process of impressions, in order to make it iterative.
    *
-   * @param {number} batchSize  A configurable amount of impressions to POP from Storage.
    * @returns {Promise<boolean>}
    */
   function processImpressionsBatch() {

@@ -37,8 +37,8 @@ export function eventsSubmitterFactory(
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheAsync,
   logger: ILogger,
-  eventsPerPost?: number,
-  maxRetries?: number,
+  eventsPerPost = EVENTS_AMOUNT_DEFAULT,
+  maxRetries = MAX_RETRIES,
 ): () => Promise<boolean> {
   /**
    * Function to wrap the POST requests and retries attempt.
@@ -49,17 +49,16 @@ export function eventsSubmitterFactory(
   async function tryPostEventsBulk(eventsQueue: SplitIO.EventData[], metadataHeaders: Record<string, string>) {
     await retry(
       () => postEventsBulk(JSON.stringify(eventsQueue), metadataHeaders),
-      maxRetries || MAX_RETRIES
+      maxRetries
     );
   }
   /**
    * Function to wrap a batch process of events, in order to make it iterative.
    *
-   * @param {number} batchSize  A configurable amount of events to POP from Storage.
    * @returns {Promise<boolean>}
    */
-  function processEventsBatch(batchSize: number = EVENTS_AMOUNT_DEFAULT) {
-    return eventsCache.popNWithMetadata(batchSize)
+  function processEventsBatch() {
+    return eventsCache.popNWithMetadata(eventsPerPost)
       .then(async (events) => {
         const processedEvents: ProcessedByMetadataEvents = groupBy(events, 'm');
         const _eMetadataKeys = Object.keys(processedEvents);
@@ -89,7 +88,7 @@ export function eventsSubmitterFactory(
           }
         }
         const count = await eventsCache.count();
-        if (count > 0) await processEventsBatch(batchSize);
+        if (count > 0) await processEventsBatch();
         return Promise.resolve(true);
       })
       .catch((e) => {
@@ -98,5 +97,5 @@ export function eventsSubmitterFactory(
       });
   }
 
-  return () => processEventsBatch(eventsPerPost);
+  return () => processEventsBatch();
 }
