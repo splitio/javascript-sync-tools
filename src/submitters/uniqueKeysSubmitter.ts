@@ -1,10 +1,11 @@
+/* eslint-disable max-len */
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostUniqueKeysBulkSs } from '@splitsoftware/splitio-commons/src/services/types';
 import { fromUniqueKeysCollector } from '@splitsoftware/splitio-commons/src/storages/inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCachePluggable }
   from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
 import { UniqueKeysPayloadSs } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
-import { ISet } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
+import { ISet, _Set } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
 
 export function uniqueKeysSubmitterFactory(
   postClient: IPostUniqueKeysBulkSs,
@@ -15,20 +16,17 @@ export function uniqueKeysSubmitterFactory(
 ): () => Promise<boolean> {
 
   async function getPayload(): Promise<UniqueKeysPayloadSs | undefined> {
-    const multipleUniqueKeys = (await uniqueKeysCache.popNRaw(uniqueKeysFetchSize))
-      .map((uniqueKeys => JSON.parse(uniqueKeys) as { [featureName: string]: ISet<string> }));
+    const uniqueKeyItems = await uniqueKeysCache.popNRaw(uniqueKeysFetchSize);
 
-    if (!multipleUniqueKeys.length) return undefined;
+    if (!uniqueKeyItems.length) return undefined;
 
-    const mergedUniqueKeys = multipleUniqueKeys.reduce((accUniqueKeys, currentUniqueKeys) => {
-      Object.keys(currentUniqueKeys).forEach(featureName => {
-        const featureNameKeys = accUniqueKeys[featureName];
-        if (featureNameKeys) {
-          currentUniqueKeys[featureName].forEach(key => featureNameKeys.add(key));
-        } else {
-          accUniqueKeys[featureName] = currentUniqueKeys[featureName];
-        }
-      });
+    const mergedUniqueKeys = uniqueKeyItems.reduce<{ [featureName: string]: ISet<string> }>((accUniqueKeys, uniqueKeyItem) => {
+      const featureNameKeys = accUniqueKeys[uniqueKeyItem.f];
+      if (featureNameKeys) {
+        uniqueKeyItem.ks.forEach(key => featureNameKeys.add(key));
+      } else {
+        accUniqueKeys[uniqueKeyItem.f] = new _Set(uniqueKeyItem.ks);
+      }
       return accUniqueKeys;
     }, {});
 
