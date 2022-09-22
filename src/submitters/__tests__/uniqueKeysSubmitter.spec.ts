@@ -2,7 +2,7 @@ import { UniqueKeysItemSs, UniqueKeysPayloadSs } from '@splitsoftware/splitio-co
 import { uniqueKeysSubmitterFactory } from '../uniqueKeysSubmitter';
 
 describe('Unique keys submitter', () => {
-  const postUniqueKeysBulkSsMock = jest.fn(() => Promise.resolve());
+  const postUniqueKeysBulkSsMock = jest.fn();
   const uniqueKeysCacheMock = { popNRaw: jest.fn() };
 
   // @ts-ignore
@@ -18,8 +18,8 @@ describe('Unique keys submitter', () => {
 
     await uniqueKeysSubmitter();
 
-    expect(uniqueKeysCacheMock.popNRaw).toHaveBeenCalledTimes(1);
     expect(postUniqueKeysBulkSsMock).not.toHaveBeenCalled();
+    expect(uniqueKeysCacheMock.popNRaw).toHaveBeenCalledTimes(1);
   });
 
   test('If there is unique keys data, POST it', async () => {
@@ -31,8 +31,6 @@ describe('Unique keys submitter', () => {
 
     await uniqueKeysSubmitter();
 
-    expect(uniqueKeysCacheMock.popNRaw).toHaveBeenCalledTimes(1);
-
     const expectedPayload: UniqueKeysPayloadSs = {
       keys: [
         { f: 'f1', ks: ['k1', 'k2', 'k3'] },
@@ -42,6 +40,7 @@ describe('Unique keys submitter', () => {
     expect(postUniqueKeysBulkSsMock.mock.calls).toEqual([
       [JSON.stringify(expectedPayload)],
     ]);
+    expect(uniqueKeysCacheMock.popNRaw).toHaveBeenCalledTimes(1);
   });
 
 });
