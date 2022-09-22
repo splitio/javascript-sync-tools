@@ -71,8 +71,8 @@ export function impressionsSubmitterFactory(
   impressionsCache: IImpressionsCacheAsync,
   observer: ImpressionObserver,
   logger: ILogger,
-  impressionsPerPost?: number,
-  maxRetries?: number,
+  impressionsPerPost = IMPRESSIONS_AMOUNT_DEFAULT,
+  maxRetries = MAX_RETRIES,
   countsCache?: ImpressionCountsCacheInMemory,
 ): () => Promise<boolean> {
   /**
@@ -87,7 +87,7 @@ export function impressionsSubmitterFactory(
   ) {
     await retry(
       () => postImpressionsBulk(impressionsQueue, metadataHeaders),
-      maxRetries || MAX_RETRIES
+      maxRetries
     );
   }
   /**
@@ -96,8 +96,8 @@ export function impressionsSubmitterFactory(
    * @param {number} batchSize  A configurable amount of impressions to POP from Storage.
    * @returns {Promise<boolean>}
    */
-  function processImpressionsBatch(batchSize: number = IMPRESSIONS_AMOUNT_DEFAULT) {
-    return impressionsCache.popNWithMetadata(batchSize)
+  function processImpressionsBatch() {
+    return impressionsCache.popNWithMetadata(impressionsPerPost)
       .then(async (dataImpressions: StoredImpressionWithMetadata[]) => {
         const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
         // convert Impressions Metadata into Impressions DTO
@@ -161,7 +161,7 @@ export function impressionsSubmitterFactory(
         }
 
         const count = await impressionsCache.count();
-        if (count > 0) await processImpressionsBatch(batchSize);
+        if (count > 0) await processImpressionsBatch();
         return Promise.resolve(true);
       })
       .catch((e) => {
@@ -169,5 +169,5 @@ export function impressionsSubmitterFactory(
         return false;
       });
   }
-  return () => processImpressionsBatch(impressionsPerPost);
+  return () => processImpressionsBatch();
 }

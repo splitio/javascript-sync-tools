@@ -24,6 +24,7 @@ export function impressionCountsSubmitterFactory(
   postClient: IPostTestImpressionsCount,
   impressionCountsCache: ImpressionCountsCacheInMemory | ImpressionCountsCachePluggable,
   logger: ILogger,
+  // @TODO maxRetries,
 ): () => Promise<boolean> {
 
   function getPayload(): MaybeThenable<ImpressionCountsPayload | undefined> {
@@ -38,14 +39,12 @@ export function impressionCountsSubmitterFactory(
     }
   }
 
-  // eslint-disable-next-line no-async-promise-executor
   return async () => {
-    const payload = await getPayload();
-
     try {
+      const payload = await getPayload();
       if (payload) await postClient(JSON.stringify(payload));
     } catch (e) {
-      logger.error(`An error occurred when processing Impressions Count : ${e}`);
+      logger.error(`An error occurred when processing impression counts: ${e}`);
       return Promise.resolve(false);
     }
 

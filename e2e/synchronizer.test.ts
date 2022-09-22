@@ -25,9 +25,6 @@ const createSynchronizer = (synchronizerMode?: string) => {
       prefix: PREFIX,
       wrapper: redisAdapterWrapper({ url: REDIS_URL }),
     },
-    // sync: {
-    //   impressionsMode,
-    // },
     debug: true,
     scheduler: {
       // @ts-ignore. Not part of public API
@@ -48,7 +45,7 @@ const flushRedis = async () => {
   }
 };
 
-describe('Synchronizer e2e tests - Synchronizer with DEBUG impression mode', () => {
+describe('Synchronizer e2e tests', () => {
   beforeAll(async () => {
     await _redisWrapper.connect();
     await flushRedis();
@@ -164,7 +161,6 @@ describe('Synchronizer e2e tests - Synchronizer with DEBUG impression mode', () 
   });
 
   describe('Runs SDK Consumer with OPTIMIZED impression mode, and', () => {
-
     it('checks that impressions, impression counts, events and telemetry are saved in Redis', async () => {
       await runSDKConsumer('OPTIMIZED');
 
@@ -181,29 +177,72 @@ describe('Synchronizer e2e tests - Synchronizer with DEBUG impression mode', () 
       expect(telemetryKeys.length).toBeGreaterThan(0);
     });
 
+    it('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
+      const _synchronizer = await createSynchronizer();
+
+      const hasExecute = await _synchronizer.execute();
+      expect(hasExecute).toBe(true);
+
+      // Impressions were popped
+      const impressions = await _redisWrapper.getItems(`${REDIS_PREFIX}.impressions`);
+      expect(impressions).toHaveLength(0);
+
+      // Impression counts were popped
+      const impressionCountKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
+      expect(impressionCountKeys).toHaveLength(0);
+
+      // Events were popped
+      const events = await _redisWrapper.getItems(`${REDIS_PREFIX}.events`);
+      expect(events).toHaveLength(0);
+
+      // Telemetry was popped
+      const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+      expect(telemetryKeys).toHaveLength(0);
+    });
   });
 
-  it('Run Synchronizer a [THIRD] time and check that data was popped from Redis and sent to Split BE', async () => {
-    const _synchronizer = await createSynchronizer();
+  describe('Runs SDK Consumer with NONE impression mode, and', () => {
+    it('checks that impression counts, unique keys, events and telemetry are saved in Redis', async () => {
+      await runSDKConsumer('NONE');
 
-    const hasExecute = await _synchronizer.execute();
-    expect(hasExecute).toBe(true);
+      const impressions = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.impressions`);
+      expect(impressions).toBe(0);
 
-    // Impressions were popped
-    const impressions = await _redisWrapper.getItems(`${REDIS_PREFIX}.impressions`);
-    expect(impressions).toHaveLength(0);
+      const impressionCountsKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
+      expect(impressionCountsKeys).toHaveLength(4);
 
-    // Impression counts were popped
-    const impressionCountKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
-    expect(impressionCountKeys).toHaveLength(0);
+      const uniqueKeys = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.uniquekeys`);
+      expect(uniqueKeys).toBe(4);
 
-    // Events were popped
-    const events = await _redisWrapper.getItems(`${REDIS_PREFIX}.events`);
-    expect(events).toHaveLength(0);
+      const events = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.events`);
+      expect(events).toBe(2);
 
-    // Telemetry was popped
-    const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
-    expect(telemetryKeys).toHaveLength(0);
+      const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+      expect(telemetryKeys.length).toBeGreaterThan(0);
+    });
+
+    it('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
+      const _synchronizer = await createSynchronizer();
+
+      const hasExecute = await _synchronizer.execute();
+      expect(hasExecute).toBe(true);
+
+      // Impression counts were popped
+      const impressionCountKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.impressions.count`);
+      expect(impressionCountKeys).toHaveLength(0);
+
+      // Unique keys were popped
+      const uniqueKeys = await _redisWrapper.getItemsCount(`${REDIS_PREFIX}.uniquekeys`);
+      expect(uniqueKeys).toBe(0);
+
+      // Events were popped
+      const events = await _redisWrapper.getItems(`${REDIS_PREFIX}.events`);
+      expect(events).toHaveLength(0);
+
+      // Telemetry was popped
+      const telemetryKeys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.telemetry`);
+      expect(telemetryKeys).toHaveLength(0);
+    });
   });
 
 });

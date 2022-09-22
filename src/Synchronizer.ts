@@ -21,6 +21,9 @@ import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/stora
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
+import { uniqueKeysSubmitterFactory } from './submitters/uniqueKeysSubmitter';
+import { UniqueKeysCachePluggable }
+  from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -53,6 +56,10 @@ export class Synchronizer {
    * The local reference to the ImpressionsCountSynchronizer class.
    */
   _impressionCountsSubmitter?: () => Promise<boolean>;
+  /**
+   * The local reference to the unique keys submitter.
+   */
+  _uniqueKeysSubmitter?: () => Promise<boolean>;
   /**
    * The local reference to the telemetry submitter.
    */
@@ -161,12 +168,16 @@ export class Synchronizer {
       );
       if (countsCache || this._storage.impressionCounts) {
         this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
-          this._splitApi.postTestImpressionsCount,
-          // @ts-expect-error
+          this._splitApi.postTestImpressionsCount, // @ts-expect-error
           countsCache || this._storage.impressionCounts,
           this.settings.log,
         );
       }
+      if (this._storage.uniqueKeys) this._uniqueKeysSubmitter = uniqueKeysSubmitterFactory(
+        this._splitApi.postUniqueKeysBulkSs,
+        this._storage.uniqueKeys as UniqueKeysCachePluggable,
+        this.settings.log,
+      );
       if (this._storage.telemetry) this._telemetrySubmitter = telemetrySubmitterFactory(
         this._splitApi,
         this._storage.telemetry as ITelemetryCacheAsync,
@@ -276,6 +287,11 @@ export class Synchronizer {
       console.log(
         ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
       );
+    }
+
+    if (this._uniqueKeysSubmitter) {
+      const isUniqueKeysSyncReady = await this._uniqueKeysSubmitter();
+      console.log(` > UniqueKeys Synchronizer task:   ${isUniqueKeysSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
     }
 
     if (this._telemetrySubmitter) {
