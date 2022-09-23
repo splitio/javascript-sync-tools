@@ -1,12 +1,9 @@
 import { IFetchSplitChanges } from '@splitsoftware/splitio-commons/src/services/types';
-import { splitChangesFetcherFactory }
-  from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
-import { splitChangesUpdaterFactory }
-  from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
+import { splitChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
+import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { ISplit } from '@splitsoftware/splitio-commons/src/dtos/types';
-import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync }
-  from '@splitsoftware/splitio-commons/src/storages/types';
+import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
 

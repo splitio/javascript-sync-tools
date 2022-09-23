@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers, max-len, jsdoc/require-jsdoc*/
 import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionsSubmitterFactory } from '../impressionsSubmitter';
 import { getImpressionsListWithSameMetadata } from './impressionsMockUtils';

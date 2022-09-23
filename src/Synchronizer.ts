@@ -7,10 +7,8 @@ import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
 import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
 import { eventsSubmitterFactory } from './submitters/eventsSubmitter';
 import { impressionsSubmitterFactory } from './submitters/impressionsSubmitter';
-import { impressionObserverSSFactory }
-  from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import { ImpressionCountsCacheInMemory }
-  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
+import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { telemetryTrackerFactory } from '@splitsoftware/splitio-commons/src/trackers/telemetryTracker';
 import { impressionCountsSubmitterFactory } from './submitters/impressionCountsSubmitter';

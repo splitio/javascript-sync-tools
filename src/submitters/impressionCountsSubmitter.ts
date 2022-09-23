@@ -1,9 +1,7 @@
 
 import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/services/types';
-import { fromImpressionCountsCollector }
-  from '@splitsoftware/splitio-commons/src/sync/submitters/impressionCountsSubmitter';
-import { ImpressionCountsCacheInMemory }
-  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { fromImpressionCountsCollector } from '@splitsoftware/splitio-commons/src/sync/submitters/impressionCountsSubmitter';
+import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 
 /**

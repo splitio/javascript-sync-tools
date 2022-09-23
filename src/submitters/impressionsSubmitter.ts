@@ -3,8 +3,7 @@ import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/stora
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
-import { ImpressionCountsCacheInMemory }
-  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { groupBy, metadataToHeaders, retry } from './utils';
 import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';

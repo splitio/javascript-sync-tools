@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers, jsdoc/require-jsdoc */
 // @ts-nocheck
 import { SplitsSynchronizer } from '../SplitsSynchronizer';
 

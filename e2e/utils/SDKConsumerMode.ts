@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { SplitFactory } from '@splitsoftware/splitio';
 import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pluggable';
 import { PREFIX, REDIS_URL } from './constants';
