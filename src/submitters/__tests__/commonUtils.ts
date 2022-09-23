@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 /**
  * Function to create a Random String. Used for mocking `n` field in metadata.
  *

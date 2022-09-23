@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { MultiMethodLatencies } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { MultiConfigs, MultiMethodExceptions } from '@splitsoftware/splitio-commons/types/sync/submitters/types';
 import { telemetrySubmitterFactory } from '../telemetrySubmitter';

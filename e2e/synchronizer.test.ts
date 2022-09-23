@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { Synchronizer } from '../src/index';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
@@ -7,6 +6,7 @@ import { ISynchronizerSettings } from '../types';
 
 let _redisWrapper = redisAdapterWrapper({ url: REDIS_URL });
 
+// @TODO validate HTTP requests
 const createSynchronizer = (synchronizerMode?: string) => {
   /**
    * Settings creation.

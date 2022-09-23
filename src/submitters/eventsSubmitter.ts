@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostEventsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';

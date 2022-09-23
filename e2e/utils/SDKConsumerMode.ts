@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { SplitFactory } from '@splitsoftware/splitio';
 import { PluggableStorage } from '@splitsoftware/splitio-commons/src/storages/pluggable';
 import { OPTIMIZED } from '@splitsoftware/splitio-commons/src/utils/constants';

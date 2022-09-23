@@ -28,8 +28,8 @@ export function telemetrySubmitterFactory(
 
     const result = new _Map<string, TelemetryUsageStats>();
 
-    latencies.forEach((latencie, metadata) => {
-      result.set(metadata, { mL: latencie });
+    latencies.forEach((latency, metadata) => {
+      result.set(metadata, { mL: latency });
     });
 
     exceptions.forEach((exception, metadata) => {
