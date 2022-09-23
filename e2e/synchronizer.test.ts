@@ -178,7 +178,7 @@ describe('Synchronizer e2e tests', () => {
     });
 
     it('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
-      const _synchronizer = await createSynchronizer();
+      const _synchronizer = createSynchronizer();
 
       const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);
@@ -222,7 +222,7 @@ describe('Synchronizer e2e tests', () => {
     });
 
     it('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
-      const _synchronizer = await createSynchronizer();
+      const _synchronizer = createSynchronizer();
 
       const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);

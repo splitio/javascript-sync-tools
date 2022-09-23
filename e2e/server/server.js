@@ -16,7 +16,7 @@ function modifyResponseBody(req, res, next) {
   console.log(req.url);
 
   // To avoid impressions, events and telemetry POSTS request processing.
-  if (req.url.match(/(testImpressions)|(events)|(version)|(v1\/metrics)/)) {
+  if (req.url.match(/(testImpressions)|(events)|(version)|(v1\/(metrics|keys))/)) {
     return res.sendStatus(200);
   }
 
