@@ -17,7 +17,6 @@ function modifyResponseBody(req, res, next) {
 
   // To avoid impressions, events and telemetry POSTS request processing.
   if (req.url.match(/(testImpressions)|(events)|(version)|(v1\/metrics)/)) {
-    // eslint-disable-next-line no-magic-numbers
     return res.sendStatus(200);
   }
 

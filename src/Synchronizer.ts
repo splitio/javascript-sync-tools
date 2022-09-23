@@ -4,7 +4,7 @@ import { IStorageAsync, ITelemetryCacheAsync } from '@splitsoftware/splitio-comm
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
-import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
+import { synchronizerStorageFactory } from './storages/synchronizerStorage';
 import { eventsSubmitterFactory } from './submitters/eventsSubmitter';
 import { impressionsSubmitterFactory } from './submitters/impressionsSubmitter';
 import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
@@ -104,7 +104,7 @@ export class Synchronizer {
   initializeStorages(): Promise<boolean> {
     return new Promise<boolean>((res, rej) => {
       // @ts-ignore
-      this._storage = SynchronizerStorageFactory(
+      this._storage = synchronizerStorageFactory(
         this.settings,
         (error) => error ? rej() : res(true)
       );
