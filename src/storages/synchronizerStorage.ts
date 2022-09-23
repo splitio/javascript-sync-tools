@@ -11,7 +11,7 @@ import { UNKNOWN } from '@splitsoftware/splitio-commons/src/utils/constants';
  * @param {() => void}        onReadyCb  The callback to execute when instantiating the pluggable storage.
  * @returns {IStorageAsync}
  */
-export function SynchronizerStorageFactory(settings: ISettings, onReadyCb: IStorageFactoryParams['onReadyCb']) {
+export function synchronizerStorageFactory(settings: ISettings, onReadyCb: IStorageFactoryParams['onReadyCb']) {
   const { log, storage, version } = settings;
   // @ts-ignore We don't need mode.
   const storageFactorParams: IStorageFactoryParams = {

@@ -57,7 +57,7 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
     beforeAll(async () => {
-      const _synchronizer = await createSynchronizer();
+      const _synchronizer = createSynchronizer();
       await _synchronizer.execute();
     });
 
@@ -114,7 +114,7 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer a [SECOND] time and', () => {
     beforeAll(async () => {
-      const _synchronizer = await createSynchronizer();
+      const _synchronizer = createSynchronizer();
 
       const hasExecute = await _synchronizer.execute();
       expect(hasExecute).toBe(true);
@@ -283,6 +283,10 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     await flushRedis();
   });
 
+  afterAll(async () => {
+    await _redisWrapper.disconnect();
+  });
+
   describe('Synchronizer runs the first time', () => {
     beforeAll(async () => {
       await _synchronizer.execute();
@@ -361,7 +365,7 @@ describe('Synchronizer - only Splits & Segments mode', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    _synchronizer = await createSynchronizer('MODE_RUN_SPLIT_SEGMENTS'); // @ts-ignore
+    _synchronizer = createSynchronizer('MODE_RUN_SPLIT_SEGMENTS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
@@ -388,7 +392,7 @@ describe('Synchronizer - only Events & Impressions', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    _synchronizer = await createSynchronizer('MODE_RUN_EVENTS_IMPRESSIONS'); // @ts-ignore
+    _synchronizer = createSynchronizer('MODE_RUN_EVENTS_IMPRESSIONS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();

@@ -69,8 +69,15 @@ export default function redisAdapterWrapper(redisOptions: Record<string, any>): 
     // @TODO check if connect should be idempotent or not
     connect() {
       return new Promise((res) => {
-        const log = new Logger({ logLevel: 'INFO' });
-        redis = new RedisAdapter(log, redisOptions);
+        // No-op logger to avoid Jest error "Cannot log after tests are done"
+        const noopLogger = {
+          debug: () => { },
+          info: () => { },
+          warn: () => { },
+          error: () => { },
+          setLogLevel: () => { },
+        };
+        redis = new RedisAdapter(noopLogger, redisOptions);
 
         redis.on('ready', res);
         // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected.
