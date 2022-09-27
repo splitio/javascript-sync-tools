@@ -2,17 +2,17 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostUniqueKeysBulkSs } from '@splitsoftware/splitio-commons/src/services/types';
 import { fromUniqueKeysCollector } from '@splitsoftware/splitio-commons/src/storages/inMemory/UniqueKeysCacheInMemory';
-import { UniqueKeysCachePluggable }
-  from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
+import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
 import { UniqueKeysPayloadSs } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { ISet, _Set } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
+import { retry } from './utils';
 
 export function uniqueKeysSubmitterFactory(
   postClient: IPostUniqueKeysBulkSs,
   uniqueKeysCache: UniqueKeysCachePluggable,
-  logger: ILogger,
-  uniqueKeysFetchSize?: number
-  // @TODO maxRetries,
+  log: ILogger,
+  maxRetries?: number,
+  uniqueKeysFetchSize?: number,
 ): () => Promise<boolean> {
 
   async function getPayload(): Promise<UniqueKeysPayloadSs | undefined> {
@@ -36,9 +36,21 @@ export function uniqueKeysSubmitterFactory(
   return async () => {
     try {
       const payload = await getPayload();
-      if (payload) await postClient(JSON.stringify(payload));
+      if (payload) {
+        // POST data with retry attempts
+        try {
+          await retry(
+            () => postClient(JSON.stringify(payload)),
+            maxRetries
+          );
+          log.info('Successfully submitted unique keys to Split.');
+        } catch (err) {
+          log.error(`An error occurred while submitting unique keys to Split: ${err}`);
+          return false;
+        }
+      }
     } catch (e) {
-      logger.error(`An error occurred when processing unique keys: ${e}`);
+      log.error(`An error occurred while retrieving unique keys from storage: ${e}`);
       return Promise.resolve(false);
     }
 

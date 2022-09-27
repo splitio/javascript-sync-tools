@@ -3,26 +3,16 @@ import { IPostTestImpressionsCount } from '@splitsoftware/splitio-commons/src/se
 import { fromImpressionCountsCollector } from '@splitsoftware/splitio-commons/src/sync/submitters/impressionCountsSubmitter';
 import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
-import { ImpressionCountsCachePluggable }
-  from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
+import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
 import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { MaybeThenable } from '@splitsoftware/splitio-commons/src/dtos/types';
+import { retry } from './utils';
 
-// @TODO reuse submitters from JS-commons after unifing ImpressionCountsCache interfaces
-/**
- * Factory that returns an impression counts submitter, capable of fetching the impressions counts from the storage,
- * process and send them to the Split cloud.
- *
- * @param {IPostTestImpressionsBulk}      postClient              HTTPClient API to perform the POST request.
- * @param {ImpressionCountsCacheInMemory} impressionCountsCache  Impressions Cache Storage reference.
- * @param {ILogger}                       logger                  The Synchronizer's Logger reference.
- * @returns {() => Promise<boolean>}
- */
 export function impressionCountsSubmitterFactory(
   postClient: IPostTestImpressionsCount,
   impressionCountsCache: ImpressionCountsCacheInMemory | ImpressionCountsCachePluggable,
-  logger: ILogger,
-  // @TODO maxRetries,
+  log: ILogger,
+  maxRetries?: number,
 ): () => Promise<boolean> {
 
   function getPayload(): MaybeThenable<ImpressionCountsPayload | undefined> {
@@ -40,9 +30,21 @@ export function impressionCountsSubmitterFactory(
   return async () => {
     try {
       const payload = await getPayload();
-      if (payload) await postClient(JSON.stringify(payload));
+      if (payload) {
+        // POST data with retry attempts
+        try {
+          await retry(
+            () => postClient(JSON.stringify(payload)),
+            maxRetries
+          );
+          log.info('Successfully submitted impression counts to Split.');
+        } catch (err) {
+          log.error(`An error occurred while submitting impression counts to Split: ${err}`);
+          return false;
+        }
+      }
     } catch (e) {
-      logger.error(`An error occurred when processing impression counts: ${e}`);
+      log.error(`An error occurred while retrieving impression counts from storage: ${e}`);
       return Promise.resolve(false);
     }
 
