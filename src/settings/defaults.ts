@@ -30,8 +30,4 @@ export const defaults = {
   },
   version: `synctoolsjs-${version}`,
   streamingEnabled: false,
-  sync: {
-    // @TODO change back to OPTIMIZED mode when it's fixed
-    impressionsMode: 'DEBUG',
-  },
 };

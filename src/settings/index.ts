@@ -1,3 +1,4 @@
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { isIntegerNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
@@ -16,10 +17,10 @@ const params = {
   runtime: () => { return { ip: false, hostname: false }; },
 };
 
-function validatePositiveInteger(paramName: string, actualValue: any, defaultValue: number) {
+function validatePositiveInteger(log: ILogger, paramName: string, actualValue: any, defaultValue: number) {
   if (isIntegerNumber(actualValue) && actualValue > 0) return actualValue;
 
-  console.log(`'${paramName}' parameter must be a positive integer number. Using default value (${defaultValue}) instead.`);
+  log.warn(`'${paramName}' parameter must be a positive integer number. Using default value (${defaultValue}) instead.`);
   return defaultValue;
 }
 
@@ -38,13 +39,13 @@ export function synchronizerSettingsValidator(
   // @ts-ignore, override readonly prop
   settings.mode = undefined; // "producer" mode
 
-  const { scheduler } = settings;
+  const { scheduler, log } = settings;
 
   // @TODO validate synchronizerMode eventually
   // @TODO: validate minimum and maximum value for config params.
-  scheduler.eventsPerPost = validatePositiveInteger('eventsPerPost', scheduler.eventsPerPost, defaults.scheduler.eventsPerPost);
-  scheduler.impressionsPerPost = validatePositiveInteger('impressionsPerPost', scheduler.impressionsPerPost, defaults.scheduler.impressionsPerPost);
-  scheduler.maxRetries = validatePositiveInteger('maxRetries', scheduler.maxRetries, defaults.scheduler.maxRetries);
+  scheduler.eventsPerPost = validatePositiveInteger(log, 'eventsPerPost', scheduler.eventsPerPost, defaults.scheduler.eventsPerPost);
+  scheduler.impressionsPerPost = validatePositiveInteger(log, 'impressionsPerPost', scheduler.impressionsPerPost, defaults.scheduler.impressionsPerPost);
+  scheduler.maxRetries = validatePositiveInteger(log, 'maxRetries', scheduler.maxRetries, defaults.scheduler.maxRetries);
 
   return settings;
 }
