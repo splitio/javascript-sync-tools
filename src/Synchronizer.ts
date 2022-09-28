@@ -148,39 +148,39 @@ export class Synchronizer {
         InMemoryStorageFactory({ settings: this.settings })
       );
       this._eventsSubmitter = eventsSubmitterFactory(
+        this.settings.log,
         this._splitApi.postEventsBulk,
         this._storage.events as IEventsCacheAsync,
-        this.settings.log,
         this.settings.scheduler.eventsPerPost,
         this.settings.scheduler.maxRetries,
       );
       this._impressionsSubmitter = impressionsSubmitterFactory(
+        this.settings.log,
         this._splitApi.postTestImpressionsBulk,
         this._storage.impressions as IImpressionsCacheAsync,
         this._observer,
-        this.settings.log,
         this.settings.scheduler.impressionsPerPost,
         this.settings.scheduler.maxRetries,
         countsCache,
       );
       if (countsCache || this._storage.impressionCounts) {
         this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
+          this.settings.log,
           this._splitApi.postTestImpressionsCount, // @ts-expect-error
           countsCache || this._storage.impressionCounts,
-          this.settings.log,
           this.settings.scheduler.maxRetries,
         );
       }
       if (this._storage.uniqueKeys) this._uniqueKeysSubmitter = uniqueKeysSubmitterFactory(
+        this.settings.log,
         this._splitApi.postUniqueKeysBulkSs,
         this._storage.uniqueKeys as UniqueKeysCachePluggable,
-        this.settings.log,
         this.settings.scheduler.maxRetries,
       );
       if (this._storage.telemetry) this._telemetrySubmitter = telemetrySubmitterFactory(
+        this.settings.log,
         this._splitApi,
         this._storage.telemetry as ITelemetryCacheAsync,
-        this.settings.log,
       );
     } catch (error) {
       this.settings.log.error(`Error when initializing Synchronizer: ${error}`);

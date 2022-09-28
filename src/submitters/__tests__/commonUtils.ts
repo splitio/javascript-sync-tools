@@ -8,3 +8,11 @@ export function _getRandomString(len: number) {
   return (Math.random().toString(36).substring(2, len) + Math.random().toString(36).substring(2, len))
     .substring(0, len);
 }
+
+export const noopLogger = {
+  debug: () => { },
+  info: () => { },
+  warn: () => { },
+  error: () => { },
+  setLogLevel: () => { },
+};

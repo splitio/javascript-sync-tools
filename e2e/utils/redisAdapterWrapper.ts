@@ -1,6 +1,6 @@
 import { RedisAdapter } from '@splitsoftware/splitio-commons/src/storages/inRedis/RedisAdapter';
-import { Logger } from '@splitsoftware/splitio-commons/src/logger/index';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
+import { noopLogger } from '../../src/submitters/__tests__/commonUtils';
 
 // @TODO refactor: move to JS-commons, rename to `ioredisWrapper`, and reuse in JS SDK for Node
 /**
@@ -70,13 +70,6 @@ export default function redisAdapterWrapper(redisOptions: Record<string, any>): 
     connect() {
       return new Promise((res) => {
         // No-op logger to avoid Jest error "Cannot log after tests are done"
-        const noopLogger = {
-          debug: () => { },
-          info: () => { },
-          warn: () => { },
-          error: () => { },
-          setLogLevel: () => { },
-        };
         redis = new RedisAdapter(noopLogger, redisOptions);
 
         redis.on('ready', res);

@@ -1,13 +1,14 @@
 /* eslint-disable max-len */
 import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { impressionCountsSubmitterFactory } from '../impressionCountsSubmitter';
+import { noopLogger } from './commonUtils';
 
 describe('Impression counts submitter', () => {
   const postTestImpressionsCountMock = jest.fn(() => Promise.resolve());
   const impressionCountsCacheMock = { getImpressionsCount: jest.fn() };
 
   // @ts-ignore
-  const impressionCountsSubmitter = impressionCountsSubmitterFactory(postTestImpressionsCountMock, impressionCountsCacheMock);
+  const impressionCountsSubmitter = impressionCountsSubmitterFactory(noopLogger, postTestImpressionsCountMock, impressionCountsCacheMock);
 
   beforeEach(() => {
     postTestImpressionsCountMock.mockClear();

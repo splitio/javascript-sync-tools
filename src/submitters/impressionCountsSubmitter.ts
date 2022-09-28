@@ -9,9 +9,9 @@ import { MaybeThenable } from '@splitsoftware/splitio-commons/src/dtos/types';
 import { retry } from './utils';
 
 export function impressionCountsSubmitterFactory(
+  logger: ILogger,
   postClient: IPostTestImpressionsCount,
   impressionCountsCache: ImpressionCountsCacheInMemory | ImpressionCountsCachePluggable,
-  logger: ILogger,
   maxRetries?: number,
 ): () => Promise<boolean> {
 
@@ -44,6 +44,7 @@ export function impressionCountsSubmitterFactory(
           () => postClient(JSON.stringify(payload)),
           maxRetries
         );
+        logger.info('Successfully submitted impression counts to Split');
       } catch (err) {
         logger.error(`An error occurred when submitting impression counts to Split: ${err}`);
         return false;

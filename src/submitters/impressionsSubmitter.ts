@@ -56,20 +56,20 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * Factory that returns an Impressions submitter, capable of fetching the impressions from the storage,
  * process and send them to the Split cloud.
  *
+ * @param {ILogger}                       logger               The reference to the Synchronizer's Logger.
  * @param {IPostTestImpressionsBulk}      postImpressionsBulk  HTTPClient API to perform the POST request.
  * @param {IImpressionsCacheAsync}        impressionsCache     Impressions Cache Storage reference.
  * @param {ImpressionObserver}            observer             The Impression Observer object for the dedupe process.
- * @param {ILogger}                       logger               The reference to the Synchronizer's Logger.
  * @param {number}                        impressionsPerPost   Amount of elements to pop from storage.
  * @param {number}                        maxRetries           Amount of attempt retries to perform the POST request.
  * @param {ImpressionCountsCacheInMemory} countsCache          The reference to the Impresion's Count Storage.
  * @returns {() => Promise<boolean>}
  */
 export function impressionsSubmitterFactory(
+  logger: ILogger,
   postImpressionsBulk: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheAsync,
   observer: ImpressionObserver,
-  logger: ILogger,
   impressionsPerPost = IMPRESSIONS_AMOUNT_DEFAULT,
   maxRetries = MAX_RETRIES,
   countsCache?: ImpressionCountsCacheInMemory,

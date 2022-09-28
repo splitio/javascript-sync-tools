@@ -1,12 +1,13 @@
 import { UniqueKeysItemSs, UniqueKeysPayloadSs } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { uniqueKeysSubmitterFactory } from '../uniqueKeysSubmitter';
+import { noopLogger } from './commonUtils';
 
 describe('Unique keys submitter', () => {
   const postUniqueKeysBulkSsMock = jest.fn(() => Promise.resolve());
   const uniqueKeysCacheMock = { popNRaw: jest.fn() };
 
   // @ts-ignore
-  const uniqueKeysSubmitter = uniqueKeysSubmitterFactory(postUniqueKeysBulkSsMock, uniqueKeysCacheMock);
+  const uniqueKeysSubmitter = uniqueKeysSubmitterFactory(noopLogger, postUniqueKeysBulkSsMock, uniqueKeysCacheMock);
 
   beforeEach(() => {
     postUniqueKeysBulkSsMock.mockClear();

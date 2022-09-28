@@ -18,7 +18,7 @@ describe('Telemetry Submitter', () => {
   };
 
   // @ts-ignore
-  const telemetrySubmitter = telemetrySubmitterFactory(splitApiMock, telemetryCacheMock, loggerMock);
+  const telemetrySubmitter = telemetrySubmitterFactory(loggerMock, splitApiMock, telemetryCacheMock);
 
   beforeEach(() => {
     loggerMock.error.mockClear();

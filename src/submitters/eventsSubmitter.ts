@@ -25,17 +25,17 @@ type ProcessedByMetadataEvents = {
  * events from the Storage, process and group by Metadata and/or max bundle size, and finally push
  * to Split's BE services. The result of this method is always a promise that will never be rejected.
  *
+ * @param {ILogger}           logger          The Synchronizer's Logger.
  * @param {IPostEventsBulk}   postEventsBulk  The Split's HTTPClient API to perform the POST request.
  * @param {IEventsCacheAsync} eventsCache     The Events storage Cache from where to retrieve the Events data.
- * @param {ILogger}           logger          The Synchronizer's Logger.
  * @param {number}            eventsPerPost   The amount of elements to pop from Storage.
  * @param {number}            maxRetries      The amount of retries attempt to perform the POST request.
  * @returns {() => Promise<boolean>}
  */
 export function eventsSubmitterFactory(
+  logger: ILogger,
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheAsync,
-  logger: ILogger,
   eventsPerPost = EVENTS_AMOUNT_DEFAULT,
   maxRetries = MAX_RETRIES,
 ): () => Promise<boolean> {

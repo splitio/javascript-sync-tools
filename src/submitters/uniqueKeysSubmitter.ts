@@ -8,9 +8,9 @@ import { ISet, _Set } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
 import { retry } from './utils';
 
 export function uniqueKeysSubmitterFactory(
+  logger: ILogger,
   postClient: IPostUniqueKeysBulkSs,
   uniqueKeysCache: UniqueKeysCachePluggable,
-  logger: ILogger,
   maxRetries?: number,
   uniqueKeysFetchSize?: number,
 ): () => Promise<boolean> {
@@ -50,6 +50,7 @@ export function uniqueKeysSubmitterFactory(
           () => postClient(JSON.stringify(payload)),
           maxRetries
         );
+        logger.info('Successfully submitted unique keys to Split');
       } catch (err) {
         logger.error(`An error occurred when submitting unique keys to Split: ${err}`);
         return false;
