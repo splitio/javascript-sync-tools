@@ -5,7 +5,7 @@ import { fromUniqueKeysCollector } from '@splitsoftware/splitio-commons/src/stor
 import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
 import { UniqueKeysPayloadSs } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { ISet, _Set } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
-import { retry } from './utils';
+import { submitterFactory } from './submitter';
 
 export function uniqueKeysSubmitterFactory(
   logger: ILogger,
@@ -33,30 +33,5 @@ export function uniqueKeysSubmitterFactory(
     return fromUniqueKeysCollector(mergedUniqueKeys);
   }
 
-  return async function postData() {
-    let payload: any;
-
-    try {
-      payload = await getPayload();
-    } catch (e) {
-      logger.error(`An error occurred when retrieving unique keys from storage: ${e}`);
-      return false;
-    }
-
-    if (payload) {
-      // POST data with retry attempts
-      try {
-        await retry(
-          () => postClient(JSON.stringify(payload)),
-          maxRetries
-        );
-        logger.info('Successfully submitted unique keys to Split');
-      } catch (err) {
-        logger.error(`An error occurred when submitting unique keys to Split: ${err}`);
-        return false;
-      }
-    }
-
-    return true;
-  };
+  return submitterFactory(logger, postClient, getPayload, 'unique keys', maxRetries);
 }

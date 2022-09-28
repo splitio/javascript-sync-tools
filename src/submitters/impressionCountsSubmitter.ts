@@ -6,7 +6,7 @@ import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
 import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { MaybeThenable } from '@splitsoftware/splitio-commons/src/dtos/types';
-import { retry } from './utils';
+import { submitterFactory } from './submitter';
 
 export function impressionCountsSubmitterFactory(
   logger: ILogger,
@@ -27,30 +27,5 @@ export function impressionCountsSubmitterFactory(
     }
   }
 
-  return async function postData() {
-    let payload: any;
-
-    try {
-      payload = await getPayload();
-    } catch (e) {
-      logger.error(`An error occurred when retrieving impression counts from storage: ${e}`);
-      return false;
-    }
-
-    if (payload) {
-      // POST data with retry attempts
-      try {
-        await retry(
-          () => postClient(JSON.stringify(payload)),
-          maxRetries
-        );
-        logger.info('Successfully submitted impression counts to Split');
-      } catch (err) {
-        logger.error(`An error occurred when submitting impression counts to Split: ${err}`);
-        return false;
-      }
-    }
-
-    return true;
-  };
+  return submitterFactory(logger, postClient, getPayload, 'impression counts', maxRetries);
 }
