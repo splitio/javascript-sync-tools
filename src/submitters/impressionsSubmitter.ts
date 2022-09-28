@@ -94,7 +94,7 @@ export function impressionsSubmitterFactory(
    *
    * @returns {Promise<boolean>}
    */
-  function processImpressionsBatch() {
+  function processImpressionsBatch(): Promise<boolean> {
     return impressionsCache.popNWithMetadata(impressionsPerPost)
       .then(async (dataImpressions: StoredImpressionWithMetadata[]) => {
         const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
@@ -159,8 +159,7 @@ export function impressionsSubmitterFactory(
         }
 
         const count = await impressionsCache.count();
-        if (count > 0) await processImpressionsBatch();
-        return Promise.resolve(true);
+        return count > 0 ? processImpressionsBatch() : true;
       })
       .catch((e) => {
         logger.error(`An error occurred when processing impressions: ${e}`);

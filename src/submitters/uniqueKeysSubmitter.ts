@@ -33,26 +33,29 @@ export function uniqueKeysSubmitterFactory(
     return fromUniqueKeysCollector(mergedUniqueKeys);
   }
 
-  return async () => {
+  return async function postData() {
+    let payload: any;
+
     try {
-      const payload = await getPayload();
-      if (payload) {
-        // POST data with retry attempts
-        try {
-          await retry(
-            () => postClient(JSON.stringify(payload)),
-            maxRetries
-          );
-        } catch (err) {
-          logger.error(`An error occurred when submitting unique keys to Split: ${err}`);
-          return false;
-        }
-      }
+      payload = await getPayload();
     } catch (e) {
       logger.error(`An error occurred when retrieving unique keys from storage: ${e}`);
-      return Promise.resolve(false);
+      return false;
     }
 
-    return Promise.resolve(true);
+    if (payload) {
+      // POST data with retry attempts
+      try {
+        await retry(
+          () => postClient(JSON.stringify(payload)),
+          maxRetries
+        );
+      } catch (err) {
+        logger.error(`An error occurred when submitting unique keys to Split: ${err}`);
+        return false;
+      }
+    }
+
+    return true;
   };
 }

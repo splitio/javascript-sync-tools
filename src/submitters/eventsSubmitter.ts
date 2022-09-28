@@ -56,7 +56,7 @@ export function eventsSubmitterFactory(
    *
    * @returns {Promise<boolean>}
    */
-  function processEventsBatch() {
+  function processEventsBatch(): Promise<boolean> {
     return eventsCache.popNWithMetadata(eventsPerPost)
       .then(async (events) => {
         const processedEvents: ProcessedByMetadataEvents = groupBy(events, 'm');
@@ -86,9 +86,9 @@ export function eventsSubmitterFactory(
             }
           }
         }
+
         const count = await eventsCache.count();
-        if (count > 0) await processEventsBatch();
-        return Promise.resolve(true);
+        return count > 0 ? processEventsBatch() : true;
       })
       .catch((e) => {
         logger.error(`An error occurred when processing events: ${e}`);
