@@ -2,7 +2,7 @@ import { UniqueKeysItemSs, UniqueKeysPayloadSs } from '@splitsoftware/splitio-co
 import { uniqueKeysSubmitterFactory } from '../uniqueKeysSubmitter';
 
 describe('Unique keys submitter', () => {
-  const postUniqueKeysBulkSsMock = jest.fn();
+  const postUniqueKeysBulkSsMock = jest.fn(() => Promise.resolve());
   const uniqueKeysCacheMock = { popNRaw: jest.fn() };
 
   // @ts-ignore

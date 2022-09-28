@@ -10,7 +10,7 @@ import { retry } from './utils';
 export function uniqueKeysSubmitterFactory(
   postClient: IPostUniqueKeysBulkSs,
   uniqueKeysCache: UniqueKeysCachePluggable,
-  log: ILogger,
+  logger: ILogger,
   maxRetries?: number,
   uniqueKeysFetchSize?: number,
 ): () => Promise<boolean> {
@@ -43,14 +43,13 @@ export function uniqueKeysSubmitterFactory(
             () => postClient(JSON.stringify(payload)),
             maxRetries
           );
-          log.info('Successfully submitted unique keys to Split.');
         } catch (err) {
-          log.error(`An error occurred while submitting unique keys to Split: ${err}`);
+          logger.error(`An error occurred when submitting unique keys to Split: ${err}`);
           return false;
         }
       }
     } catch (e) {
-      log.error(`An error occurred while retrieving unique keys from storage: ${e}`);
+      logger.error(`An error occurred when retrieving unique keys from storage: ${e}`);
       return Promise.resolve(false);
     }
 

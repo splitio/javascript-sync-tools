@@ -91,7 +91,7 @@ export function eventsSubmitterFactory(
         return Promise.resolve(true);
       })
       .catch((e) => {
-        logger.error(`An error occurred when processing Events: ${e}`);
+        logger.error(`An error occurred when processing events: ${e}`);
         return false;
       });
   }

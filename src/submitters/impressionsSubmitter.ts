@@ -163,7 +163,7 @@ export function impressionsSubmitterFactory(
         return Promise.resolve(true);
       })
       .catch((e) => {
-        logger.error(`An error occurred when processing Impressions: ${e}`);
+        logger.error(`An error occurred when processing impressions: ${e}`);
         return false;
       });
   }

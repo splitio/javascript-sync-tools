@@ -11,7 +11,7 @@ import { retry } from './utils';
 export function impressionCountsSubmitterFactory(
   postClient: IPostTestImpressionsCount,
   impressionCountsCache: ImpressionCountsCacheInMemory | ImpressionCountsCachePluggable,
-  log: ILogger,
+  logger: ILogger,
   maxRetries?: number,
 ): () => Promise<boolean> {
 
@@ -37,14 +37,13 @@ export function impressionCountsSubmitterFactory(
             () => postClient(JSON.stringify(payload)),
             maxRetries
           );
-          log.info('Successfully submitted impression counts to Split.');
         } catch (err) {
-          log.error(`An error occurred while submitting impression counts to Split: ${err}`);
+          logger.error(`An error occurred when submitting impression counts to Split: ${err}`);
           return false;
         }
       }
     } catch (e) {
-      log.error(`An error occurred while retrieving impression counts from storage: ${e}`);
+      logger.error(`An error occurred when retrieving impression counts from storage: ${e}`);
       return Promise.resolve(false);
     }
 

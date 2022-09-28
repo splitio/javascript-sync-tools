@@ -3,7 +3,7 @@ import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync
 import { impressionCountsSubmitterFactory } from '../impressionCountsSubmitter';
 
 describe('Impression counts submitter', () => {
-  const postTestImpressionsCountMock = jest.fn();
+  const postTestImpressionsCountMock = jest.fn(() => Promise.resolve());
   const impressionCountsCacheMock = { getImpressionsCount: jest.fn() };
 
   // @ts-ignore

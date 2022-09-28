@@ -35,6 +35,9 @@ export function synchronizerSettingsValidator(
 
   // @ts-ignore
   const settings = settingsValidation(config, params) as ISettings & ISynchronizerSettings;
+  // @ts-ignore, override readonly prop
+  settings.mode = undefined; // "producer" mode
+
   const { scheduler } = settings;
 
   // @TODO validate synchronizerMode eventually

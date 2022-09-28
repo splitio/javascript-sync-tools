@@ -143,9 +143,9 @@ export class Synchronizer {
         this._storage.splits,
         this._storage.segments,
         // @ts-ignore
-        InMemoryStorageFactory({ log: this.settings.log }),
+        InMemoryStorageFactory({ settings: this.settings }),
         // @ts-ignore
-        InMemoryStorageFactory({ log: this.settings.log })
+        InMemoryStorageFactory({ settings: this.settings })
       );
       this._eventsSubmitter = eventsSubmitterFactory(
         this._splitApi.postEventsBulk,
