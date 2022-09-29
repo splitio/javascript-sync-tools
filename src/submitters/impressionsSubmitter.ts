@@ -1,9 +1,8 @@
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
-import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IImpressionCountsCacheBase, IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
-import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { groupBy, metadataToHeaders } from './utils';
 import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
@@ -49,6 +48,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
       label: i.r,
       changeNumber: i.c,
       time: i.m,
+      pt: i.pt,
     } as ImpressionDTO,
   };
 };
@@ -63,7 +63,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * @param {ImpressionObserver}            observer             The Impression Observer object for the dedupe process.
  * @param {number}                        impressionsPerPost   Amount of elements to pop from storage.
  * @param {number}                        maxRetries           Amount of attempt retries to perform the POST request.
- * @param {ImpressionCountsCacheInMemory} countsCache          The reference to the Impresion's Count Storage.
+ * @param {IImpressionCountsCacheBase}    countsCache          The reference to the Impresion's Count Storage. Undefined in DEBUG mode
  * @returns {() => Promise<boolean>}
  */
 export function impressionsSubmitterFactory(
@@ -73,9 +73,10 @@ export function impressionsSubmitterFactory(
   observer: ImpressionObserver,
   impressionsPerPost = IMPRESSIONS_AMOUNT_DEFAULT,
   maxRetries = MAX_RETRIES,
-  countsCache?: ImpressionCountsCacheInMemory,
+  countsCache?: IImpressionCountsCacheBase,
 ) {
 
+  // @TODO reuse JS-commons strategies. Not possible now due to different input types: ImpressionDTO vs ImpressionDTOWithMetadata
   function fromCacheToPayload(dataImpressions: StoredImpressionWithMetadata[]) {
     const impressionsWithMetadataToPost: ImpressionsDTOWithMetadata[] = [];
     // convert Impressions Metadata into Impressions DTO
@@ -84,16 +85,15 @@ export function impressionsSubmitterFactory(
     storedImpressions.forEach((impressionWithMetadata) => {
       const { impression } = impressionWithMetadata;
 
-      if (observer) {
-        // Adds previous time if it is enabled
-        // @ts-ignore
-        impression.pt = observer.testAndSet(impression);
-      }
+      // Re-assigns previous time in both OPTIMIZED and DEBUG modes
+      impression.pt = observer.testAndSet(impression);
 
       const now = Date.now();
+      // @TODO countsCache is polluted but not used at the moment. We have to update OPTIMIZED
+      // mode eventually to reuse it and combine with the countsCache in pluggable storage.
       if (countsCache) {
         // Increments impression counter per featureName
-        countsCache.track(impression.feature, now, 1);
+        if (impression.pt) countsCache.track(impression.feature, now, 1);
       }
 
       // Checks if the impression should be added in queue to be sent

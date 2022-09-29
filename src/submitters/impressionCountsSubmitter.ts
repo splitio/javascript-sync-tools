@@ -8,6 +8,7 @@ import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync
 import { MaybeThenable } from '@splitsoftware/splitio-commons/src/dtos/types';
 import { submitterFactory } from './submitter';
 
+// @TODO at the moment we only pass a ImpressionCountsCachePluggable instance but eventually we might use ImpressionCountsCacheInMemory
 export function impressionCountsSubmitterFactory(
   logger: ILogger,
   postClient: IPostTestImpressionsCount,

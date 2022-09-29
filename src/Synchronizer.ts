@@ -21,6 +21,7 @@ import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/stora
 import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
 import { uniqueKeysSubmitterFactory } from './submitters/uniqueKeysSubmitter';
 import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
+import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -160,21 +161,19 @@ export class Synchronizer {
       this.settings.scheduler.maxRetries,
       countsCache,
     );
-    if (countsCache || this._storage.impressionCounts) {
-      this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
-        this.settings.log,
-        this._splitApi.postTestImpressionsCount, // @ts-expect-error
-        countsCache || this._storage.impressionCounts,
-        this.settings.scheduler.maxRetries,
-      );
-    }
-    if (this._storage.uniqueKeys) this._uniqueKeysSubmitter = uniqueKeysSubmitterFactory(
+    this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
+      this.settings.log,
+      this._splitApi.postTestImpressionsCount,
+      this._storage.impressionCounts as ImpressionCountsCachePluggable, // ATM we are ignoring counts from `countsCache` and only sending the ones from the storage.
+      this.settings.scheduler.maxRetries,
+    );
+    this._uniqueKeysSubmitter = uniqueKeysSubmitterFactory(
       this.settings.log,
       this._splitApi.postUniqueKeysBulkSs,
       this._storage.uniqueKeys as UniqueKeysCachePluggable,
       this.settings.scheduler.maxRetries,
     );
-    if (this._storage.telemetry) this._telemetrySubmitter = telemetrySubmitterFactory(
+    this._telemetrySubmitter = telemetrySubmitterFactory(
       this.settings.log,
       this._splitApi,
       this._storage.telemetry as ITelemetryCacheAsync,

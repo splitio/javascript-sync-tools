@@ -65,7 +65,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
     test(`Pop [2] Impressions with [SAME] Metadata from Storage,
       then make [1] Impressions POST with [1] Impressions,
-      then make an Impressions Count POST with [1] Impression, with its count value at [2]`, async () => {
+      then make an Impressions Count POST with [1] Impression, with its count value at [1]`, async () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
@@ -93,7 +93,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         1,
         JSON.stringify({
           pf: [
-            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 2 },
+            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 1 },
           ],
         }),
       );
@@ -101,7 +101,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
     test(`Pop [2] Impressions with [DIFFERENT] Metadata from Storage,
       then make [2] Impressions POST with [2] Impressions
-      then make an Impressions Count POST with [2] different Impressions, each count value at [1]`, async () => {
+      but not Impressions Count POST`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(1, true, true),
         ...getImpressionsListWithSameMetadata(1, true, true),
@@ -140,20 +140,12 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
-      expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
-          pf: [
-            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 1 },
-            { f: _mockImpressionsListWMetadata[1].i.f, m: truncateTimeFrame(Date.now()), rc: 1 },
-          ],
-        }),
-      );
+      expect(_postImpressionsCountMock).not.toBeCalled();
     });
 
     test(`Pop [20] Impressions, divided in [2] groups of 10 Impressions with [SAME] Metadata from Storage,
       then make [2] Impressions POST with [1] Impressions each
-      then make an Impressions Count POST with [2] different Impressions, each count value at [10]`, async () => {
+      then make an Impressions Count POST with [2] different Impressions, each count value at [9]`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(10, true, true),
         ...getImpressionsListWithSameMetadata(10, true, true),
@@ -199,8 +191,8 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         1,
         JSON.stringify({
           pf: [
-            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 10 },
-            { f: _mockImpressionsListWMetadata[10].i.f, m: truncateTimeFrame(Date.now()), rc: 10 },
+            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 9 },
+            { f: _mockImpressionsListWMetadata[10].i.f, m: truncateTimeFrame(Date.now()), rc: 9 },
           ],
         }),
       );
