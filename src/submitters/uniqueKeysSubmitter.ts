@@ -3,7 +3,6 @@ import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostUniqueKeysBulkSs } from '@splitsoftware/splitio-commons/src/services/types';
 import { fromUniqueKeysCollector } from '@splitsoftware/splitio-commons/src/storages/inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
-import { UniqueKeysPayloadSs } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { ISet, _Set } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
 import { submitterFactory } from './submitter';
 
@@ -15,7 +14,7 @@ export function uniqueKeysSubmitterFactory(
   uniqueKeysFetchSize?: number,
 ): () => Promise<boolean> {
 
-  async function getPayload(): Promise<UniqueKeysPayloadSs | undefined> {
+  async function getPayload() {
     const uniqueKeyItems = await uniqueKeysCache.popNRaw(uniqueKeysFetchSize);
 
     if (!uniqueKeyItems.length) return undefined;

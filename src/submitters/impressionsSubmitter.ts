@@ -89,8 +89,7 @@ export function impressionsSubmitterFactory(
       impression.pt = observer.testAndSet(impression);
 
       const now = Date.now();
-      // @TODO countsCache is polluted but not used at the moment. We have to update OPTIMIZED
-      // mode eventually to reuse it and combine with the countsCache in pluggable storage.
+
       if (countsCache) {
         // Increments impression counter per featureName
         if (impression.pt) countsCache.track(impression.feature, now, 1);

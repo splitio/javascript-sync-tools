@@ -166,6 +166,7 @@ export class Synchronizer {
       this._splitApi.postTestImpressionsCount,
       this._storage.impressionCounts as ImpressionCountsCachePluggable, // ATM we are ignoring counts from `countsCache` and only sending the ones from the storage.
       this.settings.scheduler.maxRetries,
+      countsCache,
     );
     this._uniqueKeysSubmitter = uniqueKeysSubmitterFactory(
       this.settings.log,
