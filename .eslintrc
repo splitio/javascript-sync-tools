@@ -75,6 +75,7 @@
     "quote-props": ["error", "as-needed"],
     "comma-spacing": ["error", { "before": false, "after": true }],
     "object-curly-spacing": ["error", "always"],
+    "no-trailing-spaces": "error",
      // jsdoc
     "jsdoc/check-access": "error",
     "jsdoc/check-alignment": "error",
