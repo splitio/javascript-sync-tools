@@ -5,8 +5,24 @@ import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/sr
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
 import { submitterFactory } from './submitter';
+import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
+import { _Map } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
-// @TODO at the moment we only pass a ImpressionCountsCachePluggable instance but eventually we might use ImpressionCountsCacheInMemory
+// Merge impressions counts objects
+function merge(counts1: ImpressionCountsPayload, counts2: ImpressionCountsPayload): ImpressionCountsPayload {
+  const merged = new _Map(counts1.pf.map((count) => [count.f + count.m, count]));
+  counts2.pf.forEach((count) => {
+    const key = count.f + count.m;
+    if (merged.has(key)) merged.get(key)!.rc += count.rc;
+    else merged.set(key, count);
+  }
+  );
+
+  const pf: ImpressionCountsPayload['pf'] = [];
+  merged.forEach((count) => pf.push(count));
+  return { pf };
+}
+
 export function impressionCountsSubmitterFactory(
   logger: ILogger,
   postClient: IPostTestImpressionsCount,
@@ -15,17 +31,18 @@ export function impressionCountsSubmitterFactory(
   impressionCountsCacheInMemory?: ImpressionCountsCacheInMemory,
 ): () => Promise<boolean> {
 
-  // @TODO we should update OPTIMIZED mode eventually to combine and send impression counts from the in-memory cache and the pluggable one
   async function getPayload() {
     let result = await impressionCountsCache.getImpressionsCount();
 
-    // If there aren't impression counts in pluggable storage, we try to get them from the
-    // in-memory cache available when Synchronizer runs in OPTIMIZED impressions mode
-    if (!result && impressionCountsCacheInMemory) {
+    // Get impression counts from the in-memory cache available when Synchronizer runs in OPTIMIZED impressions mode
+    // and merge with the ones from pluggable storage.
+    if (impressionCountsCacheInMemory) {
       const impressionCountsData = impressionCountsCacheInMemory.pop();
-      result = Object.keys(impressionCountsData).length > 0 ?
+      const memoryCounts = Object.keys(impressionCountsData).length > 0 ?
         fromImpressionCountsCollector(impressionCountsData) :
         undefined;
+
+      if (memoryCounts) result = result ? merge(result, memoryCounts) : memoryCounts;
     }
 
     return result;
