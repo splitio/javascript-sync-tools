@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
 import { _getRandomString } from './commonUtils';

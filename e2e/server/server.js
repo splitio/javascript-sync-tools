@@ -15,9 +15,8 @@ server.use(middlewares);
 function modifyResponseBody(req, res, next) {
   console.log(req.url);
 
-  // To avoid Impressions and Events POSTS request processing.
-  if (req.url.match(/(testImpressions)|(events)|(version)/)) {
-    // eslint-disable-next-line no-magic-numbers
+  // To avoid impressions, events and telemetry POSTS request processing.
+  if (req.url.match(/(testImpressions)|(events)|(version)|(v1\/(metrics|keys))/)) {
     return res.sendStatus(200);
   }
 

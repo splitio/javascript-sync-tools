@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers, jsdoc/require-jsdoc */
 import { StoredEventWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { _getRandomString } from './commonUtils';
 

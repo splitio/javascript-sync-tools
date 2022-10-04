@@ -1,25 +1,27 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
 import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { IStorageAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IStorageAsync, ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
 import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
-import { SynchronizerStorageFactory } from './storages/SynchronizerStorage';
-import { EventsSynchronizer } from './synchronizers/EventsSynchronizer';
-import { ImpressionsSynchronizer } from './synchronizers/ImpressionsSynchronizer';
-import { impressionObserverSSFactory }
-  from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import { ImpressionCountsCacheInMemory }
-  from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
+import { synchronizerStorageFactory } from './storages/synchronizerStorage';
+import { eventsSubmitterFactory } from './submitters/eventsSubmitter';
+import { impressionsSubmitterFactory } from './submitters/impressionsSubmitter';
+import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
+import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { telemetryTrackerFactory } from '@splitsoftware/splitio-commons/src/trackers/telemetryTracker';
-import { ImpressionsCountSynchronizer } from './synchronizers/ImpressionsCountSynchronizer';
+import { impressionCountsSubmitterFactory } from './submitters/impressionCountsSubmitter';
 import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { ISynchronizerSettings } from '../types';
 import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
+import { uniqueKeysSubmitterFactory } from './submitters/uniqueKeysSubmitter';
+import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
+import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -43,15 +45,24 @@ export class Synchronizer {
   /**
    * The local reference to the EventsSynchronizer class.
    */
-  _eventsSynchronizer!: EventsSynchronizer;
+  _eventsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsSynchronizer class.
    */
-  _impressionsSynchronizer!: ImpressionsSynchronizer;
+  _impressionsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsCountSynchronizer class.
    */
-  _impressionsCountSynchronizer!: ImpressionsCountSynchronizer;
+  _impressionCountsSubmitter?: () => Promise<boolean>;
+  /**
+   * The local reference to the unique keys submitter.
+   */
+  _uniqueKeysSubmitter?: () => Promise<boolean>;
+  /**
+   * The local reference to the telemetry submitter.
+   */
+  _telemetrySubmitter?: () => Promise<boolean>;
+
   /**
    * The local reference to the Synchronizer's settings configurations.
    */
@@ -79,7 +90,7 @@ export class Synchronizer {
     this._splitApi = splitApiFactory(
       this.settings,
       { getFetch: Synchronizer._getFetch },
-      telemetryTrackerFactory()
+      telemetryTrackerFactory() // no-op telemetry tracker
     );
   }
 
@@ -100,7 +111,7 @@ export class Synchronizer {
   initializeStorages(): Promise<boolean> {
     return new Promise<boolean>((res, rej) => {
       // @ts-ignore
-      this._storage = SynchronizerStorageFactory(
+      this._storage = synchronizerStorageFactory(
         this.settings,
         (error) => error ? rej() : res(true)
       );
@@ -112,59 +123,62 @@ export class Synchronizer {
   }
   /**
    * Function to set all the required Synchronizers.
-   *
-   * @returns {Promise<boolean>}
    */
-  initializeSynchronizers(): Promise<boolean> {
+  initializeSynchronizers() {
     // @todo: Add Cli paramater to define impressionsMode.
     const countsCache = this.settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
       undefined;
 
-    try {
-      this._segmentsSynchronizer = new SegmentsSynchronizer(
-        this._splitApi.fetchSegmentChanges,
-        this.settings,
-        this._storage.segments,
-      );
-      this._splitsSynchronizer = new SplitsSynchronizer(
-        this._splitApi.fetchSplitChanges,
-        this.settings,
-        this._storage.splits,
-        this._storage.segments,
-        // @ts-ignore
-        InMemoryStorageFactory({ log: this.settings.log }),
-        // @ts-ignore
-        InMemoryStorageFactory({ log: this.settings.log })
-      );
-      this._eventsSynchronizer = new EventsSynchronizer(
-        this._splitApi.postEventsBulk,
-        this._storage.events as IEventsCacheAsync,
-        this.settings.log,
-        this.settings.scheduler.eventsPerPost,
-        this.settings.scheduler.maxRetries,
-      );
-      this._impressionsSynchronizer = new ImpressionsSynchronizer(
-        this._splitApi.postTestImpressionsBulk,
-        this._storage.impressions as IImpressionsCacheAsync,
-        this._observer,
-        this.settings.log,
-        this.settings.scheduler.impressionsPerPost,
-        this.settings.scheduler.maxRetries,
-        countsCache,
-      );
-      if (countsCache) {
-        this._impressionsCountSynchronizer = new ImpressionsCountSynchronizer(
-          this._splitApi.postTestImpressionsCount,
-          countsCache,
-          this.settings.log,
-        );
-      }
-    } catch (error) {
-      this.settings.log.error(`Error when initializing Synchronizer: ${error}`);
-      return Promise.resolve(false);
-    }
-    return Promise.resolve(true);
+    this._segmentsSynchronizer = new SegmentsSynchronizer(
+      this._splitApi.fetchSegmentChanges,
+      this.settings,
+      this._storage.segments,
+    );
+    this._splitsSynchronizer = new SplitsSynchronizer(
+      this._splitApi.fetchSplitChanges,
+      this.settings,
+      this._storage.splits,
+      this._storage.segments,
+      // @ts-ignore
+      InMemoryStorageFactory({ settings: this.settings }),
+      // @ts-ignore
+      InMemoryStorageFactory({ settings: this.settings })
+    );
+    this._eventsSubmitter = eventsSubmitterFactory(
+      this.settings.log,
+      this._splitApi.postEventsBulk,
+      this._storage.events as IEventsCacheAsync,
+      this.settings.scheduler.eventsPerPost,
+      this.settings.scheduler.maxRetries,
+    );
+    this._impressionsSubmitter = impressionsSubmitterFactory(
+      this.settings.log,
+      this._splitApi.postTestImpressionsBulk,
+      this._storage.impressions as IImpressionsCacheAsync,
+      this._observer,
+      this.settings.scheduler.impressionsPerPost,
+      this.settings.scheduler.maxRetries,
+      countsCache,
+    );
+    this._impressionCountsSubmitter = impressionCountsSubmitterFactory(
+      this.settings.log,
+      this._splitApi.postTestImpressionsCount,
+      this._storage.impressionCounts as ImpressionCountsCachePluggable, // ATM we are ignoring counts from `countsCache` and only sending the ones from the storage.
+      this.settings.scheduler.maxRetries,
+      countsCache,
+    );
+    this._uniqueKeysSubmitter = uniqueKeysSubmitterFactory(
+      this.settings.log,
+      this._splitApi.postUniqueKeysBulkSs,
+      this._storage.uniqueKeys as UniqueKeysCachePluggable,
+      this.settings.scheduler.maxRetries,
+    );
+    this._telemetrySubmitter = telemetrySubmitterFactory(
+      this.settings.log,
+      this._splitApi,
+      this._storage.telemetry as ITelemetryCacheAsync,
+    );
   }
   /**
    * Function to prepare for sync tasks. Checks for Fetch API availability and
@@ -173,27 +187,25 @@ export class Synchronizer {
    * @returns {Promise<boolean>}
    */
   async preExecute(): Promise<boolean> {
+    const log = this.settings.log;
     if (Synchronizer._getFetch() === undefined) {
-      console.log('Global fetch API is not available.');
+      log.error('Global fetch API is not available');
       return false;
     }
-    console.log('# Synchronizer: Execute');
+    log.info('Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
     if (!areAPIsReady) return false;
-    console.log('Split API and Events API ready.');
+    log.info('Split API and Events API ready');
 
     const isStorageReady = await this.initializeStorages();
     if (!isStorageReady) {
-      // @TODO fix message for programmatic API
-      console.log('Pluggable Storage not ready. Run the cli with -d option for debugging information.');
+      log.error('Pluggable Storage not ready');
       return false;
     }
-    console.log(' > Storage setup:                  Ready');
+    log.info('Storage setup ready');
 
-    const areSyncsReady = await this.initializeSynchronizers();
-    if (!areSyncsReady) return false;
-    console.log(' > Synchronizers components setup: Ready');
+    this.initializeSynchronizers();
 
     return true;
   }
@@ -215,7 +227,6 @@ export class Synchronizer {
     const hasPreExecutionSucceded = await this.preExecute();
     if (!hasPreExecutionSucceded) return false;
 
-    console.log('# Syncronization tasks');
     if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
       await this.executeSplitsAndSegments(false);
     }
@@ -225,7 +236,7 @@ export class Synchronizer {
 
     this.postExecute();
 
-    console.log('# Synchronizer: Execution ended');
+    this.settings.log.info('Synchronizer: Execution ended');
     return true;
   }
   // @TODO remove standalone param for cleaner code
@@ -240,9 +251,9 @@ export class Synchronizer {
     // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
     const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
 
-    console.log(` > Splits Synchronizer task:       ${isSplitsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+    this.settings.log.debug(`Splits Synchronizer task: ${isSplitsSyncReady ? 'Successful' : 'Unsuccessful'}`);
     const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
-    console.log(` > Segments Synchronizer task:     ${isSegmentsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
+    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncReady ? 'Successful' : 'Unsuccessful'}`);
 
     if (standalone) await this.postExecute();
   }
@@ -252,18 +263,28 @@ export class Synchronizer {
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
    */
   private async executeImpressionsAndEvents(standalone = true) {
+    const log = this.settings.log;
     if (standalone) await this.preExecute();
 
-    const isEventsSyncReady = await this._eventsSynchronizer.synchroniseEvents();
-    console.log(` > Events Synchronizer task:       ${isEventsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
-    const isImpressionsSyncReady = await this._impressionsSynchronizer.synchroniseImpressions();
-    console.log(` > Impressions Synchronizer task:  ${isImpressionsSyncReady ? 'Successful   √' : 'Unsuccessful X'}`);
 
-    if (this._impressionsCountSynchronizer) {
-      const isImpressionsCountSyncReady = await this._impressionsCountSynchronizer.synchroniseImpressionsCount();
-      console.log(
-        ` > ImpressionsCount Synchronizer task:  ${isImpressionsCountSyncReady ? 'Successful   √' : 'Unsuccessful X'}`
-      );
+    const isEventsSyncReady = await this._eventsSubmitter();
+    log.debug(`Events Synchronizer task: ${isEventsSyncReady ? 'Successful' : 'Unsuccessful'}`);
+    const isImpressionsSyncReady = await this._impressionsSubmitter();
+    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncReady ? 'Successful' : 'Unsuccessful'}`);
+
+    if (this._impressionCountsSubmitter) {
+      const isImpressionCountsSyncReady = await this._impressionCountsSubmitter();
+      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncReady ? 'Successful' : 'Unsuccessful'}`);
+    }
+
+    if (this._uniqueKeysSubmitter) {
+      const isUniqueKeysSyncReady = await this._uniqueKeysSubmitter();
+      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncReady ? 'Successful' : 'Unsuccessful'}`);
+    }
+
+    if (this._telemetrySubmitter) {
+      const isTelemetrySyncReady = await this._telemetrySubmitter();
+      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncReady ? 'Successful' : 'Unsuccessful'}`);
     }
   }
   /**

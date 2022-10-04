@@ -1,12 +1,12 @@
-/* eslint-disable no-magic-numbers, max-len, jsdoc/require-jsdoc*/
 import { ImpressionCountsCacheInMemory } from '@splitsoftware/splitio-commons/src/storages/inMemory/ImpressionCountsCacheInMemory';
-import { impressionsSubmitterFactory } from '../synchronizerImpressionsSubmitter';
+import { impressionsSubmitterFactory } from '../impressionsSubmitter';
 import { getImpressionsListWithSameMetadata } from './impressionsMockUtils';
 import { impressionObserverSSFactory } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/impressionObserverSS';
-import { impressionsCountSubmitterFactory } from '../synchronizerImpressionsCountSubmitter';
+import { impressionCountsSubmitterFactory } from '../impressionCountsSubmitter';
 import { metadataToHeaders } from '../utils';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
+import { noopLogger } from './commonUtils';
 
 describe('Impressions Submitter for Lightweight Synchronizer', () => {
   const _postImpressionsMock = jest.fn(() => Promise.resolve());
@@ -14,9 +14,11 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     popNWithMetadata: jest.fn(),
     count: jest.fn().mockImplementation(() => 0),
   };
-  const _fakeLogger = { error: () => { } };
 
   let observer: ImpressionObserver;
+  let countsCachePluggable = {
+    getImpressionsCount: jest.fn(() => Promise.resolve()),
+  };
   let countsCache: ImpressionCountsCacheInMemory;
   let _impressionsSubmiter: { (): any; (): Promise<string | boolean>; };
 
@@ -24,7 +26,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     _postImpressionsMock.mockClear();
     _impressionsCacheMock.popNWithMetadata.mockClear();
     _impressionsCacheMock.count.mockClear();
-
+    countsCachePluggable.getImpressionsCount.mockClear();
     countsCache = new ImpressionCountsCacheInMemory();
     observer = impressionObserverSSFactory();
   });
@@ -32,11 +34,10 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
   describe('Impressions Submitter, with [OPTIMIZED] mode set in settings', () => {
     beforeEach(() => {
       _impressionsSubmiter = impressionsSubmitterFactory(
-        // @ts-ignore
+        noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
         observer,
-        undefined,
         undefined,
         undefined,
         countsCache,
@@ -57,17 +58,17 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(noopLogger, _postImpressionsCountMock, countsCachePluggable);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
-      expect(countsCache.isEmpty()).toBe(true);
+      expect(countsCachePluggable.getImpressionsCount).toBeCalledTimes(1);
       expect(_postImpressionsCountMock).toBeCalledTimes(0);
     });
 
     test(`Pop [2] Impressions with [SAME] Metadata from Storage,
       then make [1] Impressions POST with [1] Impressions,
-      then make an Impressions Count POST with [1] Impression, with its count value at [2]`, async () => {
+      then make an Impressions Count POST with [1] Impression, with its count value at [1]`, async () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
@@ -86,16 +87,16 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(noopLogger, _postImpressionsCountMock, countsCachePluggable, undefined, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           pf: [
-            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 2 },
+            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 1 },
           ],
         }),
       );
@@ -103,7 +104,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
     test(`Pop [2] Impressions with [DIFFERENT] Metadata from Storage,
       then make [2] Impressions POST with [2] Impressions
-      then make an Impressions Count POST with [2] different Impressions, each count value at [1]`, async () => {
+      but not Impression Counts POST`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(1, true, true),
         ...getImpressionsListWithSameMetadata(1, true, true),
@@ -137,25 +138,17 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(noopLogger, _postImpressionsCountMock, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
-      expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
-        1,
-        JSON.stringify({
-          pf: [
-            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 1 },
-            { f: _mockImpressionsListWMetadata[1].i.f, m: truncateTimeFrame(Date.now()), rc: 1 },
-          ],
-        }),
-      );
+      expect(_postImpressionsCountMock).not.toBeCalled();
     });
 
     test(`Pop [20] Impressions, divided in [2] groups of 10 Impressions with [SAME] Metadata from Storage,
       then make [2] Impressions POST with [1] Impressions each
-      then make an Impressions Count POST with [2] different Impressions, each count value at [10]`, async () => {
+      then make an Impressions Count POST with [2] different Impressions, each count value at [9]`, async () => {
       const _mockImpressionsListWMetadata = [
         ...getImpressionsListWithSameMetadata(10, true, true),
         ...getImpressionsListWithSameMetadata(10, true, true),
@@ -192,17 +185,17 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       // Test Impressions Count
       const _postImpressionsCountMock = jest.fn(() => Promise.resolve());
       // @ts-ignore
-      const _impressionsCountSubmitter = impressionsCountSubmitterFactory(_postImpressionsCountMock, countsCache);
+      const _impressionCountsSubmitter = impressionCountsSubmitterFactory(noopLogger, _postImpressionsCountMock, countsCachePluggable, undefined, countsCache);
 
-      await _impressionsCountSubmitter();
+      await _impressionCountsSubmitter();
 
       expect(countsCache.isEmpty()).toBe(true);
       expect(_postImpressionsCountMock).toHaveBeenNthCalledWith(
         1,
         JSON.stringify({
           pf: [
-            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 10 },
-            { f: _mockImpressionsListWMetadata[10].i.f, m: truncateTimeFrame(Date.now()), rc: 10 },
+            { f: _mockImpressionsListWMetadata[0].i.f, m: truncateTimeFrame(Date.now()), rc: 9 },
+            { f: _mockImpressionsListWMetadata[10].i.f, m: truncateTimeFrame(Date.now()), rc: 9 },
           ],
         }),
       );
@@ -213,14 +206,10 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
   describe('Impressions Submitter, with [DEBUG] mode set in settings', () => {
     beforeEach(() => {
       _impressionsSubmiter = impressionsSubmitterFactory(
-        // @ts-ignore
+        noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
-        observer,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
+        observer
       );
     });
     test(`Pop [2] Impressions with [SAME] metadata from Storage,
@@ -318,7 +307,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     test('Multiple runs [2] times, until storage count is 0', async () => {
       // @ts-ignore
       _impressionsSubmiter = impressionsSubmitterFactory(
-        // @ts-ignore
+        noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
         observer,
@@ -339,14 +328,11 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const IMPRESSIONS_PER_POST = 33;
 
       _impressionsSubmiter = impressionsSubmitterFactory(
-        // @ts-ignore
+        noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
         observer,
-        undefined,
         IMPRESSIONS_PER_POST,
-        undefined,
-        undefined,
       );
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
@@ -361,15 +347,12 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _failPostImpressionsMock = jest.fn(() => Promise.reject());
 
       let _impressionsSubmiterToFail = impressionsSubmitterFactory(
-        // @ts-ignore
-        _failPostImpressionsMock,
-        // @ts-ignore
+        noopLogger, // @ts-ignore
+        _failPostImpressionsMock, // @ts-ignore
         _impressionsCacheMock,
         observer,
-        _fakeLogger,
         undefined,
         MAX_RETRIES,
-        undefined,
       );
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
@@ -382,4 +365,3 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     });
   });
 });
-

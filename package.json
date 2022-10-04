@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-sync-tools",
-  "version": "0.1.1",
+  "version": "0.1.2-rc.3",
   "description": "Split Javascript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -43,14 +43,15 @@
     "build:cjs": "rimraf lib/cjs && tsc -m CommonJS --outDir lib/cjs --importHelpers && scripts/build_cjs_replace_imports.sh && replace @VERSION@ $npm_package_version lib/cjs/settings/defaults.js",
     "json-server": "node ./e2e/server/server.js",
     "test:unit": "jest src/",
-    "test:e2e": "start-server-and-test 'json-server' 3000 './scripts/check_redis.sh && jest e2e/ --runInBand --forceExit'",
+    "test:e2e": "start-server-and-test 'json-server' 3000 './scripts/check_redis.sh && jest e2e/ --runInBand'",
     "test": "npm run test:unit && npm run test:e2e",
+    "all": "npm run check && npm run build && npm run test",
     "publish:rc": "npm publish --tag rc",
     "publish:stable": "npm publish",
     "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.6.1",
+    "@splitsoftware/splitio-commons": "1.6.2-rc.14",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.7",
     "yargs": "^17.0.1"
@@ -58,7 +59,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-node-resolve": "^13.0.2",
-    "@splitsoftware/splitio": "10.21.1",
+    "@splitsoftware/splitio": "10.21.2-rc.5",
     "@types/ioredis": "^4.28.0",
     "@types/jest": "^27.0.0",
     "@types/node": "^15.0.1",

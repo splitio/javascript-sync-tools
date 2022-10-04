@@ -10,10 +10,9 @@ describe('Synchronizer creation and execution', () => {
       authorizationKey: 'th1s_1sF4keAp1k31',
     },
     urls: {
-      // CDN having all the information for your environment
       sdk: 'https://fake.split.io//api',
-      // Storage for your SDK events
       events: 'https://fake.events.split.io/api',
+      telemetry: 'https://fake.telemetry.split.io/api',
     },
     storage: {
       type: 'PLUGGABLE',

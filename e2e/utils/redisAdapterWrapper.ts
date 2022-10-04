@@ -1,7 +1,6 @@
 import { RedisAdapter } from '@splitsoftware/splitio-commons/src/storages/inRedis/RedisAdapter';
-import { Logger } from '@splitsoftware/splitio-commons/src/logger/index';
-import { InRedisStorageOptions } from '@splitsoftware/splitio-commons/src/storages/inRedis/';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
+import { noopLogger } from '../../src/submitters/__tests__/commonUtils';
 
 // @TODO refactor: move to JS-commons, rename to `ioredisWrapper`, and reuse in JS SDK for Node
 /**
@@ -11,7 +10,7 @@ import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/sto
  * @param {Object} redisOptions  Redis options with the format expected at `settings.storage.options`.
  * @returns {IPluggableStorageWrapper} Storage wrapper instance.
  */
-export default function redisAdapterWrapper(redisOptions: InRedisStorageOptions): IPluggableStorageWrapper {
+export default function redisAdapterWrapper(redisOptions: Record<string, any>): IPluggableStorageWrapper {
 
   let redis: RedisAdapter;
 
@@ -33,7 +32,7 @@ export default function redisAdapterWrapper(redisOptions: InRedisStorageOptions)
       return redis.keys(`${prefix}*`);
     },
     getMany(keys) {
-      return redis.mget(...keys);
+      return keys.length ? redis.mget(keys) : Promise.resolve([]);
     },
     incr(key) {
       return redis.incr(key);
@@ -70,8 +69,8 @@ export default function redisAdapterWrapper(redisOptions: InRedisStorageOptions)
     // @TODO check if connect should be idempotent or not
     connect() {
       return new Promise((res) => {
-        const log = new Logger({ logLevel: 'INFO' });
-        redis = new RedisAdapter(log, redisOptions);
+        // No-op logger to avoid Jest error "Cannot log after tests are done"
+        redis = new RedisAdapter(noopLogger, redisOptions);
 
         redis.on('ready', res);
         // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected.
