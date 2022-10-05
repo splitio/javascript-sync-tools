@@ -1,5 +1,6 @@
+import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { isNaNNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
+import { isIntegerNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
 import { ISynchronizerSettings } from '../../types';
@@ -16,6 +17,13 @@ const params = {
   runtime: () => { return { ip: false, hostname: false }; },
 };
 
+function validatePositiveInteger(log: ILogger, paramName: string, actualValue: any, defaultValue: number) {
+  if (isIntegerNumber(actualValue) && actualValue > 0) return actualValue;
+
+  log.warn(`'${paramName}' parameter must be a positive integer number. Using default value (${defaultValue}) instead.`);
+  return defaultValue;
+}
+
 /**
  * Function to validate Synchronizer config.
  *
@@ -28,23 +36,16 @@ export function synchronizerSettingsValidator(
 
   // @ts-ignore
   const settings = settingsValidation(config, params) as ISettings & ISynchronizerSettings;
+  // @ts-ignore, override readonly prop
+  settings.mode = undefined; // "producer" mode
 
-  const { eventsPerPost, impressionsPerPost, maxRetries } = settings.scheduler;
+  const { scheduler, log } = settings;
 
   // @TODO validate synchronizerMode eventually
-
   // @TODO: validate minimum and maximum value for config params.
-  if (eventsPerPost && (isNaNNumber(eventsPerPost) || eventsPerPost <= 0)) {
-    console.log('`eventsPerPost` parameter must be a positive integer number. Using default value instead.');
-  }
-
-  if (impressionsPerPost && (isNaNNumber(impressionsPerPost) || impressionsPerPost <= 0)) {
-    console.log('`impressionsPerPost` parameter must be a positive integer number. Using default value instead.');
-  }
-
-  if (maxRetries && (isNaNNumber(maxRetries) || maxRetries <= 0)) {
-    console.log('`maxRetries` parameter must be a positive integer number. Using default values instead.');
-  }
+  scheduler.eventsPerPost = validatePositiveInteger(log, 'eventsPerPost', scheduler.eventsPerPost, defaults.scheduler.eventsPerPost);
+  scheduler.impressionsPerPost = validatePositiveInteger(log, 'impressionsPerPost', scheduler.impressionsPerPost, defaults.scheduler.impressionsPerPost);
+  scheduler.maxRetries = validatePositiveInteger(log, 'maxRetries', scheduler.maxRetries, defaults.scheduler.maxRetries);
 
   return settings;
 }

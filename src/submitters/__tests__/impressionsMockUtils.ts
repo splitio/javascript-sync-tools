@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
 import { _getRandomString } from './commonUtils';
@@ -54,11 +53,11 @@ function getRandomiseMetadata(): StoredImpressionWithMetadata {
  * @returns {StoredImpressionWithMetadata}
  */
 function getRandomiseImpression(): StoredImpressionWithMetadata {
-  const { r, k, t, m, b, c } = impressionWithMetadata.i;
+  const { k, t, m, b, r, c } = impressionWithMetadata.i;
   return Object.assign(
     {},
     impressionWithMetadata,
-    { i: { r, k, t, m, b, f: _getRandomString(12), c } }
+    { i: { k, t, m, b, r, c, f: _getRandomString(12) } }
   );
 }
 /**
@@ -79,8 +78,8 @@ export function getImpressionSampleWithNoMetadata(): ImpressionDTO {
  */
 export function getImpressionsListWithSameMetadata(
   len: number,
-  randomiseMetadata: boolean = false,
-  randomiseImpression: boolean = false
+  randomiseMetadata = false,
+  randomiseImpression = false
 ): StoredImpressionWithMetadata[] {
   const _impressionTarget = {
     m: randomiseMetadata ? getRandomiseMetadata().m : impressionWithMetadata.m,

@@ -1,12 +1,9 @@
 import { IFetchSplitChanges } from '@splitsoftware/splitio-commons/src/services/types';
-import { splitChangesFetcherFactory }
-  from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
-import { splitChangesUpdaterFactory }
-  from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
+import { splitChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
+import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { ISplit } from '@splitsoftware/splitio-commons/types/dtos/types';
-import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync }
-  from '@splitsoftware/splitio-commons/types/storages/types';
+import { ISplit } from '@splitsoftware/splitio-commons/src/dtos/types';
+import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
 
@@ -93,13 +90,12 @@ export class SplitsSynchronizer {
    * @param {SplitsCacheInMemory} splitCacheInMemory  Reference to the local InMemoryCache.
    */
   async getDataFromStorage() {
-    const _splitsList: [string, string][] = [];
+    const _splitsList: [string, ISplit][] = [];
     try {
       const splits = await this._splitsStorage.getAll();
 
       splits.forEach((split) => {
-        const name = JSON.parse(split).name;
-        _splitsList.push([name, split]);
+        _splitsList.push([split.name, split]);
       });
 
       this._inMemoryStorage.splits.addSplits(_splitsList);
@@ -140,11 +136,10 @@ export class SplitsSynchronizer {
 
       if (splits.length > 0) {
 
-        const splitsToStore: [string, string][] = [];
-        for (let i = 0; i < splits?.length; i++) {
+        const splitsToStore: [string, ISplit][] = [];
+        for (let i = 0; i < splits.length; i++) {
           const split = splits[i];
-          const { name, changeNumber } = JSON.parse(splits[i]);
-          // const name = JSON.parsesplits[i];
+          const { name, changeNumber } = split;
           const oldSplitDefinition = this._inMemoryStorageSnapshot.splits.getSplit(name);
 
           if (split) {
@@ -153,9 +148,8 @@ export class SplitsSynchronizer {
               splitsToStore.push([name, split]);
               continue;
             }
-            const parsedOldSplitDefinition: ISplit = oldSplitDefinition ? JSON.parse(oldSplitDefinition) : {};
             // If the Split exists and needs to be updated.
-            if (parsedOldSplitDefinition.changeNumber !== changeNumber) {
+            if (oldSplitDefinition.changeNumber !== changeNumber) {
               splitsToStore.push([name, split]);
               continue;
             }

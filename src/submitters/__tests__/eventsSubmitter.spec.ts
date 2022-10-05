@@ -1,7 +1,7 @@
-/* eslint-disable max-len, no-magic-numbers, jsdoc/require-jsdoc */
 import { metadataToHeaders } from '../utils';
-import { eventsSubmitterFactory } from '../synchronizerEventsSubmitter';
+import { eventsSubmitterFactory } from '../eventsSubmitter';
 import { getMultipleEventsSameMetadata } from './eventsMockUtils';
+import { noopLogger } from './commonUtils';
 
 describe('Events Submitter for Lightweight Synchronizer', () => {
   const _postEventsMock = jest.fn(() => Promise.resolve());
@@ -9,10 +9,9 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
     popNWithMetadata: jest.fn(),
     count: jest.fn(),
   };
-  const _fakeLogger = { error: () => {} };
 
   // @ts-ignore
-  const _eventsSubmitter = eventsSubmitterFactory(_postEventsMock, _eventsCacheMock, _fakeLogger);
+  const _eventsSubmitter = eventsSubmitterFactory(noopLogger, _postEventsMock, _eventsCacheMock);
 
   beforeEach(() => {
     _eventsCacheMock.count.mockReturnValue(Promise.resolve(0));
@@ -87,7 +86,7 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
   test('Abort Sync tasks after all [3] set retries attempts fail', async () => {
     const _failPostEventsMock = jest.fn(() => Promise.reject());
     // @ts-ignore
-    const _eventsSubmitterToFail = eventsSubmitterFactory(_failPostEventsMock, _eventsCacheMock, _fakeLogger);
+    const _eventsSubmitterToFail = eventsSubmitterFactory(noopLogger, _failPostEventsMock, _eventsCacheMock);
 
     const _eventsMock = getMultipleEventsSameMetadata(3);
     const _metadata = metadataToHeaders(_eventsMock[0].m);
@@ -105,7 +104,7 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
   test('Abort Sync tasks after all [10] set retries attempts fail', async () => {
     const _failPostEventsMock = jest.fn(() => Promise.reject());
     // @ts-ignore
-    const _eventsSubmitterToFail = eventsSubmitterFactory(_failPostEventsMock, _eventsCacheMock, _fakeLogger, undefined, 10);
+    const _eventsSubmitterToFail = eventsSubmitterFactory(noopLogger, _failPostEventsMock, _eventsCacheMock, undefined, 10);
 
     const _eventsMock = getMultipleEventsSameMetadata(3);
     const _metadata = metadataToHeaders(_eventsMock[0].m);
@@ -134,7 +133,7 @@ describe('Events Submitter for Lightweight Synchronizer', () => {
 
   test('Define specific batch size of [30] Events from storage', async () => {
     // @ts-ignore
-    const _customEventsSubmitter = eventsSubmitterFactory(_postEventsMock, _eventsCacheMock, _fakeLogger, 30);
+    const _customEventsSubmitter = eventsSubmitterFactory(noopLogger, _postEventsMock, _eventsCacheMock, 30);
     _eventsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve([]));
 
     _eventsCacheMock.count

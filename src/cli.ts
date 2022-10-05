@@ -22,6 +22,10 @@ let _sdkApiUrl: string | undefined;
  */
 let _eventsApiUrl: string | undefined;
 /**
+ * The Telemetry API Url.
+ */
+let _telemetryApiUrl: string | undefined;
+/**
  * The API key value.
  */
 let _apikey: string | undefined;
@@ -102,6 +106,12 @@ const yargv = yargs(hideBin(argv))
       type: 'string',
       nargs: 1,
     },
+    l: {
+      alias: 'telemetryApiUrl',
+      describe: 'Set the Split Telemetry API URL',
+      type: 'string',
+      nargs: 1,
+    },
     m: {
       alias: 'mode',
       type: 'string',
@@ -160,6 +170,8 @@ const {
   API_URL,
   eventsApiUrl,
   EVENTS_API_URL,
+  telemetryApiUrl,
+  TELEMETRY_API_URL,
   debug,
   DEBUG,
   // inMemoryOperation,
@@ -205,6 +217,7 @@ switch (mode) {
     _apikey = APIKEY as string;
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
+    _telemetryApiUrl = TELEMETRY_API_URL as string;
     _storagePrefix = STORAGE_PREFIX as string;
     _pluggableStoragePath = STORAGE_PATH as string;
     _impressionsMode = IMPRESSIONS_MODE as string;
@@ -219,6 +232,7 @@ switch (mode) {
     _apikey = env.APIKEY;
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
+    _telemetryApiUrl = env.TELEMETRY_API_URL;
     _storagePrefix = env.STORAGE_PREFIX as string;
     _pluggableStoragePath = env.STORAGE_PATH as string;
     _impressionsMode = env.IMPRESSIONS_MODE as string;
@@ -233,6 +247,7 @@ switch (mode) {
     _apikey = apikey as string;
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
+    _telemetryApiUrl = telemetryApiUrl as string;
     _storagePrefix = prefix as string;
     _pluggableStoragePath = storage as string;
     _impressionsMode = impressionsMode as string;
@@ -269,6 +284,7 @@ const synchronizer = new Synchronizer({
   urls: {
     sdk: _sdkApiUrl,
     events: _eventsApiUrl,
+    telemetry: _telemetryApiUrl,
   },
   storage: {
     type: 'PLUGGABLE',
