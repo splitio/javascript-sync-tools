@@ -1,17 +1,17 @@
-# Split Javascript Sync Tools
+# Split JavaScript Sync Tools
 
 [![npm version](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-sync-tools.svg)](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-sync-tools) [![Build Status](https://github.com/splitio/javascript-sync-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/splitio/javascript-sync-tools/actions/workflows/ci.yml)
 
 ## Overview
-This package includes a set of Javascript synchronization tools built based on the core implementation used by SDKs, allowing users to rely on this tool to synchronize the rollout plan data cache snapshot, as well as send the tracked events and impressions data to the Split cloud when running SDKs in consumer mode.
+This package includes a set of JavaScript synchronization tools built based on the core implementation used by SDKs, allowing users to rely on this tool to synchronize the rollout plan data cache snapshot, as well as send the tracked events and impressions data to the Split cloud when running SDKs in consumer mode.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/splitsoftware.svg?style=social&label=Follow&maxAge=1529000)](https://twitter.com/intent/follow?screen_name=splitsoftware)
 
 ## Compatibility
-Split sync tools supports Node.js version 8 or higher. To run the tools in other Javascript environments, the target environment must support ES6 (ECMAScript 2015) syntax, and provide built-in support or a global polyfill for Promises and Web Fetch API.
+Split sync tools supports Node.js version 8 or higher. To run the tools in other JavaScript environments, the target environment must support ES6 (ECMAScript 2015) syntax, and provide built-in support or a global polyfill for Promises and Web Fetch API.
 
 ## Getting started
-Below is a simple example that describes the execution of the Javascript Synchronizer:
+Below is a simple example that describes the execution of the JavaScript Synchronizer:
 
 1. Install npm package via `npm install @splitsoftware/splitio-sync-tools`
 2. Inside your app, import the `Synchronizer`
@@ -43,7 +43,7 @@ const synchronizer = new Synchronizer({
 synchronizer.execute().then(() => console.log('ready'));
 ```
 
-Please refer to [Javascript Sync Tools](https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools) to learn about all the functionality provided by the package.
+Please refer to [JavaScript Sync Tools](https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools) to learn about all the functionality provided by the package.
 
 ## Submitting issues
 The Split team monitors all issues submitted to this [issue tracker](https://github.com/splitio/javascript-sync-tools/issues). We encourage you to use this issue tracker to submit any bug reports, feedback, and feature enhancements. We'll do our best to respond in a timely manner.
@@ -67,8 +67,8 @@ Split has built and maintains SDKs for:
 * GO [Github](https://github.com/splitio/go-client) [Docs](https://help.split.io/hc/en-us/articles/360020093652-Go-SDK)
 * iOS [Github](https://github.com/splitio/ios-client) [Docs](https://help.split.io/hc/en-us/articles/360020401491-iOS-SDK)
 * Java [Github](https://github.com/splitio/java-client) [Docs](https://help.split.io/hc/en-us/articles/360020405151-Java-SDK)
-* Javascript [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK)
-* Javascript for Browser [Github](https://github.com/splitio/javascript-browser-client) [Docs](https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK)
+* JavaScript [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK)
+* JavaScript for Browser [Github](https://github.com/splitio/javascript-browser-client) [Docs](https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK)
 * Node [Github](https://github.com/splitio/javascript-client) [Docs](https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK)
 * PHP [Github](https://github.com/splitio/php-client) [Docs](https://help.split.io/hc/en-us/articles/360020350372-PHP-SDK)
 * Python [Github](https://github.com/splitio/python-client) [Docs](https://help.split.io/hc/en-us/articles/360020359652-Python-SDK)

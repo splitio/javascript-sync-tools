@@ -1,4 +1,4 @@
-# Javascript Sync Tools
+# JavaScript Sync Tools
 
 ## What did you accomplish?
 

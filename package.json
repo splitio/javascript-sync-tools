@@ -1,7 +1,7 @@
 {
   "name": "@splitsoftware/splitio-sync-tools",
   "version": "0.2.0",
-  "description": "Split Javascript Sync Tools",
+  "description": "Split JavaScript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "files": [
@@ -75,7 +75,7 @@
     "husky": "^6.0.0",
     "ioredis": "^4.28.0",
     "jest": "^27.2.4",
-    "json-server": "^0.16.3",
+    "json-server": "^0.17.3",
     "replace": "^1.2.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.53.3",
