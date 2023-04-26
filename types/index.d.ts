@@ -1,4 +1,4 @@
-// Type definitions for Split Javascript Sync Tools
+// Type definitions for Split JavaScript Sync Tools
 // Project: http://www.split.io/
 // Definitions by: Emiliano Sanchez <https://github.com/EmilianoSanchez/>
 
@@ -6,7 +6,7 @@ export = JsSyncTools;
 
 declare module JsSyncTools {
   /**
-   * Javascript synchronizer tool.
+   * JavaScript synchronizer tool.
    *
    * @see {@link https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools}.
    */

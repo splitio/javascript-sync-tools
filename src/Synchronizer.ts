@@ -184,7 +184,7 @@ export class Synchronizer {
    * Function to prepare for sync tasks. Checks for Fetch API availability and
    * initialize Syncs and Storages.
    *
-   * @returns {Promise<boolean>}
+   * @returns {Promise<boolean>} A promise that resolves to a boolean, indicating if the synchronizer is ready to execute. It will never reject.
    */
   async preExecute(): Promise<boolean> {
     const log = this.settings.log;
@@ -211,10 +211,18 @@ export class Synchronizer {
   }
   /**
    * Function to wrap actions to perform after the sync tasks have been executed.
-   * Currently, it discconects from the Storage.
+   * Currently, it disconects from the Storage.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to a boolean, indicating if the synchronizer has successfully disconnected from the storage. It will never reject.
    */
-  async postExecute(): Promise<void> {
-    await this._storage.destroy();
+  async postExecute(): Promise<boolean> {
+    try {
+      await this._storage.destroy();
+      return true;
+    } catch (error) {
+      this.settings.log.error(`Error when disconnecting Storages: ${error}`);
+      return false;
+    }
   }
   /**
    * Method to start the Synchronizer execution.
@@ -234,10 +242,10 @@ export class Synchronizer {
       await this.executeImpressionsAndEvents(false);
     }
 
-    this.postExecute();
+    const hasPostExecutionSucceded = await this.postExecute();
 
-    this.settings.log.info('Synchronizer: Execution ended');
-    return true;
+    this.settings.log.info(`Synchronizer: Execution ended ${hasPostExecutionSucceded ? 'successfully' : 'unsuccessfully'}`);
+    return hasPostExecutionSucceded;
   }
   // @TODO remove standalone param for cleaner code
   /**
