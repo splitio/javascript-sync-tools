@@ -61,7 +61,7 @@ describe('Synchronizer creation and execution', () => {
 
     beforeAll(() => {
       jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve(true));
-      jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve());
+      jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve(true));
       // @ts-ignore
       executeSplitsAndSegmentsCallSpy = jest.spyOn(synchronizer, 'executeSplitsAndSegments') // @ts-ignore
         .mockImplementation(() => Promise.resolve());

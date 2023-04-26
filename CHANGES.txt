@@ -1,3 +1,7 @@
+0.2.1 (April 27, 2023)
+ - Updated @splitsoftware/splitio-commons and other dependencies for vulnerability fixes and performance improvements.
+ - Bugfixing - Updated `execute` method to await storage destroy promise and handle rejections.
+
 0.2.0 (October 5, 2022)
  - Added support for synchronizing telemetry data, impression counts and unique keys in pluggable storage.
  - Updated impressions POST to Split cloud in order to send a minified payload.
