@@ -215,7 +215,7 @@ export class Synchronizer {
   /**
    * Method to start the Synchronizer execution.
    *
-   * @param {Function} cb Optional error-first callback to be invoked when the operation ends. The callback will be invoked with an error as first argument if the operation fails.
+   * @param {Function?} cb Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
    * @returns {Promise<boolean>}
    */
   async execute(cb?: (err?: any) => void): Promise<boolean> {
