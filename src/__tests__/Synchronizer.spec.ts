@@ -1,7 +1,9 @@
 import { ISynchronizerSettings } from '../../types';
 
 import { Synchronizer } from '../Synchronizer';
-import InMemoryStorage from './pluggableStorage/InMemoryStorage';
+import { inMemoryWrapperFactory } from '@splitsoftware/splitio-commons/src/storages/pluggable/inMemoryWrapper';
+
+const inMemoryWrapper = inMemoryWrapperFactory();
 
 describe('Synchronizer creation and execution', () => {
 
@@ -17,7 +19,7 @@ describe('Synchronizer creation and execution', () => {
     storage: {
       type: 'PLUGGABLE',
       prefix: 'InMemoryWrapper',
-      wrapper: InMemoryStorage,
+      wrapper: inMemoryWrapper,
     },
   };
 
@@ -46,18 +48,34 @@ describe('Synchronizer creation and execution', () => {
     expect(error.message).toBe('Split endpoints health check failed');
   });
 
+  test('Synchronizer execution fails because some synchronization task failed', async () => {
+    // Arrange synchronizer to fail on splits and segments synchronization
+    const synchronizer = new Synchronizer(config);
+    jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
+    let error: any;
+    expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
+    expect(error.message).toBe('Splits and/or segments synchronization failed');
+
+    // Arrange synchronizer to fail on impressions and events synchronization
+    // @ts-expect-error Private method access
+    jest.spyOn(synchronizer, 'executeSplitsAndSegments').mockImplementation(() => Promise.resolve(true)); // @ts-ignore
+    inMemoryWrapper.pushItems('InMemoryWrapper.SPLITIO.events', ['some_event']); // push an event to make the synchronizer attempt to post it and fail
+    expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
+    expect(error.message).toBe('Impressions and/or events synchronization failed');
+  });
+
   describe('Pluggable Storage', () => {
-    it('Instantiates the Synchronizer and [SUCCESSFULLY] initializes Pluggable Storage', async () => {
+    test('Instantiates the Synchronizer and [SUCCESSFULLY] initializes Pluggable Storage', async () => {
       const synchronizer = new Synchronizer(config);
       await expect(synchronizer.initializeStorage()).resolves.toBe(undefined);
     });
 
-    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to invalid wrapper', async () => { // @ts-ignore
+    test('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to invalid wrapper', async () => { // @ts-ignore
       const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } });
       await expect(synchronizer.initializeStorage()).rejects.toThrowError('Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.');
     });
 
-    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to wrapper connection error', async () => {
+    test('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to wrapper connection error', async () => {
       const wrapperWithConnectionError = {
         ...config.storage.wrapper,
         connect: () => { throw new Error('Connection error');},
@@ -70,7 +88,7 @@ describe('Synchronizer creation and execution', () => {
       expect(error.message).toBe('Error when connecting storage. Error: Connection error');
     });
 
-    it('Instantiate the Synchronizer and [FAILS] to release Pluggable Storage due to wrapper disconnection error', async () => {
+    test('Instantiate the Synchronizer and [FAILS] to release Pluggable Storage due to wrapper disconnection error', async () => {
       const wrapperWithConnectionError = {
         ...config.storage.wrapper,
         disconnect: () => Promise.reject(new Error('Disconnection error')),
@@ -105,7 +123,7 @@ describe('Synchronizer creation and execution', () => {
       jest.clearAllMocks();
     });
 
-    it('runs [ALL] Synchronizer tasks.', async () => {
+    test('runs [ALL] Synchronizer tasks.', async () => {
       // @ts-ignore
       synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_ALL';
 
@@ -114,7 +132,7 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
     });
 
-    it('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
+    test('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
       // @ts-ignore
       synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
 
@@ -123,7 +141,7 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(0);
     });
 
-    it('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
+    test('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
       // @ts-ignore
       synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
 
@@ -132,4 +150,5 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
     });
   });
+
 });
