@@ -18,10 +18,11 @@ declare module JsSyncTools {
     constructor(config: ISynchronizerSettings);
     /**
      * Execute synchronization
+     * @param cb Optional error-first callback to be invoked when the operation ends. The callback will be invoked with an error as first argument if the operation fails.
      * @return {Promise<boolean>} A promise that resolves when the operation ends,
      * with a boolean indicating if operation succeeded or not. The promise never rejects.
      */
-    execute(): Promise<boolean>;
+    execute(cb?: (err?: Error) => void): Promise<boolean>;
     // @TODO expose settings eventually
     // settings: ISettings
   }

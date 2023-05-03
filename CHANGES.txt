@@ -1,4 +1,5 @@
-0.2.1 (April 27, 2023)
+0.3.0 (May 4, 2023)
+ - Added an optional error-first callback parameter to `execute` method, to be called when the synchronization is finished, with an error object if the synchronization finished unsuccessfully.
  - Updated @splitsoftware/splitio-commons and other dependencies for vulnerability fixes and performance improvements.
  - Bugfixing - Updated `execute` method to await storage destroy promise and handle rejections.
 

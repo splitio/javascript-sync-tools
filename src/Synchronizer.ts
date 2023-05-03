@@ -104,21 +104,19 @@ export class Synchronizer {
       await this._splitApi.getEventsAPIHealthCheck();
   }
   /**
-   * Function to set a storage. Returns a Promise that will never be rejected.
+   * Function to set a storage.
    *
-   * @returns {Promise<boolean>}
+   * @returns {Promise<void>} A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
    */
-  initializeStorages(): Promise<boolean> {
-    return new Promise<boolean>((res, rej) => {
+  initializeStorage(): Promise<void> {
+    return new Promise<void>((res, rej) => {
       // @ts-ignore
       this._storage = synchronizerStorageFactory(
         this.settings,
-        (error) => error ? rej() : res(true)
+        (error) => error ? rej(error) : res()
       );
-      return true;
     }).catch((error) => {
-      this.settings.log.error(`Error when initializing Storages: ${error}`);
-      return false;
+      throw new Error(`Error when connecting storage. ${error}`);
     });
   }
   /**
@@ -181,71 +179,70 @@ export class Synchronizer {
     );
   }
   /**
-   * Function to prepare for sync tasks. Checks for Fetch API availability and
-   * initialize Syncs and Storages.
+   * Function to prepare for sync tasks. Checks for Fetch API availability and initialize Syncs and Storages.
    *
-   * @returns {Promise<boolean>} A promise that resolves to a boolean, indicating if the synchronizer is ready to execute. It will never reject.
+   * @returns {Promise<void>} A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
+   * for example, if the Fetch API is not available, Split API are not available, or Storage connection fails.
    */
-  async preExecute(): Promise<boolean> {
+  async preExecute(): Promise<void> {
     const log = this.settings.log;
-    if (Synchronizer._getFetch() === undefined) {
-      log.error('Global fetch API is not available');
-      return false;
-    }
+    if (!Synchronizer._getFetch()) throw new Error('Global Fetch API is not available');
     log.info('Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
-    if (!areAPIsReady) return false;
+    if (!areAPIsReady) throw new Error('Split endpoints health check failed');
     log.info('Split API and Events API ready');
 
-    const isStorageReady = await this.initializeStorages();
-    if (!isStorageReady) {
-      log.error('Pluggable Storage not ready');
-      return false;
-    }
+    await this.initializeStorage();
+
     log.info('Storage setup ready');
 
     this.initializeSynchronizers();
-
-    return true;
   }
   /**
    * Function to wrap actions to perform after the sync tasks have been executed.
    * Currently, it disconects from the Storage.
    *
-   * @returns {Promise<boolean>} A promise that resolves to a boolean, indicating if the synchronizer has successfully disconnected from the storage. It will never reject.
+   * @returns {Promise<void>} A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
    */
-  async postExecute(): Promise<boolean> {
+  async postExecute(): Promise<void> {
     try {
       await this._storage.destroy();
-      return true;
     } catch (error) {
-      this.settings.log.error(`Error when disconnecting Storages: ${error}`);
-      return false;
+      throw new Error(`Error when disconnecting storage. ${error}`);
     }
   }
   /**
    * Method to start the Synchronizer execution.
    *
-   * @returns {boolean}
+   * @param {Function} cb Optional error-first callback to be invoked when the operation ends. The callback will be invoked with an error as first argument if the operation fails.
+   * @returns {Promise<boolean>}
    */
-  async execute(): Promise<boolean> {
-    // @ts-ignore @TODO define synchronizerMode config param
-    const mode = this.settings.scheduler.synchronizerMode || 'MODE_RUN_ALL';
-    const hasPreExecutionSucceded = await this.preExecute();
-    if (!hasPreExecutionSucceded) return false;
+  async execute(cb?: (err?: any) => void): Promise<boolean> {
+    try {
+      // @ts-ignore @TODO define synchronizerMode config param
+      const mode = this.settings.scheduler.synchronizerMode || 'MODE_RUN_ALL';
 
-    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
-      await this.executeSplitsAndSegments(false);
+      await this.preExecute();
+
+
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
+        await this.executeSplitsAndSegments(false);
+      }
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
+        await this.executeImpressionsAndEvents(false);
+      }
+
+      await this.postExecute();
+
+      this.settings.log.info('Synchronizer: Execution ended successfully');
+      cb && cb();
+      return true;
+    } catch (error) {
+      this.settings.log.error(`Synchronizer: Execution ended unsuccessfully with error: ${error}`);
+      cb && cb(error);
+      return false;
     }
-    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
-      await this.executeImpressionsAndEvents(false);
-    }
-
-    const hasPostExecutionSucceded = await this.postExecute();
-
-    this.settings.log.info(`Synchronizer: Execution ended ${hasPostExecutionSucceded ? 'successfully' : 'unsuccessfully'}`);
-    return hasPostExecutionSucceded;
   }
   // @TODO remove standalone param for cleaner code
   /**

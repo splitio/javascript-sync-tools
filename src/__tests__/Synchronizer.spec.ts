@@ -21,35 +21,66 @@ describe('Synchronizer creation and execution', () => {
     },
   };
 
-  describe('Synchronizer creation fails because no node-fetch global is present', () => {
-    const synchronizer = new Synchronizer(config);
+  test('Synchronizer execution fails because no Fetch API is present', async () => {
+    // Create a synchronizer with a mocked _getFetch function that returns undefined
+    const originalGetFetch = Synchronizer._getFetch;
     const _getFetchMock = jest.fn().mockReturnValue(undefined);
     Synchronizer._getFetch = _getFetchMock;
+    const synchronizer = new Synchronizer(config);
 
-    it('and execution returns false', async () => {
-      expect(await synchronizer.execute()).toBe(false);
-    });
-    it('_getFetch function returns undefined', () => {
-      expect(Synchronizer._getFetch).toHaveBeenCalled();
-    });
+    let error: any;
+    const result = synchronizer.execute((e) => { error = e; });
+    // Restore the original _getFetch function synchronously
+    Synchronizer._getFetch = originalGetFetch;
+
+    expect(await result).toBe(false);
+    expect(error.message).toBe('Global Fetch API is not available');
+
+    expect(_getFetchMock).toBeCalled();
   });
 
-  describe('Synchronizer execution halt because APIs check failed', () => {
-    it('Fails to execute Synchronizer because APIs are not available', async () => {
-      const synchronizer = new Synchronizer(config);
-      expect(await synchronizer._checkEndpointHealth()).toBe(false);
-    });
+  test('Synchronizer execution fails because APIs check failed', async () => {
+    const synchronizer = new Synchronizer(config);
+    let error: any;
+    expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
+    expect(error.message).toBe('Split endpoints health check failed');
   });
 
-  describe('Pluggable Storage initialization', () => {
+  describe('Pluggable Storage', () => {
     it('Instantiates the Synchronizer and [SUCCESSFULLY] initializes Pluggable Storage', async () => {
       const synchronizer = new Synchronizer(config);
-      expect(await synchronizer.initializeStorages()).toBe(true);
+      await expect(synchronizer.initializeStorage()).resolves.toBe(undefined);
     });
 
-    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage', async () => { // @ts-ignore
+    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to invalid wrapper', async () => { // @ts-ignore
       const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } });
-      expect(await synchronizer.initializeStorages()).toBe(false);
+      await expect(synchronizer.initializeStorage()).rejects.toThrowError('Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.');
+    });
+
+    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to wrapper connection error', async () => {
+      const wrapperWithConnectionError = {
+        ...config.storage.wrapper,
+        connect: () => { throw new Error('Connection error');},
+      };
+      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
+
+      jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
+      let error: any;
+      await expect(synchronizer.execute((e) => { error = e; })).resolves.toBe(false);
+      expect(error.message).toBe('Error when connecting storage. Error: Connection error');
+    });
+
+    it('Instantiate the Synchronizer and [FAILS] to release Pluggable Storage due to wrapper disconnection error', async () => {
+      const wrapperWithConnectionError = {
+        ...config.storage.wrapper,
+        disconnect: () => Promise.reject(new Error('Disconnection error')),
+      };
+      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
+
+      jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
+      let error: any;
+      await expect(synchronizer.execute((e) => { error = e; })).resolves.toBe(false);
+      expect(error.message).toBe('Error when disconnecting storage. Error: Disconnection error');
     });
   });
 
@@ -60,8 +91,8 @@ describe('Synchronizer creation and execution', () => {
     let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
     beforeAll(() => {
-      jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve(true));
-      jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve(true));
+      jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve());
+      jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve());
       // @ts-ignore
       executeSplitsAndSegmentsCallSpy = jest.spyOn(synchronizer, 'executeSplitsAndSegments') // @ts-ignore
         .mockImplementation(() => Promise.resolve());
