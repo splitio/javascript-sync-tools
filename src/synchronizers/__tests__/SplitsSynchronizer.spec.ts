@@ -101,7 +101,7 @@ describe('Splits Synchronizer', () => {
         await _splitsSynchronizer.getDataFromStorage();
       });
 
-      it('retrieves [SPLITS] stored from Storage into InMemory cache', () => {
+      test('retrieves [SPLITS] stored from Storage into InMemory cache', () => {
         const splitsNames = _splitsSynchronizer._inMemoryStorage.splits
           .getAll()
           .map((split) => JSON.parse(split).name);
@@ -110,7 +110,7 @@ describe('Splits Synchronizer', () => {
         expect(_splitsSynchronizer._inMemoryStorage.splits.getChangeNumber()).toBe(1);
       });
 
-      it('retrieves [SEGMENTS] stored from Storage into InMemory cache', () => {
+      test('retrieves [SEGMENTS] stored from Storage into InMemory cache', () => {
         expect(_splitsSynchronizer._inMemoryStorage.segments.getRegisteredSegments()).toEqual(['aSegment']);
       });
     });
@@ -132,7 +132,7 @@ describe('Splits Synchronizer', () => {
         ]);
       });
 
-      it('compares the updated InMemory cache with previous snapshot and removes [1] unusued split', async () => {
+      test('compares the updated InMemory cache with previous snapshot and removes [1] unusued split', async () => {
         const result = await _splitsSynchronizer.processDifferences();
 
         expect(result).toBe(1);
@@ -153,12 +153,12 @@ describe('Splits Synchronizer', () => {
         await _splitsSynchronizer.putDataToStorage();
       });
 
-      it('has stored [SPLITS] data from InMemory cache to Storage.', async () => {
+      test('has stored [SPLITS] data from InMemory cache to Storage.', async () => {
         expect(await _splitStorageMock.getSplitNames()).toStrictEqual(['pepito1', 'pepito2', 'pepito3']);
         expect(await _splitStorageMock.getChangeNumber()).toBe(12);
       });
 
-      it('has stored [SEGMENTS] data from InMemory cache to Storage', async () => {
+      test('has stored [SEGMENTS] data from InMemory cache to Storage', async () => {
         expect(await _segmentsStorageMock.getRegisteredSegments()).toEqual(['aSegment', 'anotherSegment']);
       });
     });

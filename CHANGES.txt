@@ -1,6 +1,8 @@
-0.2.1 (April 27, 2023)
+0.3.0 (May 4, 2023)
+ - Added an optional error-first callback parameter to `execute` method, to be called when the synchronization is finished, with an error object if it finished unsuccessfully.
  - Updated @splitsoftware/splitio-commons and other dependencies for vulnerability fixes and performance improvements.
- - Bugfixing - Updated `execute` method to await storage destroy promise and handle rejections.
+ - Bugfixing - Fixed `execute` method to ensure the returned promise resolves to `false` if any synchronization task fails (i.e., synchronization of splits, segments, impressions or events).
+ - Bugfixing - Fixed `execute` method to await storage destroy promise and handle rejections.
 
 0.2.0 (October 5, 2022)
  - Added support for synchronizing telemetry data, impression counts and unique keys in pluggable storage.

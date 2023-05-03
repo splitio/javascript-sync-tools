@@ -29,39 +29,39 @@ export class Synchronizer {
   /**
    * The local reference to the Synchronizer's Storage.
    */
-  _storage!: IStorageAsync;
+  private _storage!: IStorageAsync;
   /**
    * The local reference to the Synchronizer's SplitAPI instance.
    */
-  _splitApi: ISplitApi;
+  private _splitApi: ISplitApi;
   /**
    * The local reference to the SegmentsUpdater instance from @splitio/javascript-commons.
    */
-  _segmentsSynchronizer!: SegmentsSynchronizer;
+  private _segmentsSynchronizer!: SegmentsSynchronizer;
   /**
    * The local reference to the SplitUpdater instance from @splitio/javascript-commons.
    */
-  _splitsSynchronizer!: SplitsSynchronizer;
+  private _splitsSynchronizer!: SplitsSynchronizer;
   /**
    * The local reference to the EventsSynchronizer class.
    */
-  _eventsSubmitter!: () => Promise<boolean>;
+  private _eventsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsSynchronizer class.
    */
-  _impressionsSubmitter!: () => Promise<boolean>;
+  private _impressionsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsCountSynchronizer class.
    */
-  _impressionCountsSubmitter?: () => Promise<boolean>;
+  private _impressionCountsSubmitter?: () => Promise<boolean>;
   /**
    * The local reference to the unique keys submitter.
    */
-  _uniqueKeysSubmitter?: () => Promise<boolean>;
+  private _uniqueKeysSubmitter?: () => Promise<boolean>;
   /**
    * The local reference to the telemetry submitter.
    */
-  _telemetrySubmitter?: () => Promise<boolean>;
+  private _telemetrySubmitter?: () => Promise<boolean>;
 
   /**
    * The local reference to the Synchronizer's settings configurations.
@@ -70,7 +70,7 @@ export class Synchronizer {
   /**
    * The local reference for the Impression Observer.
    */
-  _observer: ImpressionObserver;
+  private _observer: ImpressionObserver;
 
   /**
    * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
@@ -99,32 +99,30 @@ export class Synchronizer {
    *
    * @returns {Promise<boolean>}
    */
-  async _checkEndpointHealth(): Promise<boolean> {
+  private async _checkEndpointHealth(): Promise<boolean> {
     return await this._splitApi.getSdkAPIHealthCheck() &&
       await this._splitApi.getEventsAPIHealthCheck();
   }
   /**
-   * Function to set a storage. Returns a Promise that will never be rejected.
+   * Function to set a storage.
    *
-   * @returns {Promise<boolean>}
+   * @returns {Promise<void>} A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
    */
-  initializeStorages(): Promise<boolean> {
-    return new Promise<boolean>((res, rej) => {
+  private initializeStorage(): Promise<void> {
+    return new Promise<void>((res, rej) => {
       // @ts-ignore
       this._storage = synchronizerStorageFactory(
         this.settings,
-        (error) => error ? rej() : res(true)
+        (error) => error ? rej(error) : res()
       );
-      return true;
     }).catch((error) => {
-      this.settings.log.error(`Error when initializing Storages: ${error}`);
-      return false;
+      throw new Error(`Error when connecting storage. ${error}`);
     });
   }
   /**
    * Function to set all the required Synchronizers.
    */
-  initializeSynchronizers() {
+  private initializeSynchronizers() {
     // @todo: Add Cli paramater to define impressionsMode.
     const countsCache = this.settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
@@ -181,119 +179,130 @@ export class Synchronizer {
     );
   }
   /**
-   * Function to prepare for sync tasks. Checks for Fetch API availability and
-   * initialize Syncs and Storages.
+   * Function to prepare for sync tasks. Checks for Fetch API availability and initialize Syncs and Storages.
    *
-   * @returns {Promise<boolean>} A promise that resolves to a boolean, indicating if the synchronizer is ready to execute. It will never reject.
+   * @returns {Promise<void>} A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
+   * for example, if the Fetch API is not available, Split API are not available, or Storage connection fails.
    */
-  async preExecute(): Promise<boolean> {
+  private async preExecute(): Promise<void> {
     const log = this.settings.log;
-    if (Synchronizer._getFetch() === undefined) {
-      log.error('Global fetch API is not available');
-      return false;
-    }
+    if (!Synchronizer._getFetch()) throw new Error('Global Fetch API is not available');
     log.info('Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
-    if (!areAPIsReady) return false;
+    if (!areAPIsReady) throw new Error('Split endpoints health check failed');
     log.info('Split API and Events API ready');
 
-    const isStorageReady = await this.initializeStorages();
-    if (!isStorageReady) {
-      log.error('Pluggable Storage not ready');
-      return false;
-    }
+    await this.initializeStorage();
+
     log.info('Storage setup ready');
 
     this.initializeSynchronizers();
-
-    return true;
   }
   /**
    * Function to wrap actions to perform after the sync tasks have been executed.
    * Currently, it disconects from the Storage.
    *
-   * @returns {Promise<boolean>} A promise that resolves to a boolean, indicating if the synchronizer has successfully disconnected from the storage. It will never reject.
+   * @returns {Promise<void>} A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
    */
-  async postExecute(): Promise<boolean> {
+  private async postExecute(): Promise<void> {
     try {
       await this._storage.destroy();
-      return true;
     } catch (error) {
-      this.settings.log.error(`Error when disconnecting Storages: ${error}`);
-      return false;
+      throw new Error(`Error when disconnecting storage. ${error}`);
     }
   }
   /**
    * Method to start the Synchronizer execution.
    *
-   * @returns {boolean}
+   * @param {Function?} cb Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
+   * @returns {Promise<boolean>}
    */
-  async execute(): Promise<boolean> {
-    // @ts-ignore @TODO define synchronizerMode config param
-    const mode = this.settings.scheduler.synchronizerMode || 'MODE_RUN_ALL';
-    const hasPreExecutionSucceded = await this.preExecute();
-    if (!hasPreExecutionSucceded) return false;
+  async execute(cb?: (err?: any) => void): Promise<boolean> {
+    try {
+      // @ts-ignore @TODO define synchronizerMode config param
+      const mode = this.settings.scheduler.synchronizerMode || 'MODE_RUN_ALL';
 
-    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
-      await this.executeSplitsAndSegments(false);
+      await this.preExecute();
+
+      let errorMessage;
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
+        if (!await this.executeSplitsAndSegments(false)) errorMessage = 'Splits and/or segments synchronization failed';
+      }
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
+        if (!await this.executeImpressionsAndEvents(false)) errorMessage = 'Impressions and/or events synchronization failed';
+      }
+
+      // Disconnect from storage before throwing synchronization error
+      await this.postExecute();
+      if (errorMessage) throw new Error(errorMessage);
+
+      this.settings.log.info('Synchronizer: Execution ended successfully');
+      cb && cb();
+      return true;
+    } catch (error) {
+      this.settings.log.error(`Synchronizer: Execution ended unsuccessfully with error: ${error}`);
+      cb && cb(error);
+      return false;
     }
-    if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
-      await this.executeImpressionsAndEvents(false);
-    }
-
-    const hasPostExecutionSucceded = await this.postExecute();
-
-    this.settings.log.info(`Synchronizer: Execution ended ${hasPostExecutionSucceded ? 'successfully' : 'unsuccessfully'}`);
-    return hasPostExecutionSucceded;
   }
   // @TODO remove standalone param for cleaner code
   /**
    * Function to wrap the execution of the Split and Segment's synchronizers.
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
+   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if splits and segments were successfully fetched and stored.
    */
   private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
     // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
-    const isSplitsSyncReady = await this._splitsSynchronizer.getSplitChanges();
+    const isSplitsSyncSuccessfull = await this._splitsSynchronizer.getSplitChanges();
 
-    this.settings.log.debug(`Splits Synchronizer task: ${isSplitsSyncReady ? 'Successful' : 'Unsuccessful'}`);
-    const isSegmentsSyncReady = await this._segmentsSynchronizer.getSegmentsChanges();
-    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncReady ? 'Successful' : 'Unsuccessful'}`);
+    this.settings.log.debug(`Splits Synchronizer task: ${isSplitsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    const isSegmentsSyncSuccessfull = await this._segmentsSynchronizer.getSegmentsChanges();
+    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
 
     if (standalone) await this.postExecute();
+
+    return isSplitsSyncSuccessfull && isSegmentsSyncSuccessfull;
   }
   /**
    * Function to wrap the execution of the Impressions and Event's synchronizers.
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
+   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if impressions and events were successfully popped from the storage and sent to Split.
    */
   private async executeImpressionsAndEvents(standalone = true) {
     const log = this.settings.log;
     if (standalone) await this.preExecute();
 
+    const isEventsSyncSuccessfull = await this._eventsSubmitter();
+    log.debug(`Events Synchronizer task: ${isEventsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    const isImpressionsSyncSuccessfull = await this._impressionsSubmitter();
+    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
 
-    const isEventsSyncReady = await this._eventsSubmitter();
-    log.debug(`Events Synchronizer task: ${isEventsSyncReady ? 'Successful' : 'Unsuccessful'}`);
-    const isImpressionsSyncReady = await this._impressionsSubmitter();
-    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncReady ? 'Successful' : 'Unsuccessful'}`);
+    let isSyncSuccessfull = isEventsSyncSuccessfull && isImpressionsSyncSuccessfull;
 
     if (this._impressionCountsSubmitter) {
-      const isImpressionCountsSyncReady = await this._impressionCountsSubmitter();
-      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncReady ? 'Successful' : 'Unsuccessful'}`);
+      const isImpressionCountsSyncSuccessfull = await this._impressionCountsSubmitter();
+      isSyncSuccessfull = isSyncSuccessfull && isImpressionCountsSyncSuccessfull;
+      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
     }
 
     if (this._uniqueKeysSubmitter) {
-      const isUniqueKeysSyncReady = await this._uniqueKeysSubmitter();
-      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncReady ? 'Successful' : 'Unsuccessful'}`);
+      const isUniqueKeysSyncSuccessfull = await this._uniqueKeysSubmitter();
+      isSyncSuccessfull = isSyncSuccessfull && isUniqueKeysSyncSuccessfull;
+      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
     }
 
     if (this._telemetrySubmitter) {
-      const isTelemetrySyncReady = await this._telemetrySubmitter();
-      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncReady ? 'Successful' : 'Unsuccessful'}`);
+      const isTelemetrySyncSuccessfull = await this._telemetrySubmitter();
+      // if telemetry sync fails, we don't return false, since it's not a critical operation
+      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
     }
+
+    return isSyncSuccessfull;
   }
   /**
    * Function to set the Fetch function to perform the requests. It can be provided through
