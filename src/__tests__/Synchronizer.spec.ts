@@ -50,7 +50,7 @@ describe('Synchronizer creation and execution', () => {
 
   test('Synchronizer execution fails because some synchronization task failed', async () => {
     // Arrange synchronizer to fail on splits and segments synchronization
-    const synchronizer = new Synchronizer(config);
+    const synchronizer = new Synchronizer(config); // @ts-expect-error Private method access
     jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
     let error: any;
     expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
@@ -66,12 +66,12 @@ describe('Synchronizer creation and execution', () => {
 
   describe('Pluggable Storage', () => {
     test('Instantiates the Synchronizer and [SUCCESSFULLY] initializes Pluggable Storage', async () => {
-      const synchronizer = new Synchronizer(config);
+      const synchronizer = new Synchronizer(config); // @ts-expect-error Private method access
       await expect(synchronizer.initializeStorage()).resolves.toBe(undefined);
     });
 
     test('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to invalid wrapper', async () => { // @ts-ignore
-      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } });
+      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } }); // @ts-expect-error Private method access
       await expect(synchronizer.initializeStorage()).rejects.toThrowError('Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.');
     });
 
@@ -82,6 +82,7 @@ describe('Synchronizer creation and execution', () => {
       };
       const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
 
+      // @ts-expect-error Private method access
       jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
       let error: any;
       await expect(synchronizer.execute((e) => { error = e; })).resolves.toBe(false);
@@ -95,6 +96,7 @@ describe('Synchronizer creation and execution', () => {
       };
       const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
 
+      // @ts-expect-error Private method access
       jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
       let error: any;
       await expect(synchronizer.execute((e) => { error = e; })).resolves.toBe(false);
@@ -108,8 +110,8 @@ describe('Synchronizer creation and execution', () => {
     let executeSplitsAndSegmentsCallSpy: jest.SpyInstance;
     let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
-    beforeAll(() => {
-      jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve());
+    beforeAll(() => { // @ts-expect-error Private method access
+      jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve()); // @ts-expect-error Private method access
       jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve());
       // @ts-ignore
       executeSplitsAndSegmentsCallSpy = jest.spyOn(synchronizer, 'executeSplitsAndSegments') // @ts-ignore

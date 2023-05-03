@@ -29,39 +29,39 @@ export class Synchronizer {
   /**
    * The local reference to the Synchronizer's Storage.
    */
-  _storage!: IStorageAsync;
+  private _storage!: IStorageAsync;
   /**
    * The local reference to the Synchronizer's SplitAPI instance.
    */
-  _splitApi: ISplitApi;
+  private _splitApi: ISplitApi;
   /**
    * The local reference to the SegmentsUpdater instance from @splitio/javascript-commons.
    */
-  _segmentsSynchronizer!: SegmentsSynchronizer;
+  private _segmentsSynchronizer!: SegmentsSynchronizer;
   /**
    * The local reference to the SplitUpdater instance from @splitio/javascript-commons.
    */
-  _splitsSynchronizer!: SplitsSynchronizer;
+  private _splitsSynchronizer!: SplitsSynchronizer;
   /**
    * The local reference to the EventsSynchronizer class.
    */
-  _eventsSubmitter!: () => Promise<boolean>;
+  private _eventsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsSynchronizer class.
    */
-  _impressionsSubmitter!: () => Promise<boolean>;
+  private _impressionsSubmitter!: () => Promise<boolean>;
   /**
    * The local reference to the ImpressionsCountSynchronizer class.
    */
-  _impressionCountsSubmitter?: () => Promise<boolean>;
+  private _impressionCountsSubmitter?: () => Promise<boolean>;
   /**
    * The local reference to the unique keys submitter.
    */
-  _uniqueKeysSubmitter?: () => Promise<boolean>;
+  private _uniqueKeysSubmitter?: () => Promise<boolean>;
   /**
    * The local reference to the telemetry submitter.
    */
-  _telemetrySubmitter?: () => Promise<boolean>;
+  private _telemetrySubmitter?: () => Promise<boolean>;
 
   /**
    * The local reference to the Synchronizer's settings configurations.
@@ -70,7 +70,7 @@ export class Synchronizer {
   /**
    * The local reference for the Impression Observer.
    */
-  _observer: ImpressionObserver;
+  private _observer: ImpressionObserver;
 
   /**
    * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
@@ -99,7 +99,7 @@ export class Synchronizer {
    *
    * @returns {Promise<boolean>}
    */
-  async _checkEndpointHealth(): Promise<boolean> {
+  private async _checkEndpointHealth(): Promise<boolean> {
     return await this._splitApi.getSdkAPIHealthCheck() &&
       await this._splitApi.getEventsAPIHealthCheck();
   }
@@ -108,7 +108,7 @@ export class Synchronizer {
    *
    * @returns {Promise<void>} A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
    */
-  initializeStorage(): Promise<void> {
+  private initializeStorage(): Promise<void> {
     return new Promise<void>((res, rej) => {
       // @ts-ignore
       this._storage = synchronizerStorageFactory(
@@ -122,7 +122,7 @@ export class Synchronizer {
   /**
    * Function to set all the required Synchronizers.
    */
-  initializeSynchronizers() {
+  private initializeSynchronizers() {
     // @todo: Add Cli paramater to define impressionsMode.
     const countsCache = this.settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
@@ -184,7 +184,7 @@ export class Synchronizer {
    * @returns {Promise<void>} A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
    * for example, if the Fetch API is not available, Split API are not available, or Storage connection fails.
    */
-  async preExecute(): Promise<void> {
+  private async preExecute(): Promise<void> {
     const log = this.settings.log;
     if (!Synchronizer._getFetch()) throw new Error('Global Fetch API is not available');
     log.info('Synchronizer: Execute');
@@ -205,7 +205,7 @@ export class Synchronizer {
    *
    * @returns {Promise<void>} A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
    */
-  async postExecute(): Promise<void> {
+  private async postExecute(): Promise<void> {
     try {
       await this._storage.destroy();
     } catch (error) {
