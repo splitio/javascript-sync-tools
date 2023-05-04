@@ -1,7 +1,9 @@
 import { ISynchronizerSettings } from '../../types';
 
 import { Synchronizer } from '../Synchronizer';
-import InMemoryStorage from './pluggableStorage/InMemoryStorage';
+import { inMemoryWrapperFactory } from '@splitsoftware/splitio-commons/src/storages/pluggable/inMemoryWrapper';
+
+const inMemoryWrapper = inMemoryWrapperFactory();
 
 describe('Synchronizer creation and execution', () => {
 
@@ -17,39 +19,88 @@ describe('Synchronizer creation and execution', () => {
     storage: {
       type: 'PLUGGABLE',
       prefix: 'InMemoryWrapper',
-      wrapper: InMemoryStorage,
+      wrapper: inMemoryWrapper,
     },
   };
 
-  describe('Synchronizer creation fails because no node-fetch global is present', () => {
-    const synchronizer = new Synchronizer(config);
+  test('Synchronizer execution fails because no Fetch API is present', async () => {
+    // Create a synchronizer with a mocked _getFetch function that returns undefined
+    const originalGetFetch = Synchronizer._getFetch;
     const _getFetchMock = jest.fn().mockReturnValue(undefined);
     Synchronizer._getFetch = _getFetchMock;
+    const synchronizer = new Synchronizer(config);
 
-    it('and execution returns false', async () => {
-      expect(await synchronizer.execute()).toBe(false);
-    });
-    it('_getFetch function returns undefined', () => {
-      expect(Synchronizer._getFetch).toHaveBeenCalled();
-    });
+    let error: any;
+    const result = synchronizer.execute((e) => { error = e; });
+    // Restore the original _getFetch function synchronously
+    Synchronizer._getFetch = originalGetFetch;
+
+    expect(await result).toBe(false);
+    expect(error.message).toBe('Global Fetch API is not available');
+
+    expect(_getFetchMock).toBeCalled();
   });
 
-  describe('Synchronizer execution halt because APIs check failed', () => {
-    it('Fails to execute Synchronizer because APIs are not available', async () => {
-      const synchronizer = new Synchronizer(config);
-      expect(await synchronizer._checkEndpointHealth()).toBe(false);
-    });
+  test('Synchronizer execution fails because APIs check failed', async () => {
+    const synchronizer = new Synchronizer(config);
+    let error: any;
+    expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
+    expect(error.message).toBe('Split endpoints health check failed');
   });
 
-  describe('Pluggable Storage initialization', () => {
-    it('Instantiates the Synchronizer and [SUCCESSFULLY] initializes Pluggable Storage', async () => {
-      const synchronizer = new Synchronizer(config);
-      expect(await synchronizer.initializeStorages()).toBe(true);
+  test('Synchronizer execution fails because some synchronization task failed', async () => {
+    // Arrange synchronizer to fail on splits and segments synchronization
+    const synchronizer = new Synchronizer(config); // @ts-expect-error Private method access
+    jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
+    let error: any;
+    expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
+    expect(error.message).toBe('Splits and/or segments synchronization failed');
+
+    // Arrange synchronizer to fail on impressions and events synchronization
+    // @ts-expect-error Private method access
+    jest.spyOn(synchronizer, 'executeSplitsAndSegments').mockImplementation(() => Promise.resolve(true)); // @ts-ignore
+    inMemoryWrapper.pushItems('InMemoryWrapper.SPLITIO.events', ['some_event']); // push an event to make the synchronizer attempt to post it and fail
+    expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
+    expect(error.message).toBe('Impressions and/or events synchronization failed');
+  });
+
+  describe('Pluggable Storage', () => {
+    test('Instantiates the Synchronizer and [SUCCESSFULLY] initializes Pluggable Storage', async () => {
+      const synchronizer = new Synchronizer(config); // @ts-expect-error Private method access
+      await expect(synchronizer.initializeStorage()).resolves.toBe(undefined);
     });
 
-    it('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage', async () => { // @ts-ignore
-      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } });
-      expect(await synchronizer.initializeStorages()).toBe(false);
+    test('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to invalid wrapper', async () => { // @ts-ignore
+      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: undefined } }); // @ts-expect-error Private method access
+      await expect(synchronizer.initializeStorage()).rejects.toThrowError('Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.');
+    });
+
+    test('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to wrapper connection error', async () => {
+      const wrapperWithConnectionError = {
+        ...config.storage.wrapper,
+        connect: () => { throw new Error('Connection error');},
+      };
+      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
+
+      // @ts-expect-error Private method access
+      jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
+      let error: any;
+      await expect(synchronizer.execute((e) => { error = e; })).resolves.toBe(false);
+      expect(error.message).toBe('Error when connecting storage. Error: Connection error');
+    });
+
+    test('Instantiate the Synchronizer and [FAILS] to release Pluggable Storage due to wrapper disconnection error', async () => {
+      const wrapperWithConnectionError = {
+        ...config.storage.wrapper,
+        disconnect: () => Promise.reject(new Error('Disconnection error')),
+      };
+      const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
+
+      // @ts-expect-error Private method access
+      jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
+      let error: any;
+      await expect(synchronizer.execute((e) => { error = e; })).resolves.toBe(false);
+      expect(error.message).toBe('Error when disconnecting storage. Error: Disconnection error');
     });
   });
 
@@ -59,8 +110,8 @@ describe('Synchronizer creation and execution', () => {
     let executeSplitsAndSegmentsCallSpy: jest.SpyInstance;
     let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
-    beforeAll(() => {
-      jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve(true));
+    beforeAll(() => { // @ts-expect-error Private method access
+      jest.spyOn(synchronizer, 'preExecute').mockImplementation(() => Promise.resolve()); // @ts-expect-error Private method access
       jest.spyOn(synchronizer, 'postExecute').mockImplementation(() => Promise.resolve());
       // @ts-ignore
       executeSplitsAndSegmentsCallSpy = jest.spyOn(synchronizer, 'executeSplitsAndSegments') // @ts-ignore
@@ -74,7 +125,7 @@ describe('Synchronizer creation and execution', () => {
       jest.clearAllMocks();
     });
 
-    it('runs [ALL] Synchronizer tasks.', async () => {
+    test('runs [ALL] Synchronizer tasks.', async () => {
       // @ts-ignore
       synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_ALL';
 
@@ -83,7 +134,7 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
     });
 
-    it('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
+    test('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
       // @ts-ignore
       synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
 
@@ -92,7 +143,7 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(0);
     });
 
-    it('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
+    test('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
       // @ts-ignore
       synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
 
@@ -101,4 +152,5 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
     });
   });
+
 });

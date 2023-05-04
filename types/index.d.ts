@@ -1,4 +1,4 @@
-// Type definitions for Split Javascript Sync Tools
+// Type definitions for Split JavaScript Sync Tools
 // Project: http://www.split.io/
 // Definitions by: Emiliano Sanchez <https://github.com/EmilianoSanchez/>
 
@@ -6,7 +6,7 @@ export = JsSyncTools;
 
 declare module JsSyncTools {
   /**
-   * Javascript synchronizer tool.
+   * JavaScript synchronizer tool.
    *
    * @see {@link https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools}.
    */
@@ -18,10 +18,11 @@ declare module JsSyncTools {
     constructor(config: ISynchronizerSettings);
     /**
      * Execute synchronization
+     * @param cb Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
      * @return {Promise<boolean>} A promise that resolves when the operation ends,
      * with a boolean indicating if operation succeeded or not. The promise never rejects.
      */
-    execute(): Promise<boolean>;
+    execute(cb?: (err?: Error) => void): Promise<boolean>;
     // @TODO expose settings eventually
     // settings: ISettings
   }
