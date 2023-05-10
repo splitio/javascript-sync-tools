@@ -95,7 +95,7 @@ export class Synchronizer {
   }
 
   /**
-   * Function to check the health status of both Split and Events API.
+   * Function to check the health status of Split APIs (SDK and Events services).
    *
    * @returns {Promise<boolean>}
    */
@@ -182,7 +182,7 @@ export class Synchronizer {
    * Function to prepare for sync tasks. Checks for Fetch API availability and initialize Syncs and Storages.
    *
    * @returns {Promise<void>} A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
-   * for example, if the Fetch API is not available, Split API are not available, or Storage connection fails.
+   * for example, if the Fetch API is not available, Split API is not responding, or Storage connection fails.
    */
   private async preExecute(): Promise<void> {
     const log = this.settings.log;
@@ -190,8 +190,8 @@ export class Synchronizer {
     log.info('Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
-    if (!areAPIsReady) throw new Error('Split endpoints health check failed');
-    log.info('Split API and Events API ready');
+    if (!areAPIsReady) throw new Error('Health check of Split API endpoints failed');
+    log.info('Split API ready');
 
     await this.initializeStorage();
 
@@ -226,8 +226,8 @@ export class Synchronizer {
       await this.preExecute();
 
       let errorMessage;
-      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_SPLIT_SEGMENTS') {
-        if (!await this.executeSplitsAndSegments(false)) errorMessage = 'Splits and/or segments synchronization failed';
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_FEATURE_FLAGS_SEGMENTS') {
+        if (!await this.executeSplitsAndSegments(false)) errorMessage = 'Feature flags and/or segments synchronization failed';
       }
       if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
         if (!await this.executeImpressionsAndEvents(false)) errorMessage = 'Impressions and/or events synchronization failed';
@@ -248,10 +248,10 @@ export class Synchronizer {
   }
   // @TODO remove standalone param for cleaner code
   /**
-   * Function to wrap the execution of the Split and Segment's synchronizers.
+   * Function to wrap the execution of the feature flags and segments synchronizers.
    *
    * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
-   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if splits and segments were successfully fetched and stored.
+   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if feature flags and segments were successfully fetched and stored.
    */
   private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();

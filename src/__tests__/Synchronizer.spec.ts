@@ -136,7 +136,7 @@ describe('Synchronizer creation and execution', () => {
 
     test('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
       // @ts-ignore
-      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_SEGMENTS';
 
       await synchronizer.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);

@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISynchronizerSettings } from '../types';
 
-type CustomModeOption = 'splitsAndSegments' | 'eventsAndImpressions' | undefined;
+type CustomModeOption = 'featureFlagsAndSegments' | 'eventsAndImpressions' | undefined;
 
 dotenv.config();
 
@@ -73,8 +73,8 @@ const yargv = yargs(hideBin(argv))
     // c: {
     //   alias: 'customRun',
     //   type: 'string',
-    //   description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
-    //   choices: ['splitsAndSegments', 'eventsAndImpressions'],
+    //   description: 'Set a custom execution to run: featureFlagsAndSegments | eventsAndImpressions',
+    //   choices: ['featureFlagsAndSegments', 'eventsAndImpressions'],
     // },
     s: {
       alias: 'storage',
@@ -150,7 +150,7 @@ const yargv = yargs(hideBin(argv))
     // g: {
     //   alias: 'inMemoryOperation',
     //   type: 'boolean',
-    //   description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
+    //   description: 'Flag that enables all the synchronization operations to be proccessed in Memory.',
     //   nargs: 0,
     // },
   })
@@ -198,9 +198,9 @@ console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
  */
 const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {
-    case 'splitsAndSegments':
+    case 'featureFlagsAndSegments':
       // @ts-ignore
-      _scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      _scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_SEGMENTS';
       break;
     case 'eventsAndImpressions':
       // @ts-ignore
