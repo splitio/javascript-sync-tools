@@ -80,7 +80,7 @@ export class Synchronizer {
     const settings = synchronizerSettingsValidator(config);
 
     if (!validateApiKey(settings.log, settings.core.authorizationKey)) {
-      throw new Error('Unable to initialize Synchronizer task: invalid APIKEY.');
+      throw new Error('Unable to initialize Synchronizer task: invalid SDK key.');
     }
 
     this.settings = settings;
@@ -259,7 +259,7 @@ export class Synchronizer {
     // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
     const isSplitsSyncSuccessfull = await this._splitsSynchronizer.getSplitChanges();
 
-    this.settings.log.debug(`Splits Synchronizer task: ${isSplitsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    this.settings.log.debug(`Feature flags Synchronizer task: ${isSplitsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
     const isSegmentsSyncSuccessfull = await this._segmentsSynchronizer.getSegmentsChanges();
     this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
 

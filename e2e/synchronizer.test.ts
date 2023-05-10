@@ -13,7 +13,7 @@ const createSynchronizer = (synchronizerMode?: string) => {
    */
   const settings: ISynchronizerSettings = {
     core: {
-      authorizationKey: 'fakeapikeyfortesting',
+      authorizationKey: 'fakeSdkKeyForTesting',
     },
     urls: {
       sdk: SERVER_MOCK_URL,
@@ -253,7 +253,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
    */
   const settings: ISynchronizerSettings = {
     core: {
-      authorizationKey: 'fakeapikeyfortesting',
+      authorizationKey: 'fakeSdkKeyForTesting',
     },
     urls: {
       sdk: SERVER_MOCK_URL,

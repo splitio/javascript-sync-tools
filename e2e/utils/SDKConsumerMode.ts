@@ -8,7 +8,7 @@ import redisAdapterWrapper from './redisAdapterWrapper';
 const config = {
   mode: 'consumer', // changing the mode to consuemer here
   core: {
-    authorizationKey: 'fakeapikey',
+    authorizationKey: 'fakeSdkKey',
   },
   storage: {
     type: 'REDIS',
