@@ -27,7 +27,7 @@ import { Synchronizer } from '@splitsoftware/splitio-sync-tools';
 ```javascript
 const synchronizer = new Synchronizer({
   core: {
-    authorizationKey: 'YOUR_SERVER_SIDE_SDK_KEY',
+    authorizationKey: 'YOUR_SDK_KEY', // SDK key of type server side
   },
   // Mandatory: provide a valid storage instance.
   storage: {
