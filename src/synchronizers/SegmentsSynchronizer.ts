@@ -5,7 +5,7 @@ import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { ISegmentsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 
 /**
- * Class that manages all the Segments entities related actions.
+ * Class that manages the synchronization of segments.
  */
 export class SegmentsSynchronizer {
   /**
@@ -27,7 +27,7 @@ export class SegmentsSynchronizer {
   private _settings;
 
   /**
-   * @param {IFetchSegmentChanges}  segmentsFetcher  The SegmentChanges fetcher from SplitAPI.
+   * @param {IFetchSegmentChanges}  segmentsFetcher  The SegmentChanges fetcher from Split API.
    * @param {ISettings}             settings         The Synchronizer's settings.
    * @param {ISegmentsCacheAsync}   segmentsStorage  The reference to the current Storage.
    */
@@ -42,7 +42,7 @@ export class SegmentsSynchronizer {
   }
 
   /**
-   * Function to use the SplitUpdater, in order fetch and store the Splits from the BE.
+   * Function to use the SegmentUpdater, in order to fetch and store segments from the BE.
    *
    * @returns {Promise<any>}
    */

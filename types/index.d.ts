@@ -38,7 +38,7 @@ declare module JsSyncTools {
    */
   type UrlSettings = {
     /**
-     * String property to override the base URL where the synchronizer will get feature flagging related data like a Split rollout plan or segments information.
+     * String property to override the base URL where the synchronizer will get feature flagging related data like a feature flag rollout plan or segments information.
      *
      * @property {string} sdk
      * @default 'https://sdk.split.io/api'
@@ -67,7 +67,7 @@ declare module JsSyncTools {
    */
   type SplitFilterType = 'byName';
   /**
-   * Defines a split filter, described by a type and list of values.
+   * Defines a feature flag filter, described by a type and list of values.
    */
   interface SplitFilter {
     /**
@@ -77,7 +77,7 @@ declare module JsSyncTools {
      */
     type: SplitFilterType,
     /**
-     * List of values: split names for 'byName' filter type, and split prefixes for 'byPrefix' type.
+     * List of values: feature flag names for 'byName' filter type, and feature flag name prefixes for 'byPrefix' type.
      *
      * @property {string[]} values
      */
@@ -103,7 +103,7 @@ declare module JsSyncTools {
      */
     core: {
       /**
-       * Your API key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+       * Your SDK key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
        *
        * @property {string} authorizationKey
        */
@@ -130,7 +130,7 @@ declare module JsSyncTools {
        * Optional prefix added to the storage keys to prevent any kind of data collision between SDK versions.
        *
        * @property {string} prefix
-       * @default SPLITIO
+       * @default 'SPLITIO'
        */
       prefix?: string
     }
@@ -159,13 +159,13 @@ declare module JsSyncTools {
      */
     sync?: {
       /**
-       * List of Split filters. These filters are used to fetch a subset of the Splits definitions in your environment.
+       * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment.
        *
-       * At the moment, only one type of split filter is supported: by name.
+       * At the moment, only one type of feature flag filter is supported: by name.
        *
        * Example:
        *  `splitFilter: [
-       *    { type: 'byName', values: ['my_split_1', 'my_split_2'] }, // will fetch splits named 'my_split_1' and 'my_split_2'
+       *    { type: 'byName', values: ['my_feature_flag_1', 'my_feature_flag_2'] }, // will fetch feature flags named 'my_feature_flag_1' and 'my_feature_flag_2'
        *  ]`
        * @property {SplitFilter[]} splitFilters
        */
