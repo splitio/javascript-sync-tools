@@ -139,10 +139,10 @@ describe('Splits Synchronizer', () => {
       });
     });
 
-    describe('Put data from InMemory Cache to storage - After Synchronization occured', () => {
+    describe('Put data from InMemory Cache to storage - After synchronization occured', () => {
       beforeAll(async () => {
         createNewSynchronizer();
-        // adding some data simulating Synchronization execution')
+        // adding some data simulating synchronization execution')
         _splitsSynchronizer._inMemoryStorage.splits.addSplits([
           ['pepito3', JSON.stringify({ name: 'pepito3', changeNumber: 6 })],
         ]);

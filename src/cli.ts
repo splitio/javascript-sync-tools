@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import { IPluggableStorageWrapper } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISynchronizerSettings } from '../types';
 
-type CustomModeOption = 'splitsAndSegments' | 'eventsAndImpressions' | undefined;
+type CustomModeOption = 'featureFlagsAndSegments' | 'eventsAndImpressions' | undefined;
 
 dotenv.config();
 
@@ -26,9 +26,9 @@ let _eventsApiUrl: string | undefined;
  */
 let _telemetryApiUrl: string | undefined;
 /**
- * The API key value.
+ * The SDK key value.
  */
-let _apikey: string | undefined;
+let _sdkKey: string | undefined;
 /**
  * The Pluggable Storage prefix.
  */
@@ -64,8 +64,8 @@ const yargv = yargs(hideBin(argv))
   .example('$0 -m json --config path2/file.json -s path2/storage.js', '| Set settings from JSON file. -d')
   .example('$0 -m env -s path2/storage.js', '| Set settings from .env file.')
   .example(
-    '$0 -k {A_VALID_APIKEY} -s path2/storage.js -r https://events.split.io/api/',
-    '| Set APIKEY and Split API URL from param.'
+    '$0 -k {A_VALID_SDK_KEY} -s path2/storage.js -r https://events.split.io/api/',
+    '| Set SDK Key and Split API URL from param.'
   )
   .example('$0 -m env [...] -d', '| Set Debug Logging enabled')
   .example('$0 -m env [...] -i', '| Set Impressions Mode Debug mode')
@@ -73,8 +73,8 @@ const yargv = yargs(hideBin(argv))
     // c: {
     //   alias: 'customRun',
     //   type: 'string',
-    //   description: 'Set a custom execution to run: splitsAndSegments | eventsAndImpressions',
-    //   choices: ['splitsAndSegments', 'eventsAndImpressions'],
+    //   description: 'Set a custom execution to run: featureFlagsAndSegments | eventsAndImpressions',
+    //   choices: ['featureFlagsAndSegments', 'eventsAndImpressions'],
     // },
     s: {
       alias: 'storage',
@@ -89,8 +89,8 @@ const yargv = yargs(hideBin(argv))
       nargs: 0,
     },
     k: {
-      alias: 'apikey',
-      describe: 'Set the apikey',
+      alias: 'sdkKey',
+      describe: 'Set the SDK key',
       type: 'string',
       nargs: 1,
     },
@@ -150,7 +150,7 @@ const yargv = yargs(hideBin(argv))
     // g: {
     //   alias: 'inMemoryOperation',
     //   type: 'boolean',
-    //   description: 'Flag that enables all the Splits Synchronization operations to be proccessed in Memory.',
+    //   description: 'Flag that enables all the synchronization operations to be proccessed in Memory.',
     //   nargs: 0,
     // },
   })
@@ -164,8 +164,8 @@ const {
   mode,
   storage,
   STORAGE_PATH,
-  APIKEY,
-  apikey,
+  SDK_KEY,
+  sdkKey,
   apiUrl,
   API_URL,
   eventsApiUrl,
@@ -198,13 +198,13 @@ console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
  */
 const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {
-    case 'splitsAndSegments':
+    case 'featureFlagsAndSegments':
       // @ts-ignore
-      _scheduler.synchronizerMode = 'MODE_RUN_SPLIT_SEGMENTS';
+      _scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS';
       break;
     case 'eventsAndImpressions':
       // @ts-ignore
-      _scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      _scheduler.synchronizerMode = 'MODE_RUN_EVENTS_AND_IMPRESSIONS';
       break;
     default:
       // @ts-ignore
@@ -214,7 +214,7 @@ const setCustomRun = (_customRun: CustomModeOption | undefined) => {
 
 switch (mode) {
   case 'json':
-    _apikey = APIKEY as string;
+    _sdkKey = SDK_KEY as string;
     _sdkApiUrl = API_URL as string;
     _eventsApiUrl = EVENTS_API_URL as string;
     _telemetryApiUrl = TELEMETRY_API_URL as string;
@@ -229,7 +229,7 @@ switch (mode) {
     setCustomRun(CUSTOM_RUN as CustomModeOption);
     break;
   case 'env':
-    _apikey = env.APIKEY;
+    _sdkKey = env.SDK_KEY;
     _sdkApiUrl = env.API_URL;
     _eventsApiUrl = env.EVENTS_API_URL;
     _telemetryApiUrl = env.TELEMETRY_API_URL;
@@ -244,7 +244,7 @@ switch (mode) {
     setCustomRun(env.CUSTOM_RUN as CustomModeOption);
     break;
   default:
-    _apikey = apikey as string;
+    _sdkKey = sdkKey as string;
     _sdkApiUrl = apiUrl as string;
     _eventsApiUrl = eventsApiUrl as string;
     _telemetryApiUrl = telemetryApiUrl as string;
@@ -269,8 +269,8 @@ try {
   exit(1);
 }
 
-if (!_apikey) {
-  console.log('Unable to initialize Synchronizer task: missing APIKEY.');
+if (!_sdkKey) {
+  console.log('Unable to initialize Synchronizer task: missing SDK KEY.');
   exit(1);
 }
 
@@ -279,7 +279,7 @@ if (!_apikey) {
  */
 const synchronizer = new Synchronizer({
   core: {
-    authorizationKey: _apikey,
+    authorizationKey: _sdkKey,
   },
   urls: {
     sdk: _sdkApiUrl,

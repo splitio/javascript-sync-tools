@@ -1,7 +1,12 @@
+0.3.1 (May 15, 2023)
+ - Updated @splitsoftware/splitio-commons package to version 1.8.2 that includes minor improvements.
+    - Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and IntelliSense comments.
+    - Updated split storage modules to optimize some operations when using Redis and pluggable storages.
+
 0.3.0 (May 4, 2023)
  - Added an optional error-first callback parameter to `execute` method, to be called when the synchronization is finished, with an error object if it finished unsuccessfully.
  - Updated @splitsoftware/splitio-commons and other dependencies for vulnerability fixes and performance improvements.
- - Bugfixing - Fixed `execute` method to ensure the returned promise resolves to `false` if any synchronization task fails (i.e., synchronization of splits, segments, impressions or events).
+ - Bugfixing - Fixed `execute` method to ensure the returned promise resolves to `false` if any synchronization task fails (i.e., synchronization of feature flags, segments, impressions or events).
  - Bugfixing - Fixed `execute` method to await storage destroy promise and handle rejections.
 
 0.2.0 (October 5, 2022)

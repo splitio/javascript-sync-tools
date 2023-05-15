@@ -8,7 +8,7 @@ import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync } from '@splitsoft
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
 
 /**
- * Class that manages all the Splits entities related actions.
+ * Class that manages the synchronization of feature flags.
  */
 export class SplitsSynchronizer {
   /**
@@ -46,7 +46,7 @@ export class SplitsSynchronizer {
   _inMemoryStorageSnapshot: IStorageSync;
 
   /**
-   * @param {IFetchSplitChanges}   splitFetcher     The SplitChanges fetcher from SplitAPI.
+   * @param {IFetchSplitChanges}   splitFetcher     The SplitChanges fetcher from Split API.
    * @param {ISettings}            settings         The Synchronizer's settings.
    * @param {ISplitsCacheAsync}    splitsStorage    The reference to the current Split Storage.
    * @param {ISegmentsCacheAsync}  segmentsStorage  The reference to the current Cache Storage.
@@ -71,7 +71,7 @@ export class SplitsSynchronizer {
   }
 
   /**
-   * Function to use the SplitUpdater, in order fetch and store the Splits from the BE.
+   * Function to use the SplitUpdater, in order to fetch and store feature flags from the BE.
    *
    * @returns {Promise<boolean>}
    */
@@ -85,7 +85,7 @@ export class SplitsSynchronizer {
     return this._splitUpdater();
   }
   /**
-   * Method to retrieve Splits data from external Storage and transfer to local InMemory cache.
+   * Method to retrieve feature flags from external Storage and transfer to local InMemory cache.
    *
    * @param {SplitsCacheInMemory} splitCacheInMemory  Reference to the local InMemoryCache.
    */
@@ -114,13 +114,13 @@ export class SplitsSynchronizer {
 
     } catch (error) {
       this._settings.log.error(
-        `Split InMemory Sinchronization: Error when retreving data from external Storage. Error: ${error}`
+        `Feature flags InMemory synchronization: Error when retreving data from external Storage. Error: ${error}`
       );
     }
   }
 
   /**
-   * Function to store Split data from InMemory cache to the provided external Storage.
+   * Function to store feature flags from InMemory cache to the provided external Storage.
    */
   async putDataToStorage() {
     try {
@@ -131,7 +131,7 @@ export class SplitsSynchronizer {
 
       const diffResult = await this.processDifferences();
 
-      if (diffResult > 0) this._settings.log.info(`Removed ${diffResult} splits from storage`);
+      if (diffResult > 0) this._settings.log.info(`Removed ${diffResult} feature flags from storage`);
       const splits = this._inMemoryStorage.splits.getAll() || [];
 
       if (splits.length > 0) {
@@ -143,12 +143,12 @@ export class SplitsSynchronizer {
           const oldSplitDefinition = this._inMemoryStorageSnapshot.splits.getSplit(name);
 
           if (split) {
-            // If the Split doesn't exists.
+            // If the feature flag doesn't exists.
             if (!oldSplitDefinition) {
               splitsToStore.push([name, split]);
               continue;
             }
-            // If the Split exists and needs to be updated.
+            // If the feature flag exists and needs to be updated.
             if (oldSplitDefinition.changeNumber !== changeNumber) {
               splitsToStore.push([name, split]);
               continue;
@@ -167,13 +167,13 @@ export class SplitsSynchronizer {
         await this._segmentsStorage.registerSegments(registeredSegments);
     } catch (error) {
       this._settings.log.error(
-        `Split InMemory Sinchronization: Error when storing data to external Storage. Error: ${error}`
+        `Feature flags InMemory synchronization: Error when storing data to external Storage. Error: ${error}`
       );
     }
   }
 
   /**
-   * Function to use the InMemoryCache to execute the SplitUpdater to fetch and store the Splits
+   * Function to use the InMemoryCache to execute the SplitUpdater to fetch and store feature flags
    * from the BE.
    *
    * @returns {Promise<boolean>}
@@ -196,13 +196,13 @@ export class SplitsSynchronizer {
       await this.putDataToStorage();
       return res;
     } catch (error) {
-      this._settings.log.error(`Error executing Splits Synchronization with InMemory cache. ${error}`);
+      this._settings.log.error(`Error executing feature flags synchronization with InMemory cache. ${error}`);
       return Promise.resolve(false);
     }
   }
   /**
    * Function to compare an inital InMemory cache snapshot with the updated InMemory cache after synchronization.
-   * It will calculate differences, removing splits that are no longer required and updating splits with new data.
+   * It will calculate differences, removing feature flags that are no longer required and updating the ones with new data.
    *
    * @returns {any}
    */

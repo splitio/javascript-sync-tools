@@ -13,7 +13,7 @@ const createSynchronizer = (synchronizerMode?: string) => {
    */
   const settings: ISynchronizerSettings = {
     core: {
-      authorizationKey: 'fakeapikeyfortesting',
+      authorizationKey: 'fakeSdkKeyForTesting',
     },
     urls: {
       sdk: SERVER_MOCK_URL,
@@ -253,7 +253,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
    */
   const settings: ISynchronizerSettings = {
     core: {
-      authorizationKey: 'fakeapikeyfortesting',
+      authorizationKey: 'fakeSdkKeyForTesting',
     },
     urls: {
       sdk: SERVER_MOCK_URL,
@@ -270,7 +270,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     },
     scheduler: {
       // @ts-ignore. Not part of public API
-      synchronizerMode: 'MODE_RUN_SPLIT_SEGMENTS',
+      synchronizerMode: 'MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS',
     },
     logger: 'NONE',
     streamingEnabled: false,
@@ -365,7 +365,7 @@ describe('Synchronizer - only Splits & Segments mode', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    _synchronizer = createSynchronizer('MODE_RUN_SPLIT_SEGMENTS'); // @ts-ignore
+    _synchronizer = createSynchronizer('MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
@@ -392,7 +392,7 @@ describe('Synchronizer - only Events & Impressions', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    _synchronizer = createSynchronizer('MODE_RUN_EVENTS_IMPRESSIONS'); // @ts-ignore
+    _synchronizer = createSynchronizer('MODE_RUN_EVENTS_AND_IMPRESSIONS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
     await _synchronizer.execute();
