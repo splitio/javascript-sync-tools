@@ -200,11 +200,11 @@ const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {
     case 'featureFlagsAndSegments':
       // @ts-ignore
-      _scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_SEGMENTS';
+      _scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS';
       break;
     case 'eventsAndImpressions':
       // @ts-ignore
-      _scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      _scheduler.synchronizerMode = 'MODE_RUN_EVENTS_AND_IMPRESSIONS';
       break;
     default:
       // @ts-ignore

@@ -226,10 +226,10 @@ export class Synchronizer {
       await this.preExecute();
 
       let errorMessage;
-      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_FEATURE_FLAGS_SEGMENTS') {
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS') {
         if (!await this.executeSplitsAndSegments(false)) errorMessage = 'Feature flags and/or segments synchronization failed';
       }
-      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_IMPRESSIONS') {
+      if (mode === 'MODE_RUN_ALL' || mode === 'MODE_RUN_EVENTS_AND_IMPRESSIONS') {
         if (!await this.executeImpressionsAndEvents(false)) errorMessage = 'Impressions and/or events synchronization failed';
       }
 
