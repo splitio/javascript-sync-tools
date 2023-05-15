@@ -134,9 +134,9 @@ describe('Synchronizer creation and execution', () => {
       expect(executeImpressionsAndEventsCallSpy).toBeCalledTimes(1);
     });
 
-    test('runs [SPLITS & SEGMENTS] Synchronizer tasks only.', async () => {
+    test('runs [FEATURE FLAGS & SEGMENTS] Synchronizer tasks only.', async () => {
       // @ts-ignore
-      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_SEGMENTS';
+      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS';
 
       await synchronizer.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(1);
@@ -145,7 +145,7 @@ describe('Synchronizer creation and execution', () => {
 
     test('runs [EVENTS & IMPRESSIONS] Synchronizer tasks only.', async () => {
       // @ts-ignore
-      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_IMPRESSIONS';
+      synchronizer.settings.scheduler.synchronizerMode = 'MODE_RUN_EVENTS_AND_IMPRESSIONS';
 
       await synchronizer.execute();
       expect(executeSplitsAndSegmentsCallSpy).toBeCalledTimes(0);
