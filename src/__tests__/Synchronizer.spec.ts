@@ -45,7 +45,7 @@ describe('Synchronizer creation and execution', () => {
     const synchronizer = new Synchronizer(config);
     let error: any;
     expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
-    expect(error.message).toBe('Split endpoints health check failed');
+    expect(error.message).toBe('Health check of Split API endpoints failed');
   });
 
   test('Synchronizer execution fails because some synchronization task failed', async () => {
@@ -54,7 +54,7 @@ describe('Synchronizer creation and execution', () => {
     jest.spyOn(synchronizer, '_checkEndpointHealth').mockImplementation(() => Promise.resolve(true));
     let error: any;
     expect(await synchronizer.execute((e) => { error = e; })).toBe(false);
-    expect(error.message).toBe('Splits and/or segments synchronization failed');
+    expect(error.message).toBe('Feature flags and/or segments synchronization failed');
 
     // Arrange synchronizer to fail on impressions and events synchronization
     // @ts-expect-error Private method access
