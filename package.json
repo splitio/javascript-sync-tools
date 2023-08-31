@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-sync-tools",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Split JavaScript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -51,7 +51,7 @@
     "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.8.2",
+    "@splitsoftware/splitio-commons": "1.9.0",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.7",
     "yargs": "^17.0.1"
@@ -69,7 +69,7 @@
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "eslint": "^7.18.0",
-    "eslint-plugin-compat": "^3.9.0",
+    "eslint-plugin-compat": "^4.2.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsdoc": "^33.1.0",
     "husky": "^6.0.0",
