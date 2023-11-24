@@ -65,7 +65,7 @@ declare module JsSyncTools {
    *
    * @typedef {string} SplitFilterType
    */
-  type SplitFilterType = 'byName';
+  type SplitFilterType = 'byName' | 'bySet';
   /**
    * Defines a feature flag filter, described by a type and list of values.
    */
@@ -160,8 +160,6 @@ declare module JsSyncTools {
     sync?: {
       /**
        * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment.
-       *
-       * At the moment, only one type of feature flag filter is supported: by name.
        *
        * Example:
        *  `splitFilter: [

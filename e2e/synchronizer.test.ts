@@ -86,6 +86,18 @@ describe('Synchronizer e2e tests', () => {
       expect(Number(ttTest)).toBe(1);
       expect(Number(ttUser)).toBe(3);
     });
+
+    test('saves flag set keys', async () => {
+      const flagSets = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.flagSet.*`);
+      const itemsSetA = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_a`);
+      const itemsSetB = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_b`);
+      const itemsInexistentSet = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.inexistent_set`);
+
+      expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_a`, `${REDIS_PREFIX}.flagSet.set_b`]);
+      expect(itemsSetA).toEqual(['MATIAS_TEST', 'TEST_DOC']);
+      expect(itemsSetB).toEqual(['TEST_DOC', 'TEST_MATIAS']);
+      expect(itemsInexistentSet).toEqual([]);
+    });
   });
 
   describe('Runs SDK Consumer with DEBUG impressions mode, and', () => {
@@ -136,6 +148,18 @@ describe('Synchronizer e2e tests', () => {
       expect(Number(ttAccount)).toBe(2);
       expect(Number(ttTest)).toBe(0);
       expect(Number(ttUser)).toBe(2);
+    });
+
+    test('saves flag set keys', async () => {
+      const flagSets = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.flagSet.*`);
+      const itemsSetA = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_a`);
+      const itemsSetB = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_b`);
+      const itemsSetC = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_c`);
+
+      expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_b`, `${REDIS_PREFIX}.flagSet.set_c`]);
+      expect(itemsSetA).toEqual([]);
+      expect(itemsSetB).toEqual(['TEST_MATIAS']);
+      expect(itemsSetC).toEqual(['MATIAS_TEST']);
     });
 
     test('checks that [0] impressions are saved in Redis', async () => {
@@ -267,6 +291,10 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
+      splitFilters: [{
+        type: 'bySet',
+        values: ['set_b'],
+      }],
     },
     scheduler: {
       // @ts-ignore. Not part of public API
@@ -292,11 +320,11 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       await _synchronizer.execute();
     });
 
-    test('saves [4] Splits as keys in Redis', async () => {
+    test('saves [2] Splits as keys in Redis that matches the flag sets filter', async () => {
       const splits = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
 
       // Check changeNumber(...71)
-      expect(splits).toHaveLength(4);
+      expect(splits).toEqual([`${REDIS_PREFIX}.split.TEST_DOC`, `${REDIS_PREFIX}.split.TEST_MATIAS`]);
     });
 
     test('saves new changeNumber value', async () => {
@@ -305,24 +333,36 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       expect(till).toBe('1619720346271');
     });
 
-    test('saves [2] Segments as keys in Redis', async () => {
+    test('saves [1] Segments as keys in Redis', async () => {
       const segments = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.segment.*`);
       const segmentsRegistered = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.segments.*`);
 
-      expect(segments.filter(x => !x.match(/.till$/))).toHaveLength(2);
+      expect(segments.filter(x => !x.match(/.till$/))).toHaveLength(1);
       expect(segmentsRegistered).toHaveLength(1);
     });
 
-    test('saves [2] Traffic Types keys', async () => {
+    test('saves [1] Traffic Types key', async () => {
       const trafficTypes = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.trafficType.*`);
       const ttAccount = await _redisWrapper.get(`${REDIS_PREFIX}.trafficType.account`);
       const ttTest = await _redisWrapper.get(`${REDIS_PREFIX}.trafficType.testTT`);
       const ttUser = await _redisWrapper.get(`${REDIS_PREFIX}.trafficType.user`);
 
-      expect(trafficTypes).toHaveLength(2);
+      expect(trafficTypes).toHaveLength(1);
       expect(Number(ttAccount)).toBe(0);
-      expect(Number(ttTest)).toBe(1);
-      expect(Number(ttUser)).toBe(3);
+      expect(Number(ttTest)).toBe(0);
+      expect(Number(ttUser)).toBe(2);
+    });
+
+    test('saves flag set keys considering the flag sets filter', async () => {
+      const flagSets = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.flagSet.*`);
+      const itemsSetA = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_a`);
+      const itemsSetB = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_b`);
+      const itemsInexistentSet = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.inexistent_set`);
+
+      expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_b`]);
+      expect(itemsSetA).toEqual([]);
+      expect(itemsSetB).toEqual(['TEST_DOC', 'TEST_MATIAS']);
+      expect(itemsInexistentSet).toEqual([]);
     });
   });
 
@@ -331,10 +371,10 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       await _synchronizer.execute();
     });
 
-    test('runs again and saves [17] Splits as keys in Redis', async () => {
+    test('runs again and saves [1] Split as keys in Redis', async () => {
       const splits = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
 
-      expect(splits).toHaveLength(4);
+      expect(splits).toEqual([`${REDIS_PREFIX}.split.TEST_MATIAS`]);
     });
 
     test('saves new changeNumber value', async () => {
@@ -343,16 +383,28 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       expect(till).toBe('1619720346272');
     });
 
-    test('updates [4] Traffic Types keys\' values', async () => {
+    test('updates [1] Traffic Types keys values', async () => {
       const trafficTypes = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.trafficType.*`);
       const ttAccount = await _redisWrapper.get(`${REDIS_PREFIX}.trafficType.account`);
       const ttTest = await _redisWrapper.get(`${REDIS_PREFIX}.trafficType.testTT`);
       const ttUser = await _redisWrapper.get(`${REDIS_PREFIX}.trafficType.user`);
 
-      expect(trafficTypes).toHaveLength(2);
-      expect(Number(ttAccount)).toBe(2);
+      expect(trafficTypes).toHaveLength(1);
+      expect(Number(ttAccount)).toBe(0);
       expect(Number(ttTest)).toBe(0);
-      expect(Number(ttUser)).toBe(2);
+      expect(Number(ttUser)).toBe(1);
+    });
+
+    test('saves flag set keys', async () => {
+      const flagSets = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.flagSet.*`);
+      const itemsSetA = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_a`);
+      const itemsSetB = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_b`);
+      const itemsSetC = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_c`);
+
+      expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_b`]);
+      expect(itemsSetA).toEqual([]);
+      expect(itemsSetB).toEqual(['TEST_MATIAS']);
+      expect(itemsSetC).toEqual([]);
     });
   });
 

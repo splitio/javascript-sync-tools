@@ -14,6 +14,7 @@
           "changeNumber": 1619720346270,
           "algo": 2,
           "configurations": {},
+          "sets": ["set_a"],
           "conditions": [
             {
               "conditionType": "ROLLOUT",
@@ -97,6 +98,7 @@
           "changeNumber": 1619205925116,
           "algo": 2,
           "configurations": {},
+          "sets": ["set_b"],
           "conditions": [
             {
               "conditionType": "WHITELIST",
@@ -197,6 +199,7 @@
           "configurations": {
             "on": "{\"ojoijoii\":\"oijoijioj\",\"\":\"\"}"
           },
+          "sets": ["set_a", "set_b"],
           "conditions": [
             {
               "conditionType": "ROLLOUT",
@@ -246,6 +249,7 @@
           "changeNumber": 1619205566698,
           "algo": 2,
           "configurations": {},
+          "sets": [],
           "conditions": [
             {
               "conditionType": "WHITELIST",
@@ -430,6 +434,7 @@
           "changeNumber": 1619720346272,
           "algo": 2,
           "configurations": {},
+          "sets": ["set_c"],
           "conditions": [
             {
               "conditionType": "ROLLOUT",

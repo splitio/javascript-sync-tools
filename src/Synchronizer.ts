@@ -99,9 +99,11 @@ export class Synchronizer {
    *
    * @returns {Promise<boolean>}
    */
-  private async _checkEndpointHealth(): Promise<boolean> {
-    return await this._splitApi.getSdkAPIHealthCheck() &&
-      await this._splitApi.getEventsAPIHealthCheck();
+  private async _checkEndpointHealth() {
+    return await Promise.all([
+      this._splitApi.getSdkAPIHealthCheck(),
+      this._splitApi.getEventsAPIHealthCheck(),
+    ]).then((results) => results.every((result) => result));
   }
   /**
    * Function to set a storage.
