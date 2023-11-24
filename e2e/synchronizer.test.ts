@@ -93,9 +93,9 @@ describe('Synchronizer e2e tests', () => {
       const itemsSetB = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_b`);
       const itemsInexistentSet = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.inexistent_set`);
 
-      expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_a`, `${REDIS_PREFIX}.flagSet.set_b`]);
-      expect(itemsSetA).toEqual(['MATIAS_TEST', 'TEST_DOC']);
-      expect(itemsSetB).toEqual(['TEST_DOC', 'TEST_MATIAS']);
+      expect(flagSets.sort()).toEqual([`${REDIS_PREFIX}.flagSet.set_a`, `${REDIS_PREFIX}.flagSet.set_b`]);
+      expect(itemsSetA.sort()).toEqual(['MATIAS_TEST', 'TEST_DOC']);
+      expect(itemsSetB.sort()).toEqual(['TEST_DOC', 'TEST_MATIAS']);
       expect(itemsInexistentSet).toEqual([]);
     });
   });
@@ -156,7 +156,7 @@ describe('Synchronizer e2e tests', () => {
       const itemsSetB = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_b`);
       const itemsSetC = await _redisWrapper.getItems(`${REDIS_PREFIX}.flagSet.set_c`);
 
-      expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_b`, `${REDIS_PREFIX}.flagSet.set_c`]);
+      expect(flagSets.sort()).toEqual([`${REDIS_PREFIX}.flagSet.set_b`, `${REDIS_PREFIX}.flagSet.set_c`]);
       expect(itemsSetA).toEqual([]);
       expect(itemsSetB).toEqual(['TEST_MATIAS']);
       expect(itemsSetC).toEqual(['MATIAS_TEST']);
@@ -324,7 +324,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       const splits = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.split.*`);
 
       // Check changeNumber(...71)
-      expect(splits).toEqual([`${REDIS_PREFIX}.split.TEST_DOC`, `${REDIS_PREFIX}.split.TEST_MATIAS`]);
+      expect(splits.sort()).toEqual([`${REDIS_PREFIX}.split.TEST_DOC`, `${REDIS_PREFIX}.split.TEST_MATIAS`]);
     });
 
     test('saves new changeNumber value', async () => {
@@ -361,7 +361,7 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
 
       expect(flagSets).toEqual([`${REDIS_PREFIX}.flagSet.set_b`]);
       expect(itemsSetA).toEqual([]);
-      expect(itemsSetB).toEqual(['TEST_DOC', 'TEST_MATIAS']);
+      expect(itemsSetB.sort()).toEqual(['TEST_DOC', 'TEST_MATIAS']);
       expect(itemsInexistentSet).toEqual([]);
     });
   });
