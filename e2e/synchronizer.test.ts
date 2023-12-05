@@ -271,7 +271,7 @@ describe('Synchronizer e2e tests', () => {
 
 });
 
-describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mode', () => {
+describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter - only Splits & Segments mode', () => {
   /**
    * Settings creation.
    */
@@ -301,7 +301,6 @@ describe('Synchronizer e2e tests - InMemoryOperation - only Splits & Segments mo
       synchronizerMode: 'MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS',
     },
     logger: 'NONE',
-    streamingEnabled: false,
   };
 
   const _synchronizer = new Synchronizer(settings);
