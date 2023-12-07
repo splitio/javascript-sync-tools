@@ -275,6 +275,7 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
   /**
    * Settings creation.
    */
+  const redisWrapper = redisAdapterWrapper({ url: REDIS_URL });
   const settings: ISynchronizerSettings = {
     core: {
       authorizationKey: 'fakeSdkKeyForTesting',
@@ -287,7 +288,7 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
     storage: {
       type: 'PLUGGABLE',
       prefix: PREFIX,
-      wrapper: redisAdapterWrapper({ url: REDIS_URL }),
+      wrapper: redisWrapper,
     },
     sync: {
       impressionsMode: 'OPTIMIZED',
@@ -407,7 +408,49 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
     });
   });
 
-  // @todo test remove split by fetching `archive` sstatus
+  test('Synchronizer runs a 3rd time with same SDK key and filter criteria, but wrong URLs. Execution should fail and storage should not be updated', async () => {
+    const keys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`);
+
+    const synchronizer = new Synchronizer({
+      ...settings,
+      sync: {
+        // To final filter query after validation is `&sets=set_b`
+        splitFilters: [{
+          type: 'bySet', values: ['set_b', '    '],
+        }, {
+          type: 'byName', values: ['set_b'],
+        }],
+      },
+      urls: {
+        sdk: SERVER_MOCK_URL + '/invalidpath',
+        events: SERVER_MOCK_URL + '/invalidpath',
+        telemetry: SERVER_MOCK_URL + '/invalidpath',
+      },
+    });
+
+    expect(await synchronizer.execute()).toBe(false);
+    expect(await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`)).toEqual(keys);
+  });
+
+  test('Synchronizer runs a 4th time with a different SDK key and wrong URLs. Execution should fail and storage should be empty, except for storage hash', async () => {
+    const keys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`);
+
+    const synchronizer = new Synchronizer({
+      ...settings,
+      core: {
+        authorizationKey: 'fakeSdkKeyForTesting-2',
+      },
+      urls: {
+        sdk: SERVER_MOCK_URL + '/invalidpath',
+        events: SERVER_MOCK_URL + '/invalidpath',
+        telemetry: SERVER_MOCK_URL + '/invalidpath',
+      },
+    });
+
+    expect(await synchronizer.execute()).toBe(false);
+    expect(keys.length).toBeGreaterThan(0);
+    expect(await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`)).toEqual([`${REDIS_PREFIX}.hash`]);
+  });
 });
 
 describe('Synchronizer - only Splits & Segments mode', () => {
