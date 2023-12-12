@@ -80,7 +80,8 @@ export class SplitsSynchronizer {
       this._settings.log,
       this._fetcher,
       this._splitsStorage,
-      this._segmentsStorage
+      this._segmentsStorage,
+      this._settings.sync.__splitFiltersValidation,
     );
     return this._splitUpdater();
   }
@@ -184,6 +185,7 @@ export class SplitsSynchronizer {
       this._fetcher,
       this._inMemoryStorage.splits,
       this._inMemoryStorage.segments,
+      this._settings.sync.__splitFiltersValidation,
     );
     try {
       this._settings.log.info('InMemoryOperation config enabled.');
