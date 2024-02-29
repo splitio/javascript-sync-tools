@@ -1,3 +1,6 @@
+0.5.1 (February 29, 2024)
+ - Updated @splitsoftware/splitio-commons package to version 1.13.1 and some transitive dependencies for vulnerability fixes.
+
 0.5.0 (December 12, 2023)
  - Added support for Flag Sets, which enables grouping feature flags and interacting with the group rather than individually (more details in our documentation).
  - Added a new Split Filter type named 'bySet'. This allows the Synchronizer to only synchronize the flags in the specified flag sets, avoiding unused or unwanted flags from being synced on the pluggable storage instance, bringing all the benefits of a reduced payload.
