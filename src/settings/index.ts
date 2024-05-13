@@ -1,10 +1,13 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
+import { FLAG_SPEC_VERSION } from '@splitsoftware/splitio-commons/src/utils/constants';
 import { isIntegerNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
 import { ISynchronizerSettings } from '../../types';
 import { defaults } from './defaults';
+
+const FLAG_SPEC_VERSIONS = ['1.0', FLAG_SPEC_VERSION];
 
 /**
  * Object with some default values to instantiate the application and fullfil internal
@@ -15,6 +18,12 @@ const params = {
   defaults,
   consent: () => undefined,
   runtime: () => { return { ip: false, hostname: false }; },
+  flagSpec: ({ sync: { flagSpecVersion }, log }: ISettings) => {
+    if (FLAG_SPEC_VERSIONS.indexOf(flagSpecVersion) > -1) return flagSpecVersion;
+
+    log.error(`settings: you passed an invalid "flagSpecVersion" config param. It should be one of the following values: ${FLAG_SPEC_VERSIONS.map((version => `"${version}"`))}. Defaulting to "${FLAG_SPEC_VERSION}"`);
+    return FLAG_SPEC_VERSION;
+  },
 };
 
 function validatePositiveInteger(log: ILogger, paramName: string, actualValue: any, defaultValue: number) {
