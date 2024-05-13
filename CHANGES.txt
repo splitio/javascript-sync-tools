@@ -1,5 +1,5 @@
 0.6.0 (May 13, 2024)
- - Added a new configuration option `sync.flagSpecVersion` to specify the flags spec version to be fetched and stored.
+ - Added a new configuration option `sync.flagSpecVersion` to specify the flags spec version of feature flag definitions to be fetched and stored.
  - Updated @splitsoftware/splitio-commons package to version 1.15.0 that includes minor updates:
     - Added support for targeting rules based on semantic versions (https://semver.org/).
     - Updated Split API client to include the flags spec version query parameter for the `splitChanges` and `auth` endpoints.
