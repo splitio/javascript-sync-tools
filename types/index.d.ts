@@ -1,6 +1,7 @@
 // Type definitions for Split JavaScript Sync Tools
 // Project: http://www.split.io/
 // Definitions by: Emiliano Sanchez <https://github.com/EmilianoSanchez/>
+import { RequestOptions } from 'http';
 
 export = JsSyncTools;
 
@@ -186,6 +187,39 @@ declare module JsSyncTools {
        * @default 'OPTIMIZED'
        */
       impressionsMode?: ImpressionsMode
+      /**
+       * Custom options object for HTTP(S) requests in NodeJS.
+       * If provided, this object is merged with the options object passed for Node-Fetch calls.
+       * @see {@link https://www.npmjs.com/package/node-fetch#options}
+       */
+      requestOptions?: {
+        /**
+         * Custom NodeJS HTTP(S) Agent used for HTTP(S) requests.
+         *
+         * You can use it, for example, for certificate pinning or setting a network proxy:
+         *
+         * ```javascript
+         * const { HttpsProxyAgent } = require('https-proxy-agent');
+         *
+         * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');
+         *
+         * const synchronizer = Synchronizer({
+         *   ...
+         *   sync: {
+         *     requestOptions: {
+         *       agent: proxyAgent
+         *     }
+         *   }
+         * })
+         * ```
+         *
+         * @see {@link https://nodejs.org/api/https.html#class-httpsagent}
+         *
+         * @property {http.Agent | https.Agent} agent
+         * @default undefined
+         */
+        agent?: RequestOptions['agent']
+      },
     }
     /**
      * Scheduler settings.

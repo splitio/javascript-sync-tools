@@ -17,6 +17,7 @@ describe('synchronizerSettingsValidator', () => {
       sync: {
         // @ts-expect-error
         flagSpecVersion: 'invalid',
+        requestOptions: { agent: false },
       },
       storage: { wrapper: {} },
     };
@@ -26,6 +27,7 @@ describe('synchronizerSettingsValidator', () => {
     expect(settings.scheduler.impressionsPerPost).toBe(defaults.scheduler.impressionsPerPost);
     expect(settings.scheduler.maxRetries).toBe(config.scheduler!.maxRetries);
     expect(settings.sync.flagSpecVersion).toBe('1.1');
+    expect(settings.sync.requestOptions).toBe(config.sync!.requestOptions);
   });
 
 });

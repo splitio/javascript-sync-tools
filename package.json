@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-sync-tools",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Split JavaScript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -51,7 +51,7 @@
     "prepublishOnly": "npm run check && npm run test && npm run build"
   },
   "dependencies": {
-    "@splitsoftware/splitio-commons": "1.15.0",
+    "@splitsoftware/splitio-commons": "1.16.0",
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.7",
     "yargs": "^17.0.1"
