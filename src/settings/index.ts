@@ -48,6 +48,9 @@ export function synchronizerSettingsValidator(
   // @ts-ignore, override readonly prop
   settings.mode = undefined; // "producer" mode
 
+  // if provided, keeps reference to the `requestOptions` object
+  if (settings.sync.requestOptions) settings.sync.requestOptions = config!.sync!.requestOptions;
+
   const { scheduler, log } = settings;
 
   // @TODO validate synchronizerMode eventually
