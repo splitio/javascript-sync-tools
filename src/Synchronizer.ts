@@ -88,8 +88,14 @@ export class Synchronizer {
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
-      this.settings,
-      { getFetch: Synchronizer._getFetch },
+      this.settings, // @ts-expect-error
+      {
+        getFetch: Synchronizer._getFetch,
+        getOptions(settings: ISettings) {
+          // @ts-expect-error
+          if (settings.sync.requestOptions) return settings.sync.requestOptions;
+        },
+      },
       telemetryTrackerFactory() // no-op telemetry tracker
     );
   }
