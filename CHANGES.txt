@@ -1,4 +1,4 @@
-0.7.0 (August 6, 2024)
+0.7.0 (August 5, 2024)
  - Added `sync.requestOptions.agent` option to allow passing a custom NodeJS HTTP(S) Agent with specific configurations for the Synchronizer requests, like custom TLS settings or a network proxy (See https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools#proxy).
  - Updated some transitive dependencies for vulnerability fixes.
 
