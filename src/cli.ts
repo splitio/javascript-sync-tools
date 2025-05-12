@@ -60,7 +60,7 @@ const _scheduler: NonNullable<ISynchronizerSettings['scheduler']> = {
 // @todo: refactor param alias and args to be all wrapped under the `options` function.
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
-  .command('sync', 'Start synchronising tasks.')
+  .command('sync', 'Start synchronizing tasks.')
   .example('$0 -m json --config path2/file.json -s path2/storage.js', '| Set settings from JSON file. -d')
   .example('$0 -m env -s path2/storage.js', '| Set settings from .env file.')
   .example(
@@ -150,7 +150,7 @@ const yargv = yargs(hideBin(argv))
     // g: {
     //   alias: 'inMemoryOperation',
     //   type: 'boolean',
-    //   description: 'Flag that enables all the synchronization operations to be proccessed in Memory.',
+    //   description: 'Flag that enables all the synchronization operations to be processed in Memory.',
     //   nargs: 0,
     // },
   })

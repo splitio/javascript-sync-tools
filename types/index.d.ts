@@ -111,7 +111,7 @@ declare module JsSyncTools {
       authorizationKey: string
     }
     /**
-     * Defines which kind of storage we should instanciate.
+     * Defines which kind of storage we should instantiate.
      *
      * @property {Object} storage
      */

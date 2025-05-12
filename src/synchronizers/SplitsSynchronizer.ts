@@ -115,7 +115,7 @@ export class SplitsSynchronizer {
 
     } catch (error) {
       this._settings.log.error(
-        `Feature flags InMemory synchronization: Error when retreving data from external Storage. Error: ${error}`
+        `Feature flags InMemory synchronization: Error when retrieving data from external Storage. Error: ${error}`
       );
     }
   }
@@ -203,7 +203,7 @@ export class SplitsSynchronizer {
     }
   }
   /**
-   * Function to compare an inital InMemory cache snapshot with the updated InMemory cache after synchronization.
+   * Function to compare an initial InMemory cache snapshot with the updated InMemory cache after synchronization.
    * It will calculate differences, removing feature flags that are no longer required and updating the ones with new data.
    *
    * @returns {any}
