@@ -1,4 +1,4 @@
-0.7.1 (May XXX, 2024)
+0.7.1 (May XXX, 2025)
  - Updated some transitive dependencies for vulnerability fixes.
 
 0.7.0 (August 5, 2024)
