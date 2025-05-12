@@ -7,7 +7,7 @@ const version = '@VERSION@';
 export const FLAG_SPEC_VERSION = '1.1';
 
 /**
- * Default values to create settings for the Javascrip Synchronizer.
+ * Default values to create settings for the JavaScript Synchronizer.
  */
 export const defaults = {
   startup: {

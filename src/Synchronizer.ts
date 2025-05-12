@@ -130,7 +130,7 @@ export class Synchronizer {
    * Function to set all the required Synchronizers.
    */
   private initializeSynchronizers() {
-    // @todo: Add Cli paramater to define impressionsMode.
+    // @todo: Add Cli parameter to define impressionsMode.
     const countsCache = this.settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
       undefined;
@@ -203,7 +203,7 @@ export class Synchronizer {
   }
   /**
    * Function to wrap actions to perform after the sync tasks have been executed.
-   * Currently, it disconects from the Storage.
+   * Currently, it disconnects from the Storage.
    *
    * @returns {Promise<void>} A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
    */
@@ -259,15 +259,15 @@ export class Synchronizer {
     if (standalone) await this.preExecute();
 
     // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
-    const isSplitsSyncSuccessfull = await this._splitsSynchronizer.getSplitChanges();
+    const isSplitsSyncSuccessful = await this._splitsSynchronizer.getSplitChanges();
 
-    this.settings.log.debug(`Feature flags Synchronizer task: ${isSplitsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
-    const isSegmentsSyncSuccessfull = await this._segmentsSynchronizer.getSegmentsChanges();
-    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    this.settings.log.debug(`Feature flags Synchronizer task: ${isSplitsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
+    const isSegmentsSyncSuccessful = await this._segmentsSynchronizer.getSegmentsChanges();
+    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
 
     if (standalone) await this.postExecute();
 
-    return isSplitsSyncSuccessfull && isSegmentsSyncSuccessfull;
+    return isSplitsSyncSuccessful && isSegmentsSyncSuccessful;
   }
   /**
    * Function to wrap the execution of the Impressions and Event's synchronizers.
@@ -279,32 +279,32 @@ export class Synchronizer {
     const log = this.settings.log;
     if (standalone) await this.preExecute();
 
-    const isEventsSyncSuccessfull = await this._eventsSubmitter();
-    log.debug(`Events Synchronizer task: ${isEventsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
-    const isImpressionsSyncSuccessfull = await this._impressionsSubmitter();
-    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    const isEventsSyncSuccessful = await this._eventsSubmitter();
+    log.debug(`Events Synchronizer task: ${isEventsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
+    const isImpressionsSyncSuccessful = await this._impressionsSubmitter();
+    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
 
-    let isSyncSuccessfull = isEventsSyncSuccessfull && isImpressionsSyncSuccessfull;
+    let isSyncSuccessful = isEventsSyncSuccessful && isImpressionsSyncSuccessful;
 
     if (this._impressionCountsSubmitter) {
-      const isImpressionCountsSyncSuccessfull = await this._impressionCountsSubmitter();
-      isSyncSuccessfull = isSyncSuccessfull && isImpressionCountsSyncSuccessfull;
-      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+      const isImpressionCountsSyncSuccessful = await this._impressionCountsSubmitter();
+      isSyncSuccessful = isSyncSuccessful && isImpressionCountsSyncSuccessful;
+      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
     }
 
     if (this._uniqueKeysSubmitter) {
-      const isUniqueKeysSyncSuccessfull = await this._uniqueKeysSubmitter();
-      isSyncSuccessfull = isSyncSuccessfull && isUniqueKeysSyncSuccessfull;
-      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+      const isUniqueKeysSyncSuccessful = await this._uniqueKeysSubmitter();
+      isSyncSuccessful = isSyncSuccessful && isUniqueKeysSyncSuccessful;
+      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
     }
 
     if (this._telemetrySubmitter) {
-      const isTelemetrySyncSuccessfull = await this._telemetrySubmitter();
+      const isTelemetrySyncSuccessful = await this._telemetrySubmitter();
       // if telemetry sync fails, we don't return false, since it's not a critical operation
-      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
     }
 
-    return isSyncSuccessfull;
+    return isSyncSuccessful;
   }
   /**
    * Function to set the Fetch function to perform the requests. It can be provided through

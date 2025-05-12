@@ -79,7 +79,7 @@ describe('Splits Synchronizer', () => {
       });
     });
 
-    describe('Process Differeces between data previous to Sync and new data.', () => {
+    describe('Process differences between data previous to Sync and new data.', () => {
       beforeAll(() => {
         createNewSynchronizer();
         _splitsSynchronizer._inMemoryStorageSnapshot.splits.update([{ name: 'pepito1', changeNumber: 4 }], [], 4);
@@ -88,14 +88,14 @@ describe('Splits Synchronizer', () => {
         _splitsSynchronizer._inMemoryStorage.splits.update([{ name: 'pepito3', changeNumber: 3 }], [], 3);
       });
 
-      test('compares the updated InMemory cache with previous snapshot and removes [1] unusued split', async () => {
+      test('compares the updated InMemory cache with previous snapshot and removes [1] unused split', async () => {
         const result = await _splitsSynchronizer.processDifferences();
 
         expect(result).toBe(1);
       });
     });
 
-    describe('Put data from InMemory Cache to storage - After synchronization occured', () => {
+    describe('Put data from InMemory Cache to storage - After synchronization occurred', () => {
       beforeAll(async () => {
         createNewSynchronizer();
         // adding some data simulating synchronization execution')

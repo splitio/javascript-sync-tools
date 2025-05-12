@@ -63,7 +63,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * @param {ImpressionObserver}            observer             The Impression Observer object for the dedupe process.
  * @param {number}                        impressionsPerPost   Amount of elements to pop from storage.
  * @param {number}                        maxRetries           Amount of attempt retries to perform the POST request.
- * @param {IImpressionCountsCacheBase}    countsCache          The reference to the Impresion's Count Storage. Undefined in DEBUG mode.
+ * @param {IImpressionCountsCacheBase}    countsCache          The reference to the Impression's Count Storage. Undefined in DEBUG mode.
  * @returns {() => Promise<boolean>}
  */
 export function impressionsSubmitterFactory(

@@ -20,7 +20,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     getImpressionsCount: jest.fn(() => Promise.resolve()),
   };
   let countsCache: ImpressionCountsCacheInMemory;
-  let _impressionsSubmiter: { (): any; (): Promise<string | boolean>; };
+  let _impressionsSubmitter: { (): any; (): Promise<string | boolean>; };
 
   beforeEach(() => {
     _postImpressionsMock.mockClear();
@@ -33,7 +33,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
   describe('Impressions Submitter, with [OPTIMIZED] mode set in settings', () => {
     beforeEach(() => {
-      _impressionsSubmiter = impressionsSubmitterFactory(
+      _impressionsSubmitter = impressionsSubmitterFactory(
         noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
@@ -49,7 +49,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       then make [0] Impressions Count POST`, async () => {
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve(([])));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledTimes(0);
@@ -72,7 +72,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledWith(
@@ -112,7 +112,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
@@ -156,7 +156,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledTimes(2);
@@ -205,7 +205,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
   describe('Impressions Submitter, with [DEBUG] mode set in settings', () => {
     beforeEach(() => {
-      _impressionsSubmiter = impressionsSubmitterFactory(
+      _impressionsSubmitter = impressionsSubmitterFactory(
         noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
@@ -217,11 +217,11 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       // The reason we are parsing the object and validating its keys (and its according value type) is because
-      // the `pt` key only exists in some impressions (that are repeated), and comparing the stringigy version
+      // the `pt` key only exists in some impressions (that are repeated), and comparing the stringified version
       // of the parameter in the call and the expected stringify value is not going to work.
       // @ts-ignore
       const call = JSON.parse(_postImpressionsMock.mock.calls[0][0]);
@@ -261,7 +261,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toHaveBeenNthCalledWith(
@@ -292,7 +292,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
 
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_postImpressionsMock).toBeCalledTimes(2);
@@ -307,7 +307,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
   describe('Impressions Submitter with custom configs and fail scenarios', () => {
     test('Multiple runs [2] times, until storage count is 0', async () => {
       // @ts-ignore
-      _impressionsSubmiter = impressionsSubmitterFactory(
+      _impressionsSubmitter = impressionsSubmitterFactory(
         noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
@@ -319,7 +319,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
         .mockReturnValueOnce(Promise.resolve(3))
         .mockReturnValue(Promise.resolve(0));
 
-      const res = await _impressionsSubmiter();
+      const res = await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledTimes(2);
       expect(res).toBe(true);
@@ -328,7 +328,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
     test('Run PopFromStorage with parameter value [33]', async () => {
       const IMPRESSIONS_PER_POST = 33;
 
-      _impressionsSubmiter = impressionsSubmitterFactory(
+      _impressionsSubmitter = impressionsSubmitterFactory(
         noopLogger, // @ts-ignore
         _postImpressionsMock,
         _impressionsCacheMock,
@@ -338,7 +338,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      await _impressionsSubmiter();
+      await _impressionsSubmitter();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(IMPRESSIONS_PER_POST);
     });
@@ -347,7 +347,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const MAX_RETRIES = 5;
       const _failPostImpressionsMock = jest.fn(() => Promise.reject());
 
-      let _impressionsSubmiterToFail = impressionsSubmitterFactory(
+      let _impressionsSubmitterToFail = impressionsSubmitterFactory(
         noopLogger, // @ts-ignore
         _failPostImpressionsMock, // @ts-ignore
         _impressionsCacheMock,
@@ -358,7 +358,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
       const _mockImpressionsListWMetadata = getImpressionsListWithSameMetadata(2, true);
       _impressionsCacheMock.popNWithMetadata.mockReturnValue(Promise.resolve((_mockImpressionsListWMetadata)));
 
-      const res = await _impressionsSubmiterToFail();
+      const res = await _impressionsSubmitterToFail();
 
       expect(_impressionsCacheMock.popNWithMetadata).toBeCalledWith(1000);
       expect(_failPostImpressionsMock).toBeCalledTimes(5);
