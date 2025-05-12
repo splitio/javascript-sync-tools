@@ -15,7 +15,6 @@ import { impressionCountsSubmitterFactory } from './submitters/impressionCountsS
 import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { ISynchronizerSettings } from '../types';
-import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
@@ -144,12 +143,7 @@ export class Synchronizer {
     this._splitsSynchronizer = new SplitsSynchronizer(
       this._splitApi.fetchSplitChanges,
       this.settings,
-      this._storage.splits,
-      this._storage.segments,
-      // @ts-ignore
-      InMemoryStorageFactory({ settings: this.settings }),
-      // @ts-ignore
-      InMemoryStorageFactory({ settings: this.settings })
+      this._storage,
     );
     this._eventsSubmitter = eventsSubmitterFactory(
       this.settings.log,

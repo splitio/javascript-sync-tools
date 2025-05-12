@@ -1,10 +1,10 @@
+import type SplitIO from '@splitsoftware/splitio-commons/types/splitio';
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { IImpressionCountsCacheBase, IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { groupBy, metadataToHeaders } from './utils';
-import type SplitIO from '@splitsoftware/splitio-commons/types/splitio';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
 import { ImpressionsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
@@ -48,6 +48,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
       changeNumber: i.c,
       time: i.m,
       pt: i.pt,
+      properties: i.properties,
     } as SplitIO.ImpressionDTO,
   };
 };
@@ -130,6 +131,7 @@ export function impressionsSubmitterFactory(
               r: entry.label, // Rule label
               c: entry.changeNumber, // ChangeNumber
               pt: entry.pt, // Previous time
+              properties: entry.properties,
             };
           }),
         });

@@ -1,5 +1,5 @@
 1.0.0 (May XXX, 2025)
- - Updated @splitsoftware/splitio-commons package to version 2.0.0.
+ - Updated @splitsoftware/splitio-commons package to version 2.2.0.
  - Updated some transitive dependencies for vulnerability fixes.
 
 0.7.0 (August 5, 2024)

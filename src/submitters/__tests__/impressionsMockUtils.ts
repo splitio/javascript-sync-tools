@@ -1,11 +1,11 @@
+import type SplitIO from '@splitsoftware/splitio-commons/types/splitio';
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
-import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
 import { _getRandomString } from './commonUtils';
 
 /**
  * An Impression example.
  */
-const impressionFullNameNoMetadata: ImpressionDTO = {
+const impressionFullNameNoMetadata: SplitIO.ImpressionDTO = {
   keyName: 'marcio@split.io',
   bucketingKey: 'impr_bucketing_2',
   feature: 'qc_team',
@@ -13,6 +13,7 @@ const impressionFullNameNoMetadata: ImpressionDTO = {
   label: 'default rule',
   changeNumber: 828282828282,
   time: Date.now(),
+  properties: '{"key":"value"}',
 };
 /**
  * An Impression with Metadata example.
@@ -31,6 +32,7 @@ const impressionWithMetadata: StoredImpressionWithMetadata = {
     b: 'impr_bucketing_2',
     r: 'default rule',
     c: 828282828282,
+    properties: '{"key":"value"}',
   },
 };
 /**
@@ -53,11 +55,11 @@ function getRandomiseMetadata(): StoredImpressionWithMetadata {
  * @returns {StoredImpressionWithMetadata}
  */
 function getRandomiseImpression(): StoredImpressionWithMetadata {
-  const { k, t, m, b, r, c } = impressionWithMetadata.i;
+  const { k, t, m, b, r, c, properties } = impressionWithMetadata.i;
   return Object.assign(
     {},
     impressionWithMetadata,
-    { i: { k, t, m, b, r, c, f: _getRandomString(12) } }
+    { i: { k, t, m, b, r, c, properties, f: _getRandomString(12) } }
   );
 }
 /**
@@ -65,7 +67,7 @@ function getRandomiseImpression(): StoredImpressionWithMetadata {
  *
  * @returns {ImpressionDTO}
  */
-export function getImpressionSampleWithNoMetadata(): ImpressionDTO {
+export function getImpressionSampleWithNoMetadata(): SplitIO.ImpressionDTO {
   return impressionFullNameNoMetadata;
 }
 /**
@@ -88,5 +90,3 @@ export function getImpressionsListWithSameMetadata(
 
   return [...Array(len).keys()].map(() => _impressionTarget);
 }
-
-
