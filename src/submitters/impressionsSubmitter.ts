@@ -4,16 +4,15 @@ import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { groupBy, metadataToHeaders } from './utils';
-import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
+import type SplitIO from '@splitsoftware/splitio-commons/types/splitio';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
-import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
 import { ImpressionsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { submitterWithMetadataFactory } from './submitter';
 
 export type ImpressionsDTOWithMetadata = {
   metadata: IMetadata;
-  impression: ImpressionDTO;
+  impression: SplitIO.ImpressionDTO;
 }
 
 /**
@@ -49,7 +48,7 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
       changeNumber: i.c,
       time: i.m,
       pt: i.pt,
-    } as ImpressionDTO,
+    } as SplitIO.ImpressionDTO,
   };
 };
 

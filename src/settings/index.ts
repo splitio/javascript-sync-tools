@@ -1,11 +1,10 @@
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { FLAG_SPEC_VERSION } from '@splitsoftware/splitio-commons/src/utils/constants';
 import { isIntegerNumber } from '@splitsoftware/splitio-commons/src/utils/lang';
 import { settingsValidation } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/index';
 import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/settingsValidation/logger/builtinLogger';
 import { ISynchronizerSettings } from '../../types';
-import { defaults } from './defaults';
+import { defaults, FLAG_SPEC_VERSION } from './defaults';
 
 const FLAG_SPEC_VERSIONS = ['1.0', FLAG_SPEC_VERSION];
 

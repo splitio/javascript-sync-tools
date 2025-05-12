@@ -3,7 +3,6 @@ import { TelemetryUsageStats } from '@splitsoftware/splitio-commons/src/sync/sub
 import { ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { metadataToHeaders } from './utils';
 import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { _Map, IMap } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
 
 /**
@@ -22,11 +21,11 @@ export function telemetrySubmitterFactory(
   telemetryCache: ITelemetryCacheAsync,
 ): () => Promise<boolean> {
 
-  async function buildUsageStats(): Promise<IMap<string, TelemetryUsageStats>> {
+  async function buildUsageStats(): Promise<Map<string, TelemetryUsageStats>> {
     const latencies = await telemetryCache.popLatencies();
     const exceptions = await telemetryCache.popExceptions();
 
-    const result = new _Map<string, TelemetryUsageStats>();
+    const result = new Map<string, TelemetryUsageStats>();
 
     latencies.forEach((latency, metadata) => {
       result.set(metadata, { mL: latency });

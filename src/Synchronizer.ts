@@ -88,11 +88,11 @@ export class Synchronizer {
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
-      this.settings, // @ts-expect-error
+      this.settings,
       {
-        getFetch: Synchronizer._getFetch,
+        getFetch: Synchronizer._getFetch, // @ts-expect-error
         getOptions(settings: ISettings) {
-          // @ts-expect-error
+          // User provided options take precedence
           if (settings.sync.requestOptions) return settings.sync.requestOptions;
         },
       },
