@@ -1,5 +1,5 @@
 // Type definitions for Split JavaScript Sync Tools
-// Project: http://www.split.io/
+// Project: https://www.split.io/
 // Definitions by: Emiliano Sanchez <https://github.com/EmilianoSanchez/>
 import { RequestOptions } from 'http';
 
@@ -111,7 +111,7 @@ declare module JsSyncTools {
       authorizationKey: string
     }
     /**
-     * Defines which kind of storage we should instanciate.
+     * Defines which kind of storage we should instantiate.
      *
      * @property {Object} storage
      */
@@ -188,13 +188,13 @@ declare module JsSyncTools {
        */
       impressionsMode?: ImpressionsMode
       /**
-       * Custom options object for HTTP(S) requests in NodeJS.
+       * Custom options object for HTTP(S) requests in Node.js.
        * If provided, this object is merged with the options object passed for Node-Fetch calls.
        * @see {@link https://www.npmjs.com/package/node-fetch#options}
        */
       requestOptions?: {
         /**
-         * Custom NodeJS HTTP(S) Agent used for HTTP(S) requests.
+         * Custom Node.js HTTP(S) Agent used for HTTP(S) requests.
          *
          * You can use it, for example, for certificate pinning or setting a network proxy:
          *

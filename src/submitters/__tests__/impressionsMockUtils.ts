@@ -38,7 +38,7 @@ const impressionWithMetadata: StoredImpressionWithMetadata = {
  *
  * @returns {StoredImpressionWithMetadata}
  */
-function getRandomiseMetadata(): StoredImpressionWithMetadata {
+function getRandomizeMetadata(): StoredImpressionWithMetadata {
   const { i, s } = impressionWithMetadata.m;
   return Object.assign(
     {},
@@ -52,7 +52,7 @@ function getRandomiseMetadata(): StoredImpressionWithMetadata {
  *
  * @returns {StoredImpressionWithMetadata}
  */
-function getRandomiseImpression(): StoredImpressionWithMetadata {
+function getRandomizeImpression(): StoredImpressionWithMetadata {
   const { k, t, m, b, r, c } = impressionWithMetadata.i;
   return Object.assign(
     {},
@@ -72,21 +72,19 @@ export function getImpressionSampleWithNoMetadata(): ImpressionDTO {
  *  Function to generate a list of Impressions with the same metadata.
  *
  * @param {number}  len        The amount of Impressions to generate.
- * @param {boolean} randomiseMetadata    Flag to determine if Metadata needs to be randomly generated.
- * @param {boolean} randomiseImpression  Flag to determine if Impression data needs to be randomly generated.
+ * @param {boolean} randomizeMetadata    Flag to determine if Metadata needs to be randomly generated.
+ * @param {boolean} randomizeImpression  Flag to determine if Impression data needs to be randomly generated.
  * @returns {StoredImpressionWithMetadata[]}
  */
 export function getImpressionsListWithSameMetadata(
   len: number,
-  randomiseMetadata = false,
-  randomiseImpression = false
+  randomizeMetadata = false,
+  randomizeImpression = false
 ): StoredImpressionWithMetadata[] {
   const _impressionTarget = {
-    m: randomiseMetadata ? getRandomiseMetadata().m : impressionWithMetadata.m,
-    i: randomiseImpression ? getRandomiseImpression().i : impressionWithMetadata.i,
+    m: randomizeMetadata ? getRandomizeMetadata().m : impressionWithMetadata.m,
+    i: randomizeImpression ? getRandomizeImpression().i : impressionWithMetadata.i,
   };
 
   return [...Array(len).keys()].map(() => _impressionTarget);
 }
-
-

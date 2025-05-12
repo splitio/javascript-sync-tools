@@ -1,5 +1,8 @@
+0.7.1 (May XXX, 2025)
+ - Updated some transitive dependencies for vulnerability fixes.
+
 0.7.0 (August 5, 2024)
- - Added `sync.requestOptions.agent` option to allow passing a custom NodeJS HTTP(S) Agent with specific configurations for the Synchronizer requests, like custom TLS settings or a network proxy (See https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools#proxy).
+ - Added `sync.requestOptions.agent` option to allow passing a custom Node.js HTTP(S) Agent with specific configurations for the Synchronizer requests, like custom TLS settings or a network proxy (See https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools#proxy).
  - Updated some transitive dependencies for vulnerability fixes.
 
 0.6.0 (May 13, 2024)
@@ -31,8 +34,8 @@
 0.3.0 (May 4, 2023)
  - Added an optional error-first callback parameter to `execute` method, to be called when the synchronization is finished, with an error object if it finished unsuccessfully.
  - Updated @splitsoftware/splitio-commons and other dependencies for vulnerability fixes and performance improvements.
- - Bugfixing - Fixed `execute` method to ensure the returned promise resolves to `false` if any synchronization task fails (i.e., synchronization of feature flags, segments, impressions or events).
- - Bugfixing - Fixed `execute` method to await storage destroy promise and handle rejections.
+ - Bugfix - Fixed `execute` method to ensure the returned promise resolves to `false` if any synchronization task fails (i.e., synchronization of feature flags, segments, impressions or events).
+ - Bugfix - Fixed `execute` method to await storage destroy promise and handle rejections.
 
 0.2.0 (October 5, 2022)
  - Added support for synchronizing telemetry data, impression counts and unique keys in pluggable storage.
