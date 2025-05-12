@@ -7,7 +7,7 @@ Split JavaScript Sync Tools is an open source project and we welcome feedback an
 ### Development process
 
 1. Fork the repository and create a topic branch from `development` branch. Please use a descriptive name for your branch.
-2. Run `nvm use` to ensure that you are using the right npm and node version, and `npm install` to have the dependencies up to date.
+2. Run `nvm use` to ensure that you are using the right npm and Node.js version, and `npm install` to have the dependencies up to date.
 3. While developing, use descriptive messages in your commits. Avoid short or meaningless sentences like: "fix bug".
 4. Make sure to add tests for both positive and negative cases.
 5. Run the linter script of the project and fix any issues you find.

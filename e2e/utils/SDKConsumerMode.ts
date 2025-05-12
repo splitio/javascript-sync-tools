@@ -33,7 +33,7 @@ export default function runSDKConsumer(impressionsMode: ImpressionsMode) {
       impressionsMode,
     }, // @ts-ignore
   }, (modules) => {
-    // Using pluggable storage in NodeJS SDK
+    // Using pluggable storage in Node.js
     modules.storageFactory = PluggableStorage({
       prefix: modules.settings.storage.prefix,
       wrapper: redisAdapterWrapper(modules.settings.storage.options),

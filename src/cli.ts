@@ -300,7 +300,7 @@ const synchronizer = new Synchronizer({
 });
 
 /**
- * Function to exit node with error.
+ * Function to exit Node.js with error.
  */
 function informFailedExecute() {
   console.log('# Split Synchronizer tool execution terminated with issues');
