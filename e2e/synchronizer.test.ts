@@ -1,12 +1,21 @@
+import responseMocks from './utils/responseMocks.json';
+import fetchMock from './utils/nodeFetchMock';
 import { Synchronizer } from '../src/index';
 import { PREFIX, REDIS_PREFIX, REDIS_URL, SERVER_MOCK_URL } from './utils/constants';
 import runSDKConsumer from './utils/SDKConsumerMode';
 import redisAdapterWrapper from './utils/redisAdapterWrapper';
 import { ISynchronizerSettings } from '../types';
 
+fetchMock.get(SERVER_MOCK_URL + '/version', 200);
+fetchMock.post({ url: SERVER_MOCK_URL + '/v1/metrics/config', repeat: 3 }, 200);
+fetchMock.post({ url: SERVER_MOCK_URL + '/v1/metrics/usage', repeat: 3 }, 200);
+fetchMock.post({ url: SERVER_MOCK_URL + '/events/bulk', repeat: 3 }, 200);
+fetchMock.post({ url: SERVER_MOCK_URL + '/testImpressions/bulk', repeat: 2 }, 200);
+fetchMock.post({ url: SERVER_MOCK_URL + '/testImpressions/count', repeat: 2 }, 200);
+fetchMock.post({ url: SERVER_MOCK_URL + '/v1/keys/ss', repeat: 1 }, 200);
+
 let _redisWrapper = redisAdapterWrapper({ url: REDIS_URL });
 
-// @TODO validate HTTP requests
 const createSynchronizer = (synchronizerMode?: string) => {
   /**
    * Settings creation.
@@ -57,6 +66,15 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
     beforeAll(async () => {
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1', { status: 200, body: responseMocks.splitChanges[0] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=-1', { status: 200, body: responseMocks.segmentChanges[0] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/ENDIOS_PEREZ?since=-1', { status: 200, body: responseMocks.segmentChanges[1] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=-1', { status: 200, body: responseMocks.segmentChanges[2] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/ENDIOS_PEREZ?since=1606940431526', { status: 200, body: responseMocks.segmentChanges[4] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1609943267407', { status: 200, body: responseMocks.segmentChanges[5] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
+
       const _synchronizer = createSynchronizer();
       await _synchronizer.execute();
     });
@@ -126,6 +144,10 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer a [SECOND] time and', () => {
     beforeAll(async () => {
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346271', { status: 200, body: responseMocks.splitChanges[2] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
+
       const _synchronizer = createSynchronizer();
 
       const hasExecute = await _synchronizer.execute();
@@ -202,6 +224,10 @@ describe('Synchronizer e2e tests', () => {
     });
 
     test('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346272', { status: 200, body: responseMocks.splitChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
+
       const _synchronizer = createSynchronizer();
 
       const hasExecute = await _synchronizer.execute();
@@ -246,6 +272,10 @@ describe('Synchronizer e2e tests', () => {
     });
 
     test('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346272', { status: 200, body: responseMocks.splitChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
+
       const _synchronizer = createSynchronizer();
 
       const hasExecute = await _synchronizer.execute();
@@ -317,6 +347,10 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
 
   describe('Synchronizer runs the first time', () => {
     beforeAll(async () => {
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1&sets=set_b', { status: 200, body: responseMocks.splitChanges[0] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=-1', { status: 200, body: responseMocks.segmentChanges[0] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+
       await _synchronizer.execute();
     });
 
@@ -368,6 +402,9 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
 
   describe('Synchronizer runs a second time, and', () => {
     beforeAll(async () => {
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346271&sets=set_b', { status: 200, body: responseMocks.splitChanges[2] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+
       await _synchronizer.execute();
     });
 
@@ -408,31 +445,29 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
     });
   });
 
-  test('Synchronizer runs a 3rd time with same SDK key and filter criteria, but wrong URLs. Execution should fail and storage should not be updated', async () => {
+  test('Synchronizer runs a 3rd time with same SDK key and filter criteria, but HTTP requests fail. Execution should fail and storage should not be updated', async () => {
     const keys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`);
 
     const synchronizer = new Synchronizer({
       ...settings,
       sync: {
-        // To final filter query after validation is `&sets=set_b`
+        // Final filter query after validation is `&sets=set_b`
         splitFilters: [{
           type: 'bySet', values: ['set_b', '    '],
         }, {
           type: 'byName', values: ['set_b'],
         }],
       },
-      urls: {
-        sdk: SERVER_MOCK_URL + '/invalidpath',
-        events: SERVER_MOCK_URL + '/invalidpath',
-        telemetry: SERVER_MOCK_URL + '/invalidpath',
-      },
     });
+
+    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346272&sets=set_b', { status: 500 });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
 
     expect(await synchronizer.execute()).toBe(false);
     expect(await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`)).toEqual(keys);
   });
 
-  test('Synchronizer runs a 4th time with a different SDK key and wrong URLs. Execution should fail and storage should be empty, except for storage hash', async () => {
+  test('Synchronizer runs a 4th time with a different SDK key and HTTP requests fail. Execution should fail and storage should be empty, except for storage hash', async () => {
     const keys = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.`);
 
     const synchronizer = new Synchronizer({
@@ -440,12 +475,9 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
       core: {
         authorizationKey: 'fakeSdkKeyForTesting-2',
       },
-      urls: {
-        sdk: SERVER_MOCK_URL + '/invalidpath',
-        events: SERVER_MOCK_URL + '/invalidpath',
-        telemetry: SERVER_MOCK_URL + '/invalidpath',
-      },
     });
+
+    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1&sets=set_b', { status: 500 });
 
     expect(await synchronizer.execute()).toBe(false);
     expect(keys.length).toBeGreaterThan(0);
@@ -459,6 +491,13 @@ describe('Synchronizer - only Splits & Segments mode', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
+    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1', { status: 200, body: responseMocks.splitChanges[0] });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=-1', { status: 200, body: responseMocks.segmentChanges[0] });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=-1', { status: 200, body: responseMocks.segmentChanges[2] });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1609943267407', { status: 200, body: responseMocks.segmentChanges[5] });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
+
     _synchronizer = createSynchronizer('MODE_RUN_FEATURE_FLAGS_AND_SEGMENTS'); // @ts-ignore
     executeSplitsAndSegmentsCallSpy = jest.spyOn(_synchronizer, 'executeSplitsAndSegments'); // @ts-ignore
     executeImpressionsAndEventsCallSpy = jest.spyOn(_synchronizer, 'executeImpressionsAndEvents');
