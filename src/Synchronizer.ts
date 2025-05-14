@@ -1,5 +1,5 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
-import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
+import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync, ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
@@ -22,6 +22,8 @@ import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
 import { uniqueKeysSubmitterFactory } from './submitters/uniqueKeysSubmitter';
 import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
 import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
+import { getFetch } from './synchronizers/getFetch';
+
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -90,7 +92,7 @@ export class Synchronizer {
     this._splitApi = splitApiFactory(
       this.settings, // @ts-expect-error
       {
-        getFetch: Synchronizer._getFetch,
+        getFetch,
         getOptions(settings: ISettings) {
           // @ts-expect-error
           if (settings.sync.requestOptions) return settings.sync.requestOptions;
@@ -194,7 +196,7 @@ export class Synchronizer {
    */
   private async preExecute(): Promise<void> {
     const log = this.settings.log;
-    if (!Synchronizer._getFetch()) throw new Error('Global Fetch API is not available');
+    if (!getFetch()) throw new Error('Global Fetch API is not available');
     log.info('Synchronizer: Execute');
 
     const areAPIsReady = await this._checkEndpointHealth();
@@ -311,25 +313,5 @@ export class Synchronizer {
     }
 
     return isSyncSuccessful;
-  }
-  /**
-   * Function to set the Fetch function to perform the requests. It can be provided through
-   * the NPM package, or fallbacks to the global Fetch function if available. In case
-   * there is no fetch globally, returns undefined.
-   *
-   * @returns {IFetch|undefined}
-   */
-  static _getFetch(): IFetch | undefined {
-    let _fetch;
-    try {
-      _fetch = require('node-fetch');
-      // Handle node-fetch issue https://github.com/node-fetch/node-fetch/issues/1037
-      if (typeof _fetch !== 'function') _fetch = _fetch.default;
-    } catch (e) {
-      // Try to access global fetch if `node-fetch` package couldn't be imported (e.g., not in a Node environment)
-      // eslint-disable-next-line no-undef
-      _fetch = typeof fetch === 'function' ? fetch : undefined;
-    }
-    return _fetch;
   }
 }
