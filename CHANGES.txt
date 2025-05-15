@@ -1,6 +1,9 @@
 1.0.0 (May XXX, 2025)
  - Updated @splitsoftware/splitio-commons package to version 2.2.0.
  - Updated some transitive dependencies for vulnerability fixes.
+ - BREAKING CHANGES:
+    - Dropped support for Node.js v8. The SDK now requires Node.js v14 or above.
+    - Removed internal ponyfills for the `Map` and `Set` global objects. The SDK now requires the runtime environment to support these features natively or provide a polyfill.
 
 0.7.0 (August 5, 2024)
  - Added `sync.requestOptions.agent` option to allow passing a custom Node.js HTTP(S) Agent with specific configurations for the Synchronizer requests, like custom TLS settings or a network proxy (See https://help.split.io/hc/en-us/articles/4421513571469-Split-JavaScript-synchronizer-tools#proxy).
