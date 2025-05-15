@@ -54,7 +54,7 @@ export class SplitsSynchronizer {
   ) {
     this._storage = storage;
     this._settings = settings;
-    this._fetcher = splitChangesFetcherFactory(splitFetcher);
+    this._fetcher = splitChangesFetcherFactory(splitFetcher, settings, storage);
     this._splitUpdater = undefined; // @ts-ignore
     this._inMemoryStorage = InMemoryStorageFactory({ settings }); // @ts-ignore
     this._inMemoryStorageSnapshot = InMemoryStorageFactory({ settings });

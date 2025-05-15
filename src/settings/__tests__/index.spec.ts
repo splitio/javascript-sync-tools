@@ -26,7 +26,7 @@ describe('synchronizerSettingsValidator', () => {
     expect(settings.scheduler.eventsPerPost).toBe(defaults.scheduler.eventsPerPost);
     expect(settings.scheduler.impressionsPerPost).toBe(defaults.scheduler.impressionsPerPost);
     expect(settings.scheduler.maxRetries).toBe(config.scheduler!.maxRetries);
-    expect(settings.sync.flagSpecVersion).toBe('1.1');
+    expect(settings.sync.flagSpecVersion).toBe('1.3');
     expect(settings.sync.requestOptions).toBe(config.sync!.requestOptions);
   });
 
