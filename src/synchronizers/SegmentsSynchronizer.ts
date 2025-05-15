@@ -17,7 +17,7 @@ export class SegmentsSynchronizer {
    */
   private _fetcher;
   /**
-   * The local reference to the SegmentsUpdater from @splitio/javascript-commons.
+   * The local reference to the SegmentsUpdater from `@splitio/javascript-commons`.
    */
   // @ts-ignore
   private _segmentsUpdater;
@@ -27,9 +27,9 @@ export class SegmentsSynchronizer {
   private _settings;
 
   /**
-   * @param {IFetchSegmentChanges}  segmentsFetcher  The SegmentChanges fetcher from Split API.
-   * @param {ISettings}             settings         The Synchronizer's settings.
-   * @param {ISegmentsCacheAsync}   segmentsStorage  The reference to the current Storage.
+   * @param segmentsFetcher - The SegmentChanges fetcher from Split API.
+   * @param settings - The Synchronizer's settings.
+   * @param segmentsStorage - The reference to the current Storage.
    */
   constructor(
     segmentsFetcher: IFetchSegmentChanges,
@@ -44,9 +44,9 @@ export class SegmentsSynchronizer {
   /**
    * Function to use the SegmentUpdater, in order to fetch and store segments from the BE.
    *
-   * @returns {Promise<any>}
+   * @returns A promise that resolves to a boolean indicating the success of the operation.
    */
-  getSegmentsChanges(): Promise<any> {
+  getSegmentsChanges(): Promise<boolean> {
     this._segmentsUpdater = segmentChangesUpdaterFactory(
       this._settings.log,
       this._fetcher,

@@ -194,7 +194,7 @@ console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
 /**
  * Function to set the Synchronizer Execution Mode.
  *
- * @param {CustomModeOption} _customRun  Option provided by the CLI or config (env|json).
+ * @param _customRun - Option provided by the CLI or config (env|json).
  */
 const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {

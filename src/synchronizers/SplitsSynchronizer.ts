@@ -24,7 +24,7 @@ export class SplitsSynchronizer {
    */
   private _fetcher;
   /**
-   * The local reference to the SplitUpdater from @splitio/javascript-commons.
+   * The local reference to the SplitUpdater from `@splitio/javascript-commons`.
    */
   private _splitUpdater?: ISplitChangesUpdater;
   /**
@@ -46,12 +46,12 @@ export class SplitsSynchronizer {
   _inMemoryStorageSnapshot: IStorageSync;
 
   /**
-   * @param {IFetchSplitChanges}   splitFetcher     The SplitChanges fetcher from Split API.
-   * @param {ISettings}            settings         The Synchronizer's settings.
-   * @param {ISplitsCacheAsync}    splitsStorage    The reference to the current Split Storage.
-   * @param {ISegmentsCacheAsync}  segmentsStorage  The reference to the current Cache Storage.
-   * @param {IStorageSync}  inMemoryStorage  The reference to the current Cache Storage.
-   * @param {IStorageSync}  inMemoryStorageSnapshot  The reference to the current Cache Storage.
+   * @param splitFetcher - The SplitChanges fetcher from Split API.
+   * @param settings - The Synchronizer's settings.
+   * @param splitsStorage - The reference to the current Split Storage.
+   * @param segmentsStorage - The reference to the current Cache Storage.
+   * @param inMemoryStorage - The reference to the current Cache Storage.
+   * @param inMemoryStorageSnapshot - The reference to the current Cache Storage.
    */
   constructor(
     splitFetcher: IFetchSplitChanges,
@@ -73,7 +73,7 @@ export class SplitsSynchronizer {
   /**
    * Function to use the SplitUpdater, in order to fetch and store feature flags from the BE.
    *
-   * @returns {Promise<boolean>}
+   * @returns A promise that resolves to a boolean indicating the success of the operation.
    */
   getSplitChanges(): Promise<boolean> {
     this._splitUpdater = splitChangesUpdaterFactory(
@@ -88,7 +88,7 @@ export class SplitsSynchronizer {
   /**
    * Method to retrieve feature flags from external Storage and transfer to local InMemory cache.
    *
-   * @param {SplitsCacheInMemory} splitCacheInMemory  Reference to the local InMemoryCache.
+   * @param splitCacheInMemory - Reference to the local InMemoryCache.
    */
   async getDataFromStorage() {
     const _splitsList: [string, ISplit][] = [];
@@ -177,7 +177,7 @@ export class SplitsSynchronizer {
    * Function to use the InMemoryCache to execute the SplitUpdater to fetch and store feature flags
    * from the BE.
    *
-   * @returns {Promise<boolean>}
+   * @returns A promise that resolves to a boolean indicating the success of the operation.
    */
   async getSplitChangesInMemory(): Promise<boolean> {
     this._splitUpdater = splitChangesUpdaterFactory(
@@ -206,7 +206,7 @@ export class SplitsSynchronizer {
    * Function to compare an initial InMemory cache snapshot with the updated InMemory cache after synchronization.
    * It will calculate differences, removing feature flags that are no longer required and updating the ones with new data.
    *
-   * @returns {any}
+   * @returns A promise that resolves to a number indicating the number of feature flags removed.
    */
   async processDifferences() {
     let deletedAmount = 0;
