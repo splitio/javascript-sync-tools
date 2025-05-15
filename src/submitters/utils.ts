@@ -5,8 +5,8 @@ const DEFAULT_RETRIES_AMOUNT = 3;
 /**
  * Function to generate the Metadata Headers required for Impressions and Events POST requests.
  *
- * @param {IMetadata} metadata  The object containing the Metadata SDK Version, IP and Machine name.
- * @returns {{ SplitSDKVersion: string, SplitSDKMachineIP: string, SplitSDKMachineName: string }}
+ * @param metadata - The object containing the Metadata SDK Version, IP and Machine name.
+ * @returns An object containing the Metadata Headers.
  */
 export const metadataToHeaders = (metadata: IMetadata): {
   SplitSDKVersion: string;
@@ -20,9 +20,9 @@ export const metadataToHeaders = (metadata: IMetadata): {
  * demand when executing the function. It returns a Map with -n array of elements grouped
  * by the desired key.
  *
- * @param {Array<any>} listOfElements  The Array of Objects to process.
- * @param {string}     objectKey       The Key name to define how to group the list of elements.
- * @returns {any}
+ * @param listOfElements - The Array of Objects to process.
+ * @param objectKey - The Key name to define how to group the list of elements.
+ * @returns A Map with -n array of elements grouped by the desired key.
  */
 export function groupBy<T>(listOfElements: Array<T>, objectKey: string):
   {[metadataAsKey: string]: Array<T>} {
@@ -39,10 +39,10 @@ export function groupBy<T>(listOfElements: Array<T>, objectKey: string):
 /**
  * Retries a async function recursively n times.
  *
- * @param {Function}    fn       The function to attempt retry.
- * @param {number}      retries  The amount of attempts to retries. Default 3.
- * @param {string|null} err      A custom error message to display when error.
- * @returns {Promise}
+ * @param fn - The function to attempt retry.
+ * @param retries - The amount of attempts to retries. Default 3.
+ * @param err - A custom error message to display when error.
+ * @returns A promise that resolves to the result of the function.
  */
 export function retry(
   fn: () => any,

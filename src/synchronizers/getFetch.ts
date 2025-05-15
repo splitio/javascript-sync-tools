@@ -21,7 +21,7 @@ export function __setFetch(fetch: IFetch | undefined) {
 /**
  * Retrieves 'node-fetch', a Fetch API polyfill for Node.js, with fallback to global 'fetch' if available.
  *
- * @returns {IFetch | undefined} Fetch API function or undefined if not available.
+ * @returns Fetch API function or undefined if not available.
  */
 export function getFetch(): IFetch | undefined {
   return nodeFetch;

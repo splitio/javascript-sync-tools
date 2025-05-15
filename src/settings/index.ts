@@ -35,8 +35,7 @@ function validatePositiveInteger(log: ILogger, paramName: string, actualValue: a
 /**
  * Function to validate Synchronizer config.
  *
- * @param {any} config  Synchronizer config object provided by the user.
- * @returns {ISettings}
+ * @param config - Synchronizer config object provided by the user.
  */
 export function synchronizerSettingsValidator(
   config: ISynchronizerSettings

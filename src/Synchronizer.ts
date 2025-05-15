@@ -36,11 +36,11 @@ export class Synchronizer {
    */
   private _splitApi: ISplitApi;
   /**
-   * The local reference to the SegmentsUpdater instance from @splitio/javascript-commons.
+   * The local reference to the SegmentsUpdater instance from `@splitio/javascript-commons`.
    */
   private _segmentsSynchronizer!: SegmentsSynchronizer;
   /**
-   * The local reference to the SplitUpdater instance from @splitio/javascript-commons.
+   * The local reference to the SplitUpdater instance from `@splitio/javascript-commons`.
    */
   private _splitsSynchronizer!: SplitsSynchronizer;
   /**
@@ -74,7 +74,7 @@ export class Synchronizer {
   private _observer: ImpressionObserver;
 
   /**
-   * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
+   * @param config - Configuration object used to instantiate the Synchronizer.
    */
   constructor(config: ISynchronizerSettings) {
     this._observer = impressionObserverSSFactory();
@@ -104,7 +104,7 @@ export class Synchronizer {
   /**
    * Function to check the health status of Split APIs (SDK and Events services).
    *
-   * @returns {Promise<boolean>}
+   * @returns A Promise that resolves to `true` if both services are healthy, `false` otherwise.
    */
   private async _checkEndpointHealth() {
     return await Promise.all([
@@ -115,7 +115,7 @@ export class Synchronizer {
   /**
    * Function to set a storage.
    *
-   * @returns {Promise<void>} A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
+   * @returns A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
    */
   private initializeStorage(): Promise<void> {
     return new Promise<void>((res, rej) => {
@@ -185,7 +185,7 @@ export class Synchronizer {
   /**
    * Function to prepare for sync tasks. Checks for Fetch API availability and initialize Syncs and Storages.
    *
-   * @returns {Promise<void>} A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
+   * @returns A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
    * for example, if the Fetch API is not available, Split API is not responding, or Storage connection fails.
    */
   private async preExecute(): Promise<void> {
@@ -207,7 +207,7 @@ export class Synchronizer {
    * Function to wrap actions to perform after the sync tasks have been executed.
    * Currently, it disconnects from the Storage.
    *
-   * @returns {Promise<void>} A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
+   * @returns A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
    */
   private async postExecute(): Promise<void> {
     try {
@@ -219,8 +219,8 @@ export class Synchronizer {
   /**
    * Method to start the Synchronizer execution.
    *
-   * @param {Function?} cb Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
-   * @returns {Promise<boolean>}
+   * @param cb - Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
+   * @returns A promise that resolves to `true` if the synchronization was successful, `false` otherwise.
    */
   async execute(cb?: (err?: any) => void): Promise<boolean> {
     try {
@@ -254,8 +254,8 @@ export class Synchronizer {
   /**
    * Function to wrap the execution of the feature flags and segments synchronizers.
    *
-   * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
-   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if feature flags and segments were successfully fetched and stored.
+   * @param standalone - Flag to determine the function requires the preExecute conditions.
+   * @returns A promise that resolves to a boolean value indicating if feature flags and segments were successfully fetched and stored.
    */
   private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
@@ -274,8 +274,8 @@ export class Synchronizer {
   /**
    * Function to wrap the execution of the Impressions and Event's synchronizers.
    *
-   * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
-   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if impressions and events were successfully popped from the storage and sent to Split.
+   * @param standalone - Flag to determine the function requires the preExecute conditions.
+   * @returns A promise that resolves to a boolean value indicating if impressions and events were successfully popped from the storage and sent to Split.
    */
   private async executeImpressionsAndEvents(standalone = true) {
     const log = this.settings.log;
