@@ -35,8 +35,6 @@ const impressionWithMetadata: StoredImpressionWithMetadata = {
 };
 /**
  * Function go return an Impression with a Random generated metadata.
- *
- * @returns {StoredImpressionWithMetadata}
  */
 function getRandomizeMetadata(): StoredImpressionWithMetadata {
   const { i, s } = impressionWithMetadata.m;
@@ -49,8 +47,6 @@ function getRandomizeMetadata(): StoredImpressionWithMetadata {
 /**
  * Function generate a random value for the "value" in an example impression,
  * and then return that Impression.
- *
- * @returns {StoredImpressionWithMetadata}
  */
 function getRandomizeImpression(): StoredImpressionWithMetadata {
   const { k, t, m, b, r, c } = impressionWithMetadata.i;
@@ -62,8 +58,6 @@ function getRandomizeImpression(): StoredImpressionWithMetadata {
 }
 /**
  * Function to return an Impression with its full Key's name and no metadata.
- *
- * @returns {ImpressionDTO}
  */
 export function getImpressionSampleWithNoMetadata(): ImpressionDTO {
   return impressionFullNameNoMetadata;
@@ -71,10 +65,10 @@ export function getImpressionSampleWithNoMetadata(): ImpressionDTO {
 /**
  *  Function to generate a list of Impressions with the same metadata.
  *
- * @param {number}  len        The amount of Impressions to generate.
- * @param {boolean} randomizeMetadata    Flag to determine if Metadata needs to be randomly generated.
- * @param {boolean} randomizeImpression  Flag to determine if Impression data needs to be randomly generated.
- * @returns {StoredImpressionWithMetadata[]}
+ * @param len - The amount of Impressions to generate.
+ * @param randomizeMetadata - Flag to determine if Metadata needs to be randomly generated.
+ * @param randomizeImpression - Flag to determine if Impression data needs to be randomly generated.
+ * @returns An array of Impressions with the metadata.
  */
 export function getImpressionsListWithSameMetadata(
   len: number,
