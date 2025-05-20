@@ -371,6 +371,51 @@
         ],
         "s": -1,
         "t": 1619720346271
+      },
+      "rbs": {
+        "s": -1,
+        "t": 100,
+        "d": [
+          {
+            "changeNumber": 5,
+            "name": "test_rule_based_segment",
+            "status": "ACTIVE",
+            "trafficTypeName": "user",
+            "excluded": {
+              "keys": [
+                "mauro@split.io",
+                "gaston@split.io"
+              ],
+              "segments": [
+                {
+                  "type": "standard",
+                  "name": "test_maldo"
+                }
+              ]
+            },
+            "conditions": [
+              {
+                "matcherGroup": {
+                  "combiner": "AND",
+                  "matchers": [
+                    {
+                      "keySelector": {
+                        "trafficType": "user"
+                      },
+                      "matcherType": "ENDS_WITH",
+                      "negate": false,
+                      "whitelistMatcherData": {
+                        "whitelist": [
+                          "@split.io"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     {

@@ -142,7 +142,7 @@ export class SplitsSynchronizer {
 
       const registeredSegments = this._inMemoryStorage.segments.getRegisteredSegments();
 
-      // @todo: Update segment definitions and change number
+      // @todo: Update rule-based segments, segment definitions and change number
       if (registeredSegments.length > 0)
         await this._storage.segments.registerSegments(registeredSegments);
     } catch (error) {
