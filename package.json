@@ -36,7 +36,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "check": "npm run check:lint && npm run check:types",
-    "check:lint": "eslint src types --ext .js,.ts",
+    "check:lint": "eslint src types e2e --ext .js,.ts",
     "check:types": "tsc --noEmit",
     "build": "npm run build:esm && npm run build:cjs",
     "build:esm": "rimraf lib/esm && tsc -m es2015 --outDir lib/esm --importHelpers && scripts/build_esm_replace_imports.sh && replace @VERSION@ $npm_package_version lib/esm/settings/defaults.js",
