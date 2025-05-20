@@ -1,6 +1,7 @@
 // Type definitions for Split JavaScript Sync Tools
 // Project: https://www.split.io/
 // Definitions by: Emiliano Sanchez <https://github.com/EmilianoSanchez/>
+
 import { RequestOptions } from 'http';
 
 export = JsSyncTools;
@@ -14,11 +15,13 @@ declare module JsSyncTools {
   export class Synchronizer {
     /**
      * Creates a new Synchronizer instance
+     *
      * @param config - The synchronizer config object
      */
     constructor(config: ISynchronizerSettings);
     /**
      * Execute synchronization
+     *
      * @param cb - Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
      * @returns A promise that resolves when the operation ends, with a boolean indicating if operation succeeded or not. The promise never rejects.
      */
@@ -98,7 +101,7 @@ declare module JsSyncTools {
      */
     storage: {
       /**
-       * Storage type. The only possible value is "PLUGGABLE", which is the default.
+       * Storage type. The only possible value is `'PLUGGABLE'`, which is the default.
        */
       type?: 'PLUGGABLE',
       /**
@@ -121,10 +124,11 @@ declare module JsSyncTools {
      * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string.
      *
      * Examples:
-     * ```typescript
+     * ```
      * config.debug = true
      * config.debug = 'WARN'
      * ```
+     *
      * @defaultValue `false`
      */
     debug?: boolean | LogLevel
@@ -145,7 +149,7 @@ declare module JsSyncTools {
       splitFilters?: SplitFilter[]
       /**
        * Feature Flag Spec version. Option to determine which version of the feature flag definitions are fetched and stored.
-       * Possible values are '1.0' and '1.1'.
+       * Possible values are `'1.0'` and `'1.1'`.
        *
        * @defaultValue `'1.1'`
        */
@@ -153,7 +157,7 @@ declare module JsSyncTools {
       /**
        * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split Servers.
        *
-       * Possible values are 'DEBUG' and 'OPTIMIZED'.
+       * Possible values are `'DEBUG'` and `'OPTIMIZED'`.
        * - DEBUG: will send all the impressions generated (recommended only for debugging purposes).
        * - OPTIMIZED: will send unique impressions to Split Servers avoiding a considerable amount of traffic that duplicated impressions could generate.
        *
@@ -163,6 +167,7 @@ declare module JsSyncTools {
       /**
        * Custom options object for HTTP(S) requests in Node.js.
        * If provided, this object is merged with the options object passed for Node-Fetch calls.
+       *
        * @see {@link https://www.npmjs.com/package/node-fetch#options}
        */
       requestOptions?: {
@@ -193,7 +198,7 @@ declare module JsSyncTools {
          *
          * You can use it, for example, for certificate pinning or setting a network proxy:
          *
-         * ```javascript
+         * ```
          * const { HttpsProxyAgent } = require('https-proxy-agent');
          *
          * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');
@@ -221,16 +226,19 @@ declare module JsSyncTools {
     scheduler?: {
       /**
        * Maximum number of impressions to send per POST request.
+       *
        * @defaultValue `1000`
        */
       impressionsPerPost?: number
       /**
        * Maximum number of events to send per POST request.
+       *
        * @defaultValue `1000`
        */
       eventsPerPost?: number
       /**
        * Maximum number of retry attempts for posting impressions and events.
+       *
        * @defaultValue `3`
        */
       maxRetries?: number
