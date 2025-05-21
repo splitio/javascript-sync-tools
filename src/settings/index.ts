@@ -53,7 +53,7 @@ export function synchronizerSettingsValidator(
   const { scheduler, log } = settings;
 
   // @TODO validate synchronizerMode eventually
-  // @TODO: validate minimum and maximum value for config params.
+  // @TODO validate minimum and maximum value for config params.
   scheduler.eventsPerPost = validatePositiveInteger(log, 'eventsPerPost', scheduler.eventsPerPost, defaults.scheduler.eventsPerPost);
   scheduler.impressionsPerPost = validatePositiveInteger(log, 'impressionsPerPost', scheduler.impressionsPerPost, defaults.scheduler.impressionsPerPost);
   scheduler.maxRetries = validatePositiveInteger(log, 'maxRetries', scheduler.maxRetries, defaults.scheduler.maxRetries);
