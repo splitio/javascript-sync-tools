@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-sync-tools",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "description": "Split JavaScript Sync Tools",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
