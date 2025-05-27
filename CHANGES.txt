@@ -1,4 +1,6 @@
-1.0.0 (May XXX, 2025)
+1.0.0 (May 28, 2025)
+ - Added support for synchronizing feature flags with rule-based segments. These segments determine membership at runtime by evaluating their configured rules against the user attributes provided to the SDK.
+ - Added support for synchronizing feature flags with prerequisites. This allows customers to define dependency conditions between flags, which are evaluated before any allowlists or targeting rules.
  - Added support for synchronizing SDK impressions with properties.
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance Synchronizer HTTP request Headers for Authorization Frameworks.
  - Updated @splitsoftware/splitio-commons package to version 2.3.0 and some transitive dependencies for vulnerability fixes and other improvements.

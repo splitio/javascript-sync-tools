@@ -149,11 +149,11 @@ declare module JsSyncTools {
       splitFilters?: SplitFilter[]
       /**
        * Feature Flag Spec version. Option to determine which version of the feature flag definitions are fetched and stored.
-       * Possible values are `'1.0'` and `'1.1'`.
+       * Possible values are `'1.0'`, `'1.1'`, `'1.2'`, and `'1.3'`.
        *
-       * @defaultValue `'1.1'`
+       * @defaultValue `'1.3'`
        */
-      flagSpecVersion?: '1.0' | '1.1'
+      flagSpecVersion?: '1.0' | '1.1' | '1.2' | '1.3'
       /**
        * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split Servers.
        *

@@ -4,8 +4,6 @@
  */
 const version = '@VERSION@';
 
-export const FLAG_SPEC_VERSION = '1.1';
-
 /**
  * Default values to create settings for the JavaScript Synchronizer.
  */
@@ -29,9 +27,6 @@ export const defaults = {
     eventsPerPost: 1000,
     // Number of retry attempts for posting impressions and events.
     maxRetries: 3,
-  },
-  sync: {
-    flagSpecVersion: FLAG_SPEC_VERSION,
   },
   version: `synctoolsjs-${version}`,
   streamingEnabled: false,

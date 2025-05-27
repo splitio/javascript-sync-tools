@@ -54,7 +54,7 @@ export class SplitsSynchronizer {
   ) {
     this._storage = storage;
     this._settings = settings;
-    this._fetcher = splitChangesFetcherFactory(splitFetcher);
+    this._fetcher = splitChangesFetcherFactory(splitFetcher, settings, storage);
     this._splitUpdater = undefined; // @ts-ignore
     this._inMemoryStorage = InMemoryStorageFactory({ settings }); // @ts-ignore
     this._inMemoryStorageSnapshot = InMemoryStorageFactory({ settings });
@@ -142,7 +142,7 @@ export class SplitsSynchronizer {
 
       const registeredSegments = this._inMemoryStorage.segments.getRegisteredSegments();
 
-      // @todo: Update segment definitions and change number
+      // @todo: Update rule-based segments, segment definitions and change number
       if (registeredSegments.length > 0)
         await this._storage.segments.registerSegments(registeredSegments);
     } catch (error) {
