@@ -14,6 +14,7 @@ export function synchronizerStorageFactory(settings: ISettings, onReadyCb: IStor
   const { storage } = settings;
 
   // @TODO support both storage param types?: config object (JS SDK) and storage function (Browser and RN SDK)
+  // @ts-expect-error
   const storageFactory = typeof storage === 'function' ? storage : PluggableStorage(storage);
   // Ignoring metadata parameter since it's use by the Consumer API (like Events.track)
   // and the Synchronizer doesn't need to perform such actions.

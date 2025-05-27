@@ -1,9 +1,10 @@
 import { IFetchSplitChanges } from '@splitsoftware/splitio-commons/src/services/types';
+import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { splitChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
 import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
 import { ISplit } from '@splitsoftware/splitio-commons/src/dtos/types';
-import { ISegmentsCacheAsync, ISplitsCacheAsync, IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
+import { IStorageAsync, IStorageSync } from '@splitsoftware/splitio-commons/src/storages/types';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
 
@@ -12,13 +13,9 @@ type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>;
  */
 export class SplitsSynchronizer {
   /**
-   * The local reference to the Synchronizer's Split Storage.
+   * The local reference to the Synchronizer's Storage.
    */
-  private _segmentsStorage;
-  /**
-   * The local reference to the Synchronizer's Segments Storage.
-   */
-  private _splitsStorage;
+  private _storage;
   /**
    * The local reference to the Fetch implementation required to perform requests.
    */
@@ -48,26 +45,19 @@ export class SplitsSynchronizer {
   /**
    * @param splitFetcher - The SplitChanges fetcher from Split API.
    * @param settings - The Synchronizer's settings.
-   * @param splitsStorage - The reference to the current Split Storage.
-   * @param segmentsStorage - The reference to the current Cache Storage.
-   * @param inMemoryStorage - The reference to the current Cache Storage.
-   * @param inMemoryStorageSnapshot - The reference to the current Cache Storage.
+   * @param storage - The reference to the current Storage.
    */
   constructor(
     splitFetcher: IFetchSplitChanges,
     settings: ISettings,
-    splitsStorage: ISplitsCacheAsync,
-    segmentsStorage: ISegmentsCacheAsync,
-    inMemoryStorage: IStorageSync,
-    inMemoryStorageSnapshot: IStorageSync,
+    storage: IStorageAsync,
   ) {
-    this._splitsStorage = splitsStorage;
-    this._segmentsStorage = segmentsStorage;
+    this._storage = storage;
     this._settings = settings;
-    this._fetcher = splitChangesFetcherFactory(splitFetcher);
-    this._splitUpdater = undefined;
-    this._inMemoryStorage = inMemoryStorage;
-    this._inMemoryStorageSnapshot = inMemoryStorageSnapshot;
+    this._fetcher = splitChangesFetcherFactory(splitFetcher, settings, storage);
+    this._splitUpdater = undefined; // @ts-ignore
+    this._inMemoryStorage = InMemoryStorageFactory({ settings }); // @ts-ignore
+    this._inMemoryStorageSnapshot = InMemoryStorageFactory({ settings });
   }
 
   /**
@@ -79,8 +69,7 @@ export class SplitsSynchronizer {
     this._splitUpdater = splitChangesUpdaterFactory(
       this._settings.log,
       this._fetcher,
-      this._splitsStorage,
-      this._segmentsStorage,
+      this._storage,
       this._settings.sync.__splitFiltersValidation,
     );
     return this._splitUpdater();
@@ -91,28 +80,19 @@ export class SplitsSynchronizer {
    * @param splitCacheInMemory - Reference to the local InMemoryCache.
    */
   async getDataFromStorage() {
-    const _splitsList: [string, ISplit][] = [];
     try {
-      const splits = await this._splitsStorage.getAll();
+      const splits = await this._storage.splits.getAll();
 
-      splits.forEach((split) => {
-        _splitsList.push([split.name, split]);
-      });
+      const changeNumber = await this._storage.splits.getChangeNumber();
+      this._inMemoryStorage.splits.update(splits, [], changeNumber);
 
-      this._inMemoryStorage.splits.addSplits(_splitsList);
+      this._inMemoryStorageSnapshot.splits.update(splits, [], changeNumber);
 
-      this._inMemoryStorageSnapshot.splits.addSplits(_splitsList);
-
-      const registeredSegments = await this._segmentsStorage.getRegisteredSegments();
+      const registeredSegments = await this._storage.segments.getRegisteredSegments();
       if (registeredSegments.length > 0) {
         this._inMemoryStorage.segments.registerSegments(registeredSegments);
         this._inMemoryStorageSnapshot.segments.registerSegments(registeredSegments);
       }
-      const changeNumber = await this._splitsStorage.getChangeNumber();
-
-      this._inMemoryStorage.splits.setChangeNumber(changeNumber);
-      this._inMemoryStorageSnapshot.splits.setChangeNumber(changeNumber);
-
     } catch (error) {
       this._settings.log.error(
         `Feature flags InMemory synchronization: Error when retrieving data from external Storage. Error: ${error}`
@@ -137,7 +117,7 @@ export class SplitsSynchronizer {
 
       if (splits.length > 0) {
 
-        const splitsToStore: [string, ISplit][] = [];
+        const splitsToStore: ISplit[] = [];
         for (let i = 0; i < splits.length; i++) {
           const split = splits[i];
           const { name, changeNumber } = split;
@@ -146,26 +126,25 @@ export class SplitsSynchronizer {
           if (split) {
             // If the feature flag doesn't exists.
             if (!oldSplitDefinition) {
-              splitsToStore.push([name, split]);
+              splitsToStore.push(split);
               continue;
             }
             // If the feature flag exists and needs to be updated.
             if (oldSplitDefinition.changeNumber !== changeNumber) {
-              splitsToStore.push([name, split]);
+              splitsToStore.push(split);
               continue;
             }
           }
         }
 
-        await this._splitsStorage.addSplits(splitsToStore);
+        await this._storage.splits.update(splitsToStore, [], changeNumber);
       }
-      await this._splitsStorage.setChangeNumber(changeNumber);
 
       const registeredSegments = this._inMemoryStorage.segments.getRegisteredSegments();
 
-      // @todo: Update segment definitions and change number
+      // @todo: Update rule-based segments, segment definitions and change number
       if (registeredSegments.length > 0)
-        await this._segmentsStorage.registerSegments(registeredSegments);
+        await this._storage.segments.registerSegments(registeredSegments);
     } catch (error) {
       this._settings.log.error(
         `Feature flags InMemory synchronization: Error when storing data to external Storage. Error: ${error}`
@@ -183,8 +162,7 @@ export class SplitsSynchronizer {
     this._splitUpdater = splitChangesUpdaterFactory(
       this._settings.log,
       this._fetcher,
-      this._inMemoryStorage.splits,
-      this._inMemoryStorage.segments,
+      this._inMemoryStorage,
       this._settings.sync.__splitFiltersValidation,
     );
     try {
@@ -223,7 +201,8 @@ export class SplitsSynchronizer {
       }
     });
 
-    await this._splitsStorage.removeSplits(splitKeysToRemove);
+    // @ts-expect-error
+    await this._storage.splits.update([], splitKeysToRemove.map((k) => ({ name: k })), this._storage.splits.getChangeNumber());
 
     return deletedAmount;
   }

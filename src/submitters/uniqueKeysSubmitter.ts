@@ -3,7 +3,6 @@ import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IPostUniqueKeysBulkSs } from '@splitsoftware/splitio-commons/src/services/types';
 import { fromUniqueKeysCollector } from '@splitsoftware/splitio-commons/src/storages/inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
-import { ISet, _Set } from '@splitsoftware/splitio-commons/src/utils/lang/sets';
 import { submitterFactory } from './submitter';
 
 export function uniqueKeysSubmitterFactory(
@@ -19,12 +18,12 @@ export function uniqueKeysSubmitterFactory(
 
     if (!uniqueKeyItems.length) return undefined;
 
-    const mergedUniqueKeys = uniqueKeyItems.reduce<{ [featureName: string]: ISet<string> }>((accUniqueKeys, uniqueKeyItem) => {
+    const mergedUniqueKeys = uniqueKeyItems.reduce<{ [featureName: string]: Set<string> }>((accUniqueKeys, uniqueKeyItem) => {
       const featureNameKeys = accUniqueKeys[uniqueKeyItem.f];
       if (featureNameKeys) {
         uniqueKeyItem.ks.forEach(key => featureNameKeys.add(key));
       } else {
-        accUniqueKeys[uniqueKeyItem.f] = new _Set(uniqueKeyItem.ks);
+        accUniqueKeys[uniqueKeyItem.f] = new Set(uniqueKeyItem.ks);
       }
       return accUniqueKeys;
     }, {});

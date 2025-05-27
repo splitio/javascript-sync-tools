@@ -2,8 +2,10 @@ import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/spl
 import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync, ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
-import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
+import { segmentChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/segmentChangesFetcher';
+import { segmentChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/segmentChangesUpdater';
+import { splitChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
+import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { synchronizerStorageFactory } from './storages/synchronizerStorage';
 import { eventsSubmitterFactory } from './submitters/eventsSubmitter';
 import { impressionsSubmitterFactory } from './submitters/impressionsSubmitter';
@@ -15,7 +17,6 @@ import { impressionCountsSubmitterFactory } from './submitters/impressionCountsS
 import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { ISynchronizerSettings } from '../types';
-import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
@@ -37,13 +38,13 @@ export class Synchronizer {
    */
   private _splitApi: ISplitApi;
   /**
-   * The local reference to the SegmentsUpdater instance from `@splitio/javascript-commons`.
+   * The local reference to the segmentChangesUpdater instance from `@splitio/javascript-commons`.
    */
-  private _segmentsSynchronizer!: SegmentsSynchronizer;
+  private _segmentChangesUpdater!: ReturnType<typeof segmentChangesUpdaterFactory>;
   /**
-   * The local reference to the SplitUpdater instance from `@splitio/javascript-commons`.
+   * The local reference to the splitChangesUpdater instance from `@splitio/javascript-commons`.
    */
-  private _splitsSynchronizer!: SplitsSynchronizer;
+  private _splitChangesUpdater!: ReturnType<typeof splitChangesUpdaterFactory>;
   /**
    * The local reference to the EventsSynchronizer class.
    */
@@ -90,11 +91,11 @@ export class Synchronizer {
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
-      this.settings, // @ts-expect-error
+      this.settings,
       {
         getFetch,
         getOptions(settings: ISettings) {
-          // @ts-expect-error
+          // User provided options take precedence
           if (settings.sync.requestOptions) return settings.sync.requestOptions;
         },
       },
@@ -138,20 +139,16 @@ export class Synchronizer {
       new ImpressionCountsCacheInMemory() :
       undefined;
 
-    this._segmentsSynchronizer = new SegmentsSynchronizer(
-      this._splitApi.fetchSegmentChanges,
-      this.settings,
+    this._segmentChangesUpdater = segmentChangesUpdaterFactory(
+      this.settings.log,
+      segmentChangesFetcherFactory(this._splitApi.fetchSegmentChanges),
       this._storage.segments,
     );
-    this._splitsSynchronizer = new SplitsSynchronizer(
-      this._splitApi.fetchSplitChanges,
-      this.settings,
-      this._storage.splits,
-      this._storage.segments,
-      // @ts-ignore
-      InMemoryStorageFactory({ settings: this.settings }),
-      // @ts-ignore
-      InMemoryStorageFactory({ settings: this.settings })
+    this._splitChangesUpdater = splitChangesUpdaterFactory(
+      this.settings.log,
+      splitChangesFetcherFactory(this._splitApi.fetchSplitChanges, this.settings, this._storage),
+      this._storage,
+      this.settings.sync.__splitFiltersValidation
     );
     this._eventsSubmitter = eventsSubmitterFactory(
       this.settings.log,
@@ -197,7 +194,7 @@ export class Synchronizer {
   private async preExecute(): Promise<void> {
     const log = this.settings.log;
     if (!getFetch()) throw new Error('Global Fetch API is not available');
-    log.info('Synchronizer: Execute');
+    log.info(`Synchronizer: Execute. Version: ${this.settings.version}`);
 
     const areAPIsReady = await this._checkEndpointHealth();
     if (!areAPIsReady) throw new Error('Health check of Split API endpoints failed');
@@ -266,11 +263,10 @@ export class Synchronizer {
   private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
-    const isSplitsSyncSuccessful = await this._splitsSynchronizer.getSplitChanges();
+    const isSplitsSyncSuccessful = await this._splitChangesUpdater();
 
     this.settings.log.debug(`Feature flags Synchronizer task: ${isSplitsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
-    const isSegmentsSyncSuccessful = await this._segmentsSynchronizer.getSegmentsChanges();
+    const isSegmentsSyncSuccessful = await this._segmentChangesUpdater();
     this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
 
     if (standalone) await this.postExecute();

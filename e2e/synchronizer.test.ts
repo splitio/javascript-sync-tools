@@ -66,7 +66,7 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer for the [FIRST] time, and', () => {
     beforeAll(async () => {
-      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1', { status: 200, body: responseMocks.splitChanges[0] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=-1&rbSince=-1', { status: 200, body: responseMocks.splitChanges[0] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=-1', { status: 200, body: responseMocks.segmentChanges[0] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/ENDIOS_PEREZ?since=-1', { status: 200, body: responseMocks.segmentChanges[1] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=-1', { status: 200, body: responseMocks.segmentChanges[2] });
@@ -116,6 +116,14 @@ describe('Synchronizer e2e tests', () => {
       expect(itemsSetB.sort()).toEqual(['TEST_DOC', 'TEST_MATIAS']);
       expect(itemsInexistentSet).toEqual([]);
     });
+
+    test('saves 1 rule-based segment', async () => {
+      const ruleBasedSegments = await _redisWrapper.getKeysByPrefix(`${REDIS_PREFIX}.rbsegment.*`);
+      expect(ruleBasedSegments).toHaveLength(1);
+
+      expect(await _redisWrapper.get(`${REDIS_PREFIX}.rbsegments.till`)).toBe('100');
+    });
+
   });
 
   describe('Runs SDK Consumer with DEBUG impressions mode, and', () => {
@@ -144,7 +152,7 @@ describe('Synchronizer e2e tests', () => {
 
   describe('Runs Synchronizer a [SECOND] time and', () => {
     beforeAll(async () => {
-      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346271', { status: 200, body: responseMocks.splitChanges[2] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=1619720346271&rbSince=100', { status: 200, body: responseMocks.splitChanges[2] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
 
@@ -224,7 +232,7 @@ describe('Synchronizer e2e tests', () => {
     });
 
     test('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
-      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346272', { status: 200, body: responseMocks.splitChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=1619720346272&rbSince=100', { status: 200, body: responseMocks.splitChanges[3] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
 
@@ -272,7 +280,7 @@ describe('Synchronizer e2e tests', () => {
     });
 
     test('Run Synchronizer and check that data was popped from Redis and sent to Split BE', async () => {
-      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346272', { status: 200, body: responseMocks.splitChanges[3] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=1619720346272&rbSince=100', { status: 200, body: responseMocks.splitChanges[3] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=1617053238061', { status: 200, body: responseMocks.segmentChanges[6] });
 
@@ -347,7 +355,7 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
 
   describe('Synchronizer runs the first time', () => {
     beforeAll(async () => {
-      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1&sets=set_b', { status: 200, body: responseMocks.splitChanges[0] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=-1&rbSince=-1&sets=set_b', { status: 200, body: responseMocks.splitChanges[0] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=-1', { status: 200, body: responseMocks.segmentChanges[0] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
 
@@ -402,7 +410,7 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
 
   describe('Synchronizer runs a second time, and', () => {
     beforeAll(async () => {
-      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346271&sets=set_b', { status: 200, body: responseMocks.splitChanges[2] });
+      fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=1619720346271&rbSince=100&sets=set_b', { status: 200, body: responseMocks.splitChanges[2] });
       fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
 
       await _synchronizer.execute();
@@ -460,7 +468,7 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
       },
     });
 
-    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=1619720346272&sets=set_b', { status: 500 });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=1619720346272&rbSince=100&sets=set_b', { status: 500 });
     fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });
 
     expect(await synchronizer.execute()).toBe(false);
@@ -477,7 +485,7 @@ describe('Synchronizer e2e tests - OPTIMIZED impressions mode & Flag Sets filter
       },
     });
 
-    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1&sets=set_b', { status: 500 });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=-1&rbSince=-1&sets=set_b', { status: 500 });
 
     expect(await synchronizer.execute()).toBe(false);
     expect(keys.length).toBeGreaterThan(0);
@@ -491,7 +499,7 @@ describe('Synchronizer - only Splits & Segments mode', () => {
   let executeImpressionsAndEventsCallSpy: jest.SpyInstance;
 
   beforeAll(async () => {
-    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.1&since=-1', { status: 200, body: responseMocks.splitChanges[0] });
+    fetchMock.getOnce(SERVER_MOCK_URL + '/splitChanges?s=1.3&since=-1&rbSince=-1', { status: 200, body: responseMocks.splitChanges[0] });
     fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=-1', { status: 200, body: responseMocks.segmentChanges[0] });
     fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/Lucas_Segments_Tests?since=-1', { status: 200, body: responseMocks.segmentChanges[2] });
     fetchMock.getOnce(SERVER_MOCK_URL + '/segmentChanges/test_maldo?since=1589906133231', { status: 200, body: responseMocks.segmentChanges[3] });

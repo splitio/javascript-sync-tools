@@ -242,6 +242,7 @@ describe('Impressions Submitter for Lightweight Synchronizer', () => {
           c: expect.any(Number),
           m: expect.any(Number),
           pt: expect.any(Number),
+          properties: expect.any(String),
         })
       );
       // @ts-ignore

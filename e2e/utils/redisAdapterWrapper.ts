@@ -7,8 +7,8 @@ import { noopLogger } from '../../src/submitters/__tests__/commonUtils';
  * Creates a storage wrapper that uses our RedisAdapter.
  * Operations fail until `connect` is resolved once the Redis 'ready' event is emitted.
  *
- * @param {Object} redisOptions  Redis options with the format expected at `settings.storage.options`.
- * @returns {IPluggableStorageWrapper} Storage wrapper instance.
+ * @param redisOptions - Redis options with the format expected at `settings.storage.options`.
+ * @returns Storage wrapper instance.
  */
 export default function redisAdapterWrapper(redisOptions: Record<string, any>): IPluggableStorageWrapper {
 
