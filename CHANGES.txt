@@ -1,5 +1,6 @@
-1.0.0 (May XXX, 2025)
- - Added support for synchronizing feature flags with prerequisites and targeting rules based on rule-based segments, by updating the default flag spec version to 1.3. If using the Split Proxy, flag spec 1.3 requires Split Proxy v5.11.0 or higher. If an older version is used, the Synchronizer will fallback to the previous flag spec version (1.2).
+1.0.0 (May 28, 2025)
+ - Added support for synchronizing feature flags with rule-based segments. These segments determine membership at runtime by evaluating their configured rules against the user attributes provided to the SDK.
+ - Added support for synchronizing feature flags with prerequisites. This allows customers to define dependency conditions between flags, which are evaluated before any allowlists or targeting rules.
  - Added support for synchronizing SDK impressions with properties.
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance Synchronizer HTTP request Headers for Authorization Frameworks.
  - Updated @splitsoftware/splitio-commons package to version 2.3.0 and some transitive dependencies for vulnerability fixes and other improvements.

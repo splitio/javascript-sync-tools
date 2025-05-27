@@ -194,7 +194,7 @@ export class Synchronizer {
   private async preExecute(): Promise<void> {
     const log = this.settings.log;
     if (!getFetch()) throw new Error('Global Fetch API is not available');
-    log.info('Synchronizer: Execute');
+    log.info(`Synchronizer: Execute. Version: ${this.settings.version}`);
 
     const areAPIsReady = await this._checkEndpointHealth();
     if (!areAPIsReady) throw new Error('Health check of Split API endpoints failed');
