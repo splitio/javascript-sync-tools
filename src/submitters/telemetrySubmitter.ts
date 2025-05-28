@@ -3,7 +3,6 @@ import { TelemetryUsageStats } from '@splitsoftware/splitio-commons/src/sync/sub
 import { ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { metadataToHeaders } from './utils';
 import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
-import { _Map, IMap } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
 
 /**
@@ -11,10 +10,10 @@ import { _Map, IMap } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
  * (latencies and exceptions) from the telemetry storage, and submits them to the Split cloud.
  * The function returns a promise that never rejects, and resolves to true or false if the operation success or not.
  *
- * @param {ILogger}              logger          The Synchronizer's Logger.
- * @param {ISplitApi}            splitApi        The Split's HTTPClient API to perform the POST request.
- * @param {ITelemetryCacheAsync} telemetryCache  The Telemetry storage Cache from where to retrieve data.
- * @returns {() => Promise<boolean>}
+ * @param logger - The Synchronizer's Logger.
+ * @param splitApi - The Split's HTTPClient API to perform the POST request.
+ * @param telemetryCache - The Telemetry storage Cache from where to retrieve data.
+ * @returns A function that never rejects, and resolves to true or false if the operation success or not.
  */
 export function telemetrySubmitterFactory(
   logger: ILogger,
@@ -22,11 +21,11 @@ export function telemetrySubmitterFactory(
   telemetryCache: ITelemetryCacheAsync,
 ): () => Promise<boolean> {
 
-  async function buildUsageStats(): Promise<IMap<string, TelemetryUsageStats>> {
+  async function buildUsageStats(): Promise<Map<string, TelemetryUsageStats>> {
     const latencies = await telemetryCache.popLatencies();
     const exceptions = await telemetryCache.popExceptions();
 
-    const result = new _Map<string, TelemetryUsageStats>();
+    const result = new Map<string, TelemetryUsageStats>();
 
     latencies.forEach((latency, metadata) => {
       result.set(metadata, { mL: latency });

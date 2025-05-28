@@ -1,4 +1,5 @@
 import { ISynchronizerSettings } from '../../types';
+import * as getFetch from '../synchronizers/getFetch';
 
 import { Synchronizer } from '../Synchronizer';
 import { inMemoryWrapperFactory } from '@splitsoftware/splitio-commons/src/storages/pluggable/inMemoryWrapper';
@@ -24,21 +25,19 @@ describe('Synchronizer creation and execution', () => {
   };
 
   test('Synchronizer execution fails because no Fetch API is present', async () => {
-    // Create a synchronizer with a mocked _getFetch function that returns undefined
-    const originalGetFetch = Synchronizer._getFetch;
-    const _getFetchMock = jest.fn().mockReturnValue(undefined);
-    Synchronizer._getFetch = _getFetchMock;
+    // Create a synchronizer with a mocked getFetch function that returns undefined
+    jest.spyOn(getFetch, 'getFetch').mockImplementation(() => undefined);
     const synchronizer = new Synchronizer(config);
 
     let error: any;
     const result = synchronizer.execute((e) => { error = e; });
-    // Restore the original _getFetch function synchronously
-    Synchronizer._getFetch = originalGetFetch;
 
     expect(await result).toBe(false);
     expect(error.message).toBe('Global Fetch API is not available');
+    expect(getFetch.getFetch).toBeCalled();
 
-    expect(_getFetchMock).toBeCalled();
+    // Restore the original getFetch function
+    (getFetch.getFetch as jest.Mock).mockRestore();
   });
 
   test('Synchronizer execution fails because APIs check failed', async () => {
@@ -78,7 +77,7 @@ describe('Synchronizer creation and execution', () => {
     test('Instantiate the Synchronizer and [FAILS] to initialize Pluggable Storage due to wrapper connection error', async () => {
       const wrapperWithConnectionError = {
         ...config.storage.wrapper,
-        connect: () => { throw new Error('Connection error');},
+        connect: () => { throw new Error('Connection error'); },
       };
       const synchronizer = new Synchronizer({ ...config, storage: { ...config.storage, wrapper: wrapperWithConnectionError } });
 

@@ -7,7 +7,7 @@ import { validateLogger } from '@splitsoftware/splitio-commons/src/utils/setting
 import { ISynchronizerSettings } from '../../types';
 import { defaults } from './defaults';
 
-const FLAG_SPEC_VERSIONS = ['1.0', FLAG_SPEC_VERSION];
+const FLAG_SPEC_VERSIONS = ['1.0', '1.1', '1.2', FLAG_SPEC_VERSION];
 
 /**
  * Object with some default values to instantiate the application and fullfil internal
@@ -36,8 +36,7 @@ function validatePositiveInteger(log: ILogger, paramName: string, actualValue: a
 /**
  * Function to validate Synchronizer config.
  *
- * @param {any} config  Synchronizer config object provided by the user.
- * @returns {ISettings}
+ * @param config - Synchronizer config object provided by the user.
  */
 export function synchronizerSettingsValidator(
   config: ISynchronizerSettings
@@ -54,7 +53,7 @@ export function synchronizerSettingsValidator(
   const { scheduler, log } = settings;
 
   // @TODO validate synchronizerMode eventually
-  // @TODO: validate minimum and maximum value for config params.
+  // @TODO validate minimum and maximum value for config params.
   scheduler.eventsPerPost = validatePositiveInteger(log, 'eventsPerPost', scheduler.eventsPerPost, defaults.scheduler.eventsPerPost);
   scheduler.impressionsPerPost = validatePositiveInteger(log, 'impressionsPerPost', scheduler.impressionsPerPost, defaults.scheduler.impressionsPerPost);
   scheduler.maxRetries = validatePositiveInteger(log, 'maxRetries', scheduler.maxRetries, defaults.scheduler.maxRetries);

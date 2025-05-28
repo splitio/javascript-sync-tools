@@ -1,11 +1,11 @@
+import type SplitIO from '@splitsoftware/splitio-commons/types/splitio';
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
-import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
 import { _getRandomString } from './commonUtils';
 
 /**
  * An Impression example.
  */
-const impressionFullNameNoMetadata: ImpressionDTO = {
+const impressionFullNameNoMetadata: SplitIO.ImpressionDTO = {
   keyName: 'marcio@split.io',
   bucketingKey: 'impr_bucketing_2',
   feature: 'qc_team',
@@ -13,6 +13,7 @@ const impressionFullNameNoMetadata: ImpressionDTO = {
   label: 'default rule',
   changeNumber: 828282828282,
   time: Date.now(),
+  properties: '{"key":"value"}',
 };
 /**
  * An Impression with Metadata example.
@@ -31,14 +32,13 @@ const impressionWithMetadata: StoredImpressionWithMetadata = {
     b: 'impr_bucketing_2',
     r: 'default rule',
     c: 828282828282,
+    properties: '{"key":"value"}',
   },
 };
 /**
  * Function go return an Impression with a Random generated metadata.
- *
- * @returns {StoredImpressionWithMetadata}
  */
-function getRandomiseMetadata(): StoredImpressionWithMetadata {
+function getRandomizeMetadata(): StoredImpressionWithMetadata {
   const { i, s } = impressionWithMetadata.m;
   return Object.assign(
     {},
@@ -49,44 +49,38 @@ function getRandomiseMetadata(): StoredImpressionWithMetadata {
 /**
  * Function generate a random value for the "value" in an example impression,
  * and then return that Impression.
- *
- * @returns {StoredImpressionWithMetadata}
  */
-function getRandomiseImpression(): StoredImpressionWithMetadata {
-  const { k, t, m, b, r, c } = impressionWithMetadata.i;
+function getRandomizeImpression(): StoredImpressionWithMetadata {
+  const { k, t, m, b, r, c, properties } = impressionWithMetadata.i;
   return Object.assign(
     {},
     impressionWithMetadata,
-    { i: { k, t, m, b, r, c, f: _getRandomString(12) } }
+    { i: { k, t, m, b, r, c, properties, f: _getRandomString(12) } }
   );
 }
 /**
  * Function to return an Impression with its full Key's name and no metadata.
- *
- * @returns {ImpressionDTO}
  */
-export function getImpressionSampleWithNoMetadata(): ImpressionDTO {
+export function getImpressionSampleWithNoMetadata(): SplitIO.ImpressionDTO {
   return impressionFullNameNoMetadata;
 }
 /**
  *  Function to generate a list of Impressions with the same metadata.
  *
- * @param {number}  len        The amount of Impressions to generate.
- * @param {boolean} randomiseMetadata    Flag to determine if Metadata needs to be randomly generated.
- * @param {boolean} randomiseImpression  Flag to determine if Impression data needs to be randomly generated.
- * @returns {StoredImpressionWithMetadata[]}
+ * @param len - The amount of Impressions to generate.
+ * @param randomizeMetadata - Flag to determine if Metadata needs to be randomly generated.
+ * @param randomizeImpression - Flag to determine if Impression data needs to be randomly generated.
+ * @returns An array of Impressions with the metadata.
  */
 export function getImpressionsListWithSameMetadata(
   len: number,
-  randomiseMetadata = false,
-  randomiseImpression = false
+  randomizeMetadata = false,
+  randomizeImpression = false
 ): StoredImpressionWithMetadata[] {
   const _impressionTarget = {
-    m: randomiseMetadata ? getRandomiseMetadata().m : impressionWithMetadata.m,
-    i: randomiseImpression ? getRandomiseImpression().i : impressionWithMetadata.i,
+    m: randomizeMetadata ? getRandomizeMetadata().m : impressionWithMetadata.m,
+    i: randomizeImpression ? getRandomizeImpression().i : impressionWithMetadata.i,
   };
 
   return [...Array(len).keys()].map(() => _impressionTarget);
 }
-
-

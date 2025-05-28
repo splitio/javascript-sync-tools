@@ -6,11 +6,10 @@ import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
 import { submitterFactory } from './submitter';
 import { ImpressionCountsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
-import { _Map } from '@splitsoftware/splitio-commons/src/utils/lang/maps';
 
 // Merge impressions counts objects
 function merge(counts1: ImpressionCountsPayload, counts2: ImpressionCountsPayload): ImpressionCountsPayload {
-  const merged = new _Map(counts1.pf.map((count) => [count.f + count.m, count]));
+  const merged = new Map(counts1.pf.map((count) => [count.f + count.m, count]));
   counts2.pf.forEach((count) => {
     const key = count.f + count.m;
     if (merged.has(key)) merged.get(key)!.rc += count.rc;

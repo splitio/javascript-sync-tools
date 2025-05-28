@@ -1,19 +1,18 @@
+import type SplitIO from '@splitsoftware/splitio-commons/types/splitio';
 import { IPostTestImpressionsBulk } from '@splitsoftware/splitio-commons/src/services/types';
 import { IImpressionCountsCacheBase, IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { StoredImpressionWithMetadata } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { truncateTimeFrame } from '@splitsoftware/splitio-commons/src/utils/time';
 import { ImpressionObserver } from '@splitsoftware/splitio-commons/src/trackers/impressionObserver/ImpressionObserver';
 import { groupBy, metadataToHeaders } from './utils';
-import { SplitIO } from '@splitsoftware/splitio-commons/src/types';
 import { ILogger } from '@splitsoftware/splitio-commons/src/logger/types';
 import { IMetadata } from '@splitsoftware/splitio-commons/src/dtos/types';
-import { ImpressionDTO } from '@splitsoftware/splitio-commons/src/types';
 import { ImpressionsPayload } from '@splitsoftware/splitio-commons/src/sync/submitters/types';
 import { submitterWithMetadataFactory } from './submitter';
 
 export type ImpressionsDTOWithMetadata = {
   metadata: IMetadata;
-  impression: ImpressionDTO;
+  impression: SplitIO.ImpressionDTO;
 }
 
 /**
@@ -28,8 +27,8 @@ const MAX_RETRIES = 3;
  * Function to create an ImpressionDTOWithMetadata object from a StoredImpressionWithMetadata.
  * Basically it's transforming each StoredImpression key to its full name.
  *
- * @param {StoredImpressionWithMetadata} storedImpression  The target impression.
- * @returns {ImpressionsDTOWithMetadata}
+ * @param storedImpression - The target impression.
+ * @returns An ImpressionsDTOWithMetadata object.
  */
 export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredImpressionWithMetadata):
   ImpressionsDTOWithMetadata => {
@@ -49,7 +48,8 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
       changeNumber: i.c,
       time: i.m,
       pt: i.pt,
-    } as ImpressionDTO,
+      properties: i.properties,
+    } as SplitIO.ImpressionDTO,
   };
 };
 
@@ -57,14 +57,14 @@ export const impressionWithMetadataToImpressionDTO = (storedImpression: StoredIm
  * Factory that returns an Impressions submitter, capable of fetching the impressions from the storage,
  * process and send them to the Split cloud.
  *
- * @param {ILogger}                       logger               The reference to the Synchronizer's Logger.
- * @param {IPostTestImpressionsBulk}      postImpressionsBulk  HTTPClient API to perform the POST request.
- * @param {IImpressionsCacheAsync}        impressionsCache     Impressions Cache Storage reference.
- * @param {ImpressionObserver}            observer             The Impression Observer object for the dedupe process.
- * @param {number}                        impressionsPerPost   Amount of elements to pop from storage.
- * @param {number}                        maxRetries           Amount of attempt retries to perform the POST request.
- * @param {IImpressionCountsCacheBase}    countsCache          The reference to the Impresion's Count Storage. Undefined in DEBUG mode.
- * @returns {() => Promise<boolean>}
+ * @param logger - The Synchronizer's Logger.
+ * @param postImpressionsBulk - HTTPClient API to perform the POST request.
+ * @param impressionsCache - Impressions Cache Storage reference.
+ * @param observer - The Impression Observer object for the dedupe process.
+ * @param impressionsPerPost - Amount of elements to pop from storage.
+ * @param maxRetries - Amount of attempt retries to perform the POST request.
+ * @param countsCache - The reference to the Impression's Count Storage. Undefined in DEBUG mode.
+ * @returns An impressions submitter function.
  */
 export function impressionsSubmitterFactory(
   logger: ILogger,
@@ -131,6 +131,7 @@ export function impressionsSubmitterFactory(
               r: entry.label, // Rule label
               c: entry.changeNumber, // ChangeNumber
               pt: entry.pt, // Previous time
+              properties: entry.properties,
             };
           }),
         });

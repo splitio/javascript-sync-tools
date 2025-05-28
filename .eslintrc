@@ -6,7 +6,7 @@
   "plugins": [
     "@typescript-eslint",
     "import",
-    "eslint-plugin-jsdoc"
+    "eslint-plugin-tsdoc"
   ],
   "env": {
     "browser": false,
@@ -34,6 +34,13 @@
       "rules": {
         "no-use-before-define": "off",
         "no-undef": "off" // turned off to avoid issue with triple-slash path directive
+      }
+    },
+    {
+      // Enable TSDoc rules for TypeScript files, allowing the use of JSDoc in JS files.
+      "files": ["**/*.ts"],
+      "rules": {
+        "tsdoc/syntax": "warn"
       }
     }
   ],
@@ -75,49 +82,6 @@
     "quote-props": ["error", "as-needed"],
     "comma-spacing": ["error", { "before": false, "after": true }],
     "object-curly-spacing": ["error", "always"],
-    "no-trailing-spaces": "error",
-     // jsdoc
-    "jsdoc/check-access": "error",
-    "jsdoc/check-alignment": "error",
-    "jsdoc/check-param-names": ["error", {
-      "allowExtraTrailingParamDocs": true
-    }],
-    "jsdoc/check-syntax": "error",
-    "jsdoc/check-tag-names": ["error", {
-      "definedTags": [
-        "parent",
-        "body",
-        "endpoint",
-        "ngdoc",
-        "restrict"
-      ]
-    }],
-    "jsdoc/check-types": "error",
-    "jsdoc/implements-on-classes": "error",
-    "jsdoc/match-description": "error",
-    "jsdoc/newline-after-description": "error",
-    "jsdoc/require-description": ["error", {
-      "checkConstructors": false,
-      "descriptionStyle": "any"
-    }],
-    "jsdoc/require-description-complete-sentence": "error",
-    "jsdoc/require-hyphen-before-param-description": ["error", "never"],
-    "jsdoc/require-param": "error",
-    "jsdoc/require-param-description": "error",
-    "jsdoc/require-param-name": "error",
-    "jsdoc/require-param-type": "error",
-    "jsdoc/require-property": "error",
-    "jsdoc/require-property-description": "error",
-    "jsdoc/require-property-name": "error",
-    "jsdoc/require-property-type": "error",
-    "jsdoc/require-returns": "error",
-    "jsdoc/require-returns-check": "error",
-    "jsdoc/require-returns-type": "error",
-    "jsdoc/valid-types": "error"
-  },
-  "settings": {
-    "jsdoc": {
-      "mode": "typescript"
-    }
+    "no-trailing-spaces": "error"
   }
 }

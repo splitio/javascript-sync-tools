@@ -3,8 +3,6 @@ import { _getRandomString } from './commonUtils';
 
 /**
  * Mock representing an Event String with no Properties object.
- *
- * @type {string}
  */
 export const singleEventMockNoProperties = `{
   "m":{
@@ -22,16 +20,15 @@ export const singleEventMockNoProperties = `{
   }
 }`;
 /**
- * Function to return a single Mock Event, with the option to randomise some of its data.
+ * Function that returns a single Mock Event, with the option to randomize some of its data.
  *
- * @param {boolean} isSetMaxSize  Flag to decide to randomise some of the Metadata.
- * @param {boolean} randomise     Flag to decide to randomise some of the Metadata.
- * @returns {string}
+ * @param isSetMaxSize - Flag to decide to randomize some of the Metadata.
+ * @param randomize - Flag to decide to randomize some of the Metadata.
  */
-export function getSingleEventString(isSetMaxSize = false, randomise = false): string {
+export function getSingleEventString(isSetMaxSize = false, randomize = false): string {
   const _newEvent = JSON.parse(singleEventMockNoProperties);
-  // Randomise metadata.name parameter.
-  if (randomise) {
+  // Randomize metadata.name parameter.
+  if (randomize) {
     _newEvent.m.n = _getRandomString(14);
   }
   // Add Properties object with a string value to reach 1024 bytes size for event limit.
@@ -45,18 +42,17 @@ export function getSingleEventString(isSetMaxSize = false, randomise = false): s
  * Function to return a list with a specific number of Events with the same metadata, with the option of generating
  * the events set with Max Size per event cap, or randomize metadata.
  *
- * @param {number}  amount        The amount of events to add and return in the list.
- * @param {boolean} isSetMaxSize  The flag to define if the events are set to its Max Size.
- * @param {boolean} randomise     The flag to set the same random metadata for the events in the list.
- * @returns {StoredEventWithMetadata[]}
+ * @param amount - The amount of events to add and return in the list.
+ * @param isSetMaxSize - The flag to define if the events are set to its Max Size.
+ * @param randomize - The flag to set the same random metadata for the events in the list.
  */
 export function getMultipleEventsSameMetadata(
   amount: number,
   isSetMaxSize: boolean = false,
-  randomise: boolean = false
+  randomize: boolean = false
 ): StoredEventWithMetadata[] {
-  const _singleEvent = getSingleEventString(isSetMaxSize, randomise);
-  const _eventsList = [];
+  const _singleEvent = getSingleEventString(isSetMaxSize, randomize);
+  const _eventsList: StoredEventWithMetadata[] = [];
 
   for (let i = 0; i < amount; i++) {
     _eventsList.push(JSON.parse(_singleEvent));

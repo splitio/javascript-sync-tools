@@ -5,7 +5,7 @@
 const version = '@VERSION@';
 
 /**
- * Default values to create settings for the Javascrip Synchronizer.
+ * Default values to create settings for the JavaScript Synchronizer.
  */
 export const defaults = {
   startup: {

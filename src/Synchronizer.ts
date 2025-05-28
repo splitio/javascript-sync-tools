@@ -1,9 +1,11 @@
 import { splitApiFactory } from '@splitsoftware/splitio-commons/src/services/splitApi';
-import { IFetch, ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
+import { ISplitApi } from '@splitsoftware/splitio-commons/src/services/types';
 import { IStorageAsync, ITelemetryCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { ISettings } from '@splitsoftware/splitio-commons/src/types';
-import { SegmentsSynchronizer } from './synchronizers/SegmentsSynchronizer';
-import { SplitsSynchronizer } from './synchronizers/SplitsSynchronizer';
+import { segmentChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/segmentChangesFetcher';
+import { segmentChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/segmentChangesUpdater';
+import { splitChangesFetcherFactory } from '@splitsoftware/splitio-commons/src/sync/polling/fetchers/splitChangesFetcher';
+import { splitChangesUpdaterFactory } from '@splitsoftware/splitio-commons/src/sync/polling/updaters/splitChangesUpdater';
 import { synchronizerStorageFactory } from './storages/synchronizerStorage';
 import { eventsSubmitterFactory } from './submitters/eventsSubmitter';
 import { impressionsSubmitterFactory } from './submitters/impressionsSubmitter';
@@ -15,13 +17,14 @@ import { impressionCountsSubmitterFactory } from './submitters/impressionCountsS
 import { synchronizerSettingsValidator } from './settings';
 import { validateApiKey } from '@splitsoftware/splitio-commons/src/utils/inputValidation';
 import { ISynchronizerSettings } from '../types';
-import { InMemoryStorageFactory } from '@splitsoftware/splitio-commons/src/storages/inMemory/InMemoryStorage';
 import { IEventsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { IImpressionsCacheAsync } from '@splitsoftware/splitio-commons/src/storages/types';
 import { telemetrySubmitterFactory } from './submitters/telemetrySubmitter';
 import { uniqueKeysSubmitterFactory } from './submitters/uniqueKeysSubmitter';
 import { UniqueKeysCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/UniqueKeysCachePluggable';
 import { ImpressionCountsCachePluggable } from '@splitsoftware/splitio-commons/src/storages/pluggable/ImpressionCountsCachePluggable';
+import { getFetch } from './synchronizers/getFetch';
+
 /**
  * Main class to handle the Synchronizer execution.
  */
@@ -35,13 +38,13 @@ export class Synchronizer {
    */
   private _splitApi: ISplitApi;
   /**
-   * The local reference to the SegmentsUpdater instance from @splitio/javascript-commons.
+   * The local reference to the segmentChangesUpdater instance from `@splitio/javascript-commons`.
    */
-  private _segmentsSynchronizer!: SegmentsSynchronizer;
+  private _segmentChangesUpdater!: ReturnType<typeof segmentChangesUpdaterFactory>;
   /**
-   * The local reference to the SplitUpdater instance from @splitio/javascript-commons.
+   * The local reference to the splitChangesUpdater instance from `@splitio/javascript-commons`.
    */
-  private _splitsSynchronizer!: SplitsSynchronizer;
+  private _splitChangesUpdater!: ReturnType<typeof splitChangesUpdaterFactory>;
   /**
    * The local reference to the EventsSynchronizer class.
    */
@@ -73,7 +76,7 @@ export class Synchronizer {
   private _observer: ImpressionObserver;
 
   /**
-   * @param  {ISynchronizerSettings} config  Configuration object used to instantiates the Synchronizer.
+   * @param config - Configuration object used to instantiate the Synchronizer.
    */
   constructor(config: ISynchronizerSettings) {
     this._observer = impressionObserverSSFactory();
@@ -88,11 +91,11 @@ export class Synchronizer {
      * The Split's HTTPclient, required to make the requests to the API.
      */
     this._splitApi = splitApiFactory(
-      this.settings, // @ts-expect-error
+      this.settings,
       {
-        getFetch: Synchronizer._getFetch,
+        getFetch,
         getOptions(settings: ISettings) {
-          // @ts-expect-error
+          // User provided options take precedence
           if (settings.sync.requestOptions) return settings.sync.requestOptions;
         },
       },
@@ -103,7 +106,7 @@ export class Synchronizer {
   /**
    * Function to check the health status of Split APIs (SDK and Events services).
    *
-   * @returns {Promise<boolean>}
+   * @returns A Promise that resolves to `true` if both services are healthy, `false` otherwise.
    */
   private async _checkEndpointHealth() {
     return await Promise.all([
@@ -114,7 +117,7 @@ export class Synchronizer {
   /**
    * Function to set a storage.
    *
-   * @returns {Promise<void>} A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
+   * @returns A Promise that resolves when the storage is ready. It can reject if the storage is not properly configured (e.g., invalid wrapper) or the wrapper fails to connect.
    */
   private initializeStorage(): Promise<void> {
     return new Promise<void>((res, rej) => {
@@ -131,25 +134,21 @@ export class Synchronizer {
    * Function to set all the required Synchronizers.
    */
   private initializeSynchronizers() {
-    // @todo: Add Cli paramater to define impressionsMode.
+    // @todo: Add Cli parameter to define impressionsMode.
     const countsCache = this.settings.sync.impressionsMode === 'OPTIMIZED' ?
       new ImpressionCountsCacheInMemory() :
       undefined;
 
-    this._segmentsSynchronizer = new SegmentsSynchronizer(
-      this._splitApi.fetchSegmentChanges,
-      this.settings,
+    this._segmentChangesUpdater = segmentChangesUpdaterFactory(
+      this.settings.log,
+      segmentChangesFetcherFactory(this._splitApi.fetchSegmentChanges),
       this._storage.segments,
     );
-    this._splitsSynchronizer = new SplitsSynchronizer(
-      this._splitApi.fetchSplitChanges,
-      this.settings,
-      this._storage.splits,
-      this._storage.segments,
-      // @ts-ignore
-      InMemoryStorageFactory({ settings: this.settings }),
-      // @ts-ignore
-      InMemoryStorageFactory({ settings: this.settings })
+    this._splitChangesUpdater = splitChangesUpdaterFactory(
+      this.settings.log,
+      splitChangesFetcherFactory(this._splitApi.fetchSplitChanges, this.settings, this._storage),
+      this._storage,
+      this.settings.sync.__splitFiltersValidation
     );
     this._eventsSubmitter = eventsSubmitterFactory(
       this.settings.log,
@@ -189,13 +188,13 @@ export class Synchronizer {
   /**
    * Function to prepare for sync tasks. Checks for Fetch API availability and initialize Syncs and Storages.
    *
-   * @returns {Promise<void>} A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
+   * @returns A promise that resolves if the synchronizer is ready to execute. It rejects with an error,
    * for example, if the Fetch API is not available, Split API is not responding, or Storage connection fails.
    */
   private async preExecute(): Promise<void> {
     const log = this.settings.log;
-    if (!Synchronizer._getFetch()) throw new Error('Global Fetch API is not available');
-    log.info('Synchronizer: Execute');
+    if (!getFetch()) throw new Error('Global Fetch API is not available');
+    log.info(`Synchronizer: Execute. Version: ${this.settings.version}`);
 
     const areAPIsReady = await this._checkEndpointHealth();
     if (!areAPIsReady) throw new Error('Health check of Split API endpoints failed');
@@ -209,9 +208,9 @@ export class Synchronizer {
   }
   /**
    * Function to wrap actions to perform after the sync tasks have been executed.
-   * Currently, it disconects from the Storage.
+   * Currently, it disconnects from the Storage.
    *
-   * @returns {Promise<void>} A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
+   * @returns A promise that resolves if the synchronizer has successfully disconnected from the storage. Otherwise, it rejects with an error.
    */
   private async postExecute(): Promise<void> {
     try {
@@ -223,8 +222,8 @@ export class Synchronizer {
   /**
    * Method to start the Synchronizer execution.
    *
-   * @param {Function?} cb Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
-   * @returns {Promise<boolean>}
+   * @param cb - Optional error-first callback to be invoked when the synchronization ends. The callback will be invoked with an error as first argument if the synchronization fails.
+   * @returns A promise that resolves to `true` if the synchronization was successful, `false` otherwise.
    */
   async execute(cb?: (err?: any) => void): Promise<boolean> {
     try {
@@ -258,78 +257,57 @@ export class Synchronizer {
   /**
    * Function to wrap the execution of the feature flags and segments synchronizers.
    *
-   * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
-   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if feature flags and segments were successfully fetched and stored.
+   * @param standalone - Flag to determine the function requires the preExecute conditions.
+   * @returns A promise that resolves to a boolean value indicating if feature flags and segments were successfully fetched and stored.
    */
   private async executeSplitsAndSegments(standalone = true) {
     if (standalone) await this.preExecute();
 
-    // @TODO optimize SplitChangesUpdater to reduce storage operations ("inMemoryOperation" mode)
-    const isSplitsSyncSuccessfull = await this._splitsSynchronizer.getSplitChanges();
+    const isSplitsSyncSuccessful = await this._splitChangesUpdater();
 
-    this.settings.log.debug(`Feature flags Synchronizer task: ${isSplitsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
-    const isSegmentsSyncSuccessfull = await this._segmentsSynchronizer.getSegmentsChanges();
-    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    this.settings.log.debug(`Feature flags Synchronizer task: ${isSplitsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
+    const isSegmentsSyncSuccessful = await this._segmentChangesUpdater();
+    this.settings.log.debug(`Segments Synchronizer task: ${isSegmentsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
 
     if (standalone) await this.postExecute();
 
-    return isSplitsSyncSuccessfull && isSegmentsSyncSuccessfull;
+    return isSplitsSyncSuccessful && isSegmentsSyncSuccessful;
   }
   /**
    * Function to wrap the execution of the Impressions and Event's synchronizers.
    *
-   * @param {boolean} standalone  Flag to determine the function requires the preExecute conditions.
-   * @returns {Promise<boolean>} A promise that resolves to a boolean value indicating if impressions and events were successfully popped from the storage and sent to Split.
+   * @param standalone - Flag to determine the function requires the preExecute conditions.
+   * @returns A promise that resolves to a boolean value indicating if impressions and events were successfully popped from the storage and sent to Split.
    */
   private async executeImpressionsAndEvents(standalone = true) {
     const log = this.settings.log;
     if (standalone) await this.preExecute();
 
-    const isEventsSyncSuccessfull = await this._eventsSubmitter();
-    log.debug(`Events Synchronizer task: ${isEventsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
-    const isImpressionsSyncSuccessfull = await this._impressionsSubmitter();
-    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+    const isEventsSyncSuccessful = await this._eventsSubmitter();
+    log.debug(`Events Synchronizer task: ${isEventsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
+    const isImpressionsSyncSuccessful = await this._impressionsSubmitter();
+    log.debug(`Impressions Synchronizer task: ${isImpressionsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
 
-    let isSyncSuccessfull = isEventsSyncSuccessfull && isImpressionsSyncSuccessfull;
+    let isSyncSuccessful = isEventsSyncSuccessful && isImpressionsSyncSuccessful;
 
     if (this._impressionCountsSubmitter) {
-      const isImpressionCountsSyncSuccessfull = await this._impressionCountsSubmitter();
-      isSyncSuccessfull = isSyncSuccessfull && isImpressionCountsSyncSuccessfull;
-      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+      const isImpressionCountsSyncSuccessful = await this._impressionCountsSubmitter();
+      isSyncSuccessful = isSyncSuccessful && isImpressionCountsSyncSuccessful;
+      log.debug(`ImpressionCounts Synchronizer task: ${isImpressionCountsSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
     }
 
     if (this._uniqueKeysSubmitter) {
-      const isUniqueKeysSyncSuccessfull = await this._uniqueKeysSubmitter();
-      isSyncSuccessfull = isSyncSuccessfull && isUniqueKeysSyncSuccessfull;
-      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+      const isUniqueKeysSyncSuccessful = await this._uniqueKeysSubmitter();
+      isSyncSuccessful = isSyncSuccessful && isUniqueKeysSyncSuccessful;
+      log.debug(`UniqueKeys Synchronizer task: ${isUniqueKeysSyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
     }
 
     if (this._telemetrySubmitter) {
-      const isTelemetrySyncSuccessfull = await this._telemetrySubmitter();
+      const isTelemetrySyncSuccessful = await this._telemetrySubmitter();
       // if telemetry sync fails, we don't return false, since it's not a critical operation
-      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncSuccessfull ? 'Successful' : 'Unsuccessful'}`);
+      log.debug(`Telemetry Synchronizer task: ${isTelemetrySyncSuccessful ? 'Successful' : 'Unsuccessful'}`);
     }
 
-    return isSyncSuccessfull;
-  }
-  /**
-   * Function to set the Fetch function to perform the requests. It can be provided through
-   * the NPM package, or fallbacks to the global Fetch function if available. In case
-   * there is no fetch globally, returns undefined.
-   *
-   * @returns {IFetch|undefined}
-   */
-  static _getFetch(): IFetch | undefined {
-    let _fetch;
-    try {
-      _fetch = require('node-fetch');
-      // Handle node-fetch issue https://github.com/node-fetch/node-fetch/issues/1037
-      if (typeof _fetch !== 'function') _fetch = _fetch.default;
-    } catch (e) {
-      // Try to access global fetch if `node-fetch` package couldn't be imported (e.g., not in a Node environment)
-      // eslint-disable-next-line no-undef
-      _fetch = typeof fetch === 'function' ? fetch : undefined;
-    }
-    return _fetch;
+    return isSyncSuccessful;
   }
 }

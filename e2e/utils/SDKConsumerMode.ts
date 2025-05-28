@@ -23,8 +23,7 @@ const config = {
  * Function to run an example SDK in Consumer mode, in order to generate Events and Impressions
  * to be then processed by the Synchronizer.
  *
- * @param {ImpressionsMode} impressionsMode Impressions mode.
- * @returns {Promise}
+ * @param impressionsMode - Impressions mode.
  */
 export default function runSDKConsumer(impressionsMode: ImpressionsMode) {
   const factory = SplitFactory({
@@ -33,7 +32,7 @@ export default function runSDKConsumer(impressionsMode: ImpressionsMode) {
       impressionsMode,
     }, // @ts-ignore
   }, (modules) => {
-    // Using pluggable storage in NodeJS SDK
+    // Using pluggable storage in Node.js
     modules.storageFactory = PluggableStorage({
       prefix: modules.settings.storage.prefix,
       wrapper: redisAdapterWrapper(modules.settings.storage.options),

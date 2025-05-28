@@ -60,7 +60,7 @@ const _scheduler: NonNullable<ISynchronizerSettings['scheduler']> = {
 // @todo: refactor param alias and args to be all wrapped under the `options` function.
 const yargv = yargs(hideBin(argv))
   .usage('Usage: $0 [options]')
-  .command('sync', 'Start synchronising tasks.')
+  .command('sync', 'Start synchronizing tasks.')
   .example('$0 -m json --config path2/file.json -s path2/storage.js', '| Set settings from JSON file. -d')
   .example('$0 -m env -s path2/storage.js', '| Set settings from .env file.')
   .example(
@@ -150,7 +150,7 @@ const yargv = yargs(hideBin(argv))
     // g: {
     //   alias: 'inMemoryOperation',
     //   type: 'boolean',
-    //   description: 'Flag that enables all the synchronization operations to be proccessed in Memory.',
+    //   description: 'Flag that enables all the synchronization operations to be processed in Memory.',
     //   nargs: 0,
     // },
   })
@@ -194,7 +194,7 @@ console.log(` > Synchronizer configs from: ${mode || 'CLI params'}`);
 /**
  * Function to set the Synchronizer Execution Mode.
  *
- * @param {CustomModeOption} _customRun  Option provided by the CLI or config (env|json).
+ * @param _customRun - Option provided by the CLI or config (env|json).
  */
 const setCustomRun = (_customRun: CustomModeOption | undefined) => {
   switch (_customRun) {
@@ -300,7 +300,7 @@ const synchronizer = new Synchronizer({
 });
 
 /**
- * Function to exit node with error.
+ * Function to exit Node.js with error.
  */
 function informFailedExecute() {
   console.log('# Split Synchronizer tool execution terminated with issues');
