@@ -1,0 +1,15 @@
+inputSet:
+  name: javascript-sync-tools
+  tags: {}
+  identifier: javascriptsynctools
+  orgIdentifier: PROD
+  projectIdentifier: Harness_Split
+  pipeline:
+    identifier: javascriptsynctools
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
